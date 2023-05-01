@@ -3,6 +3,7 @@
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     import { ColoredBox } from '$lib/classes/ColoredBox';
+    import { greet } from 'wasm';
 
     enum SliceMovement {
         MoveSlice,
@@ -128,6 +129,8 @@
         newDisplayedSlice = Math.round(scrollPosition);
         
     }
+
+    greet("Rens");
 
 </script>
 
