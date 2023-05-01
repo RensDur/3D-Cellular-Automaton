@@ -1,4 +1,5 @@
 use wasm_bindgen::prelude::*;
+mod voxels;
 
 #[wasm_bindgen]
 extern {
@@ -7,5 +8,5 @@ extern {
 
 #[wasm_bindgen]
 pub fn greet(name: &str) {
-    alert(&format!("Hello, {}!", name));
+    alert(&format!("Good afternoon, {}!", name));
 }

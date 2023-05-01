@@ -1,10 +1,10 @@
 <script>
 
-    import SimpleScene from "$lib/components/SimpleScene.svelte";
+    import MainStage from "$lib/components/MainStage.svelte";
 
 </script>
 
-<SimpleScene/>
+<MainStage/>
 
 <style>
 

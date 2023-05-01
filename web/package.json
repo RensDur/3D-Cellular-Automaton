@@ -14,8 +14,7 @@
 		"format": "prettier --plugin-search-dir . --write ."
 	},
 	"dependencies": {
-		"three": "^0.152.2",
-		"wasm": "^1.0.0"
+		"three": "^0.152.2"
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.28.1",

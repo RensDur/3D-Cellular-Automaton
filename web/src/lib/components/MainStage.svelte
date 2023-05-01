@@ -3,7 +3,7 @@
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     import { ColoredBox } from '$lib/classes/ColoredBox';
-    import { greet } from 'wasm';
+    import init, { greet } from '$lib/wasm/pkg/wasm';
 
     enum SliceMovement {
         MoveSlice,
@@ -115,8 +115,6 @@
         animate();
     }
 
-    onMount(setupScene);
-
     function handleMouseWheelEvent(e: WheelEvent) {
         scrollPosition += (e.deltaY * size)/1000;
         
@@ -130,7 +128,7 @@
         
     }
 
-    greet("Rens");
+    onMount(() => {init().then(setupScene)});
 
 </script>
 
