@@ -3,7 +3,7 @@
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     import { ColoredBox } from '$lib/classes/ColoredBox';
-    import init, { greet } from '$lib/wasm/pkg/wasm';
+    import init, { CAGrid2D } from '$lib/wasm/pkg/wasm';
 
     enum SliceMovement {
         MoveSlice,
@@ -20,6 +20,8 @@
     let renderedBoxes: Array<ColoredBox> = [];
 
     function setupScene() {
+
+        console.log(CAGrid2D);
 
         // Setup a new three.js scene
         const scene = new THREE.Scene();

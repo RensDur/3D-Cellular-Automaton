@@ -1,5 +1,5 @@
 use wasm_bindgen::prelude::*;
-mod voxels;
+mod data;
 
 #[wasm_bindgen]
 extern {
