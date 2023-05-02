@@ -1,46 +1,48 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-    import * as THREE from 'three';
-    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-    import { ColoredBox } from '$lib/classes/ColoredBox';
-    import init, { CAGrid2D } from '$lib/wasm/pkg/wasm';
+    import * as THREE from "three";
+	import { ColoredBox } from "$lib/classes/ColoredBox";
+	import { SliceMovement } from "$lib/data/SliceMovement";
+	import { onMount } from "svelte";
+    import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
-    enum SliceMovement {
-        MoveSlice,
-        MoveBoundingBox
-    }
+    // DOM bindings
+    let containerDiv: HTMLDivElement;
 
+    // THREE.js elements
+    let scene: THREE.Scene;
+    let renderer: THREE.WebGLRenderer;
+    let camera: THREE.PerspectiveCamera;
+    let orbitControls: OrbitControls;
+
+    // THREE.js behaviour variables
     let sliceMovement = SliceMovement.MoveSlice;
-
+    const size = 20;
     let scrollPosition = 0;
     let displayedSlice: number = 0;
     let newDisplayedSlice: number = 0;
-    const size = 20;
-
     let renderedBoxes: Array<ColoredBox> = [];
 
+    // THREE.js setup
     function setupScene() {
 
-        console.log(CAGrid2D);
-
-        // Setup a new three.js scene
-        const scene = new THREE.Scene();
+        // Setup the three.js scene
+        scene = new THREE.Scene();
         scene.background = new THREE.Color(0xf5f5f5);
 
         // Setup the WebGL renderer
-        const renderer = new THREE.WebGLRenderer({antialias: true});
+        renderer = new THREE.WebGLRenderer({antialias: true});
         renderer.setSize(window.innerWidth, window.innerHeight);
 
-        // Add the domElement from this renderer to the div#container
-        document.getElementById("container")?.appendChild(renderer.domElement);
+        // Add the dom-element of the renderer to the container
+        containerDiv.appendChild(renderer.domElement);
 
         // Specify the camera properties
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         camera.position.set(size, size, size);
-
+        
         // Specify the orbit-controls
-        const orbitControls = new OrbitControls(camera, renderer.domElement);
-
+        orbitControls = new OrbitControls(camera, renderer.domElement);
+        
         // Disable zoom through scrolling
         orbitControls.enableZoom = false;
 
@@ -117,7 +119,9 @@
         animate();
     }
 
-    function handleMouseWheelEvent(e: WheelEvent) {
+
+    // Event handlers
+    function handleScroll(e: WheelEvent) {
         scrollPosition += (e.deltaY * size)/1000;
         
         if (scrollPosition >= size-1) {
@@ -127,29 +131,32 @@
         }
 
         newDisplayedSlice = Math.round(scrollPosition);
-        
     }
 
-    onMount(() => {init().then(setupScene)});
+    function handleWindowResize(e: Event) {
+        // Update the camera aspect-ratio
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+
+        // Update the size of the renderer to match the new window-size
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+
+    // Svelte page-mount
+    onMount(() => {
+        setupScene();
+    })
 
 </script>
 
+<!-- Capture wheel and resize events -->
+<svelte:window on:wheel={handleScroll} on:resize={handleWindowResize}></svelte:window>
 
-<div id="container" on:wheel={handleMouseWheelEvent}>
-
-</div>
+<!-- The container for the THREE.js canvas -->
+<div id="container" bind:this={containerDiv}></div>
 
 
 <style>
-
-    div#container {
-        width: 100%;
-        height: 100%;
-
-        margin: 0;
-        padding: 0;
-
-        background: green;
-    }
 
 </style>
