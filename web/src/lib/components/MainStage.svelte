@@ -16,8 +16,8 @@
     let orbitControls: OrbitControls;
 
     // THREE.js behaviour variables
+    let size: number = 20;
     let sliceMovement = SliceMovement.MoveSlice;
-    const size = 20;
     let scrollPosition = 0;
     let displayedSlice: number = 0;
     let newDisplayedSlice: number = 0;
@@ -26,6 +26,8 @@
 
     // THREE.js setup
     function setupScene() {
+
+        size = $controller.size();
 
         // Setup the three.js scene
         scene = new THREE.Scene();
@@ -83,7 +85,7 @@
                 let color = new THREE.Color(box.getX() / size, 0.5, z / size);
 
                 if ($controller) {
-                    let chemical = $controller.get(box.getX(), box.getY());
+                    let chemical = $controller.get(box.getX(), box.getY(), z);
                     color = new THREE.Color(0, 0, 0);
 
                     if (chemical == 1) {
@@ -117,6 +119,7 @@
             // We'll only change the slice once the user has selected a different one.
             // If the new slice selection is different from the current slice
             if (newDisplayedSlice != displayedSlice || $controller != previouslyRenderedGrid) {
+
                 displayedSlice = newDisplayedSlice;
 
                 // Add new boxes to the scene

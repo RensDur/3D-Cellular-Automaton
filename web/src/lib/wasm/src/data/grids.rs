@@ -26,6 +26,13 @@ impl CAGrid2D {
     pub fn size(&self) -> usize {
         self.size
     }
+
+    pub fn dist(x1: usize, y1: usize, x2: usize, y2: usize) -> f32 {
+        let dx = x2 as f32 - x1 as f32;
+        let dy = y2 as f32 - y1 as f32;
+    
+        (dx*dx + dy*dy).sqrt()
+    }
 }
 
 
@@ -55,5 +62,13 @@ impl CAGrid3D {
 
     pub fn size(&self) -> usize {
         self.size
+    }
+
+    pub fn dist(x1: usize, y1: usize, z1: usize, x2: usize, y2: usize, z2: usize) -> f32 {
+        let dx = x2 as f32 - x1 as f32;
+        let dy = y2 as f32 - y1 as f32;
+        let dz = z2 as f32 - z1 as f32;
+    
+        (dx*dx + dy*dy + dz*dz).sqrt()
     }
 }

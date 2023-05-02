@@ -6,7 +6,7 @@ import { writable } from "svelte/store";
 import init, * as wasm from "$lib/wasm/pkg/wasm";
 
 function createControllerStore() {
-    const { subscribe, set, update } = writable<wasm.CAGrid2D>();
+    const { subscribe, set, update } = writable<wasm.CellularAutomaton3D>();
 
     // Variable to keep track of initialisation status of wasm
     let wasmInitialised = false;
@@ -22,28 +22,43 @@ function createControllerStore() {
             if (!wasmInitialised) {
                 await init();
                 wasmInitialised = true;
+
+                set(wasm.CellularAutomaton3D.new(50, 2.3, 1.0, 6.01, -0.25));
             }
         },
 
+        clearGrid: () => {
+            update(ca => ca.resetAllVoxels());
+        },
+
         /**
-         * Method: Create a new empty grid of the specified size
+         * Method: update dc and uc parameters
          */
-        createEmptyGrid: (size: number) => {
-            set(wasm.CAGrid2D.new(size));
+        updateDCRange: (dc_range: number) => {
+            update(ca => ca.set_dc_range(dc_range));
+        },
+        updateDCInfluence: (dc_influence: number) => {
+            update(ca => ca.set_dc_influence(dc_influence));
+        },
+        updateUCRange: (uc_range: number) => {
+            update(ca => ca.set_uc_range(uc_range));
+        },
+        updateUCInfluence: (uc_influence: number) => {
+            update(ca => ca.set_uc_influence(uc_influence));
         },
 
         /**
          * Method: randomly spread the specified number of chemicals over the grid
          */
         randomlySpreadChemicals: (chemicals: number) => {
-            update(grid => wasm.spread_chemicals_randomly_2d(grid, chemicals));
+            update(ca => ca.spread_chemicals_randomly(chemicals));
         },
 
         /**
          * Method: run one iteration of the algorithm
          */
         runIteration: () => {
-            update(grid => wasm.run_iteration(grid));
+            update(ca => ca.run_iteration());
         }
     }
 }
