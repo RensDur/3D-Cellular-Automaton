@@ -4,6 +4,7 @@
 	import { SliceMovement } from "$lib/data/SliceMovement";
 	import { onMount } from "svelte";
     import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+    import { controller } from "$lib/stores/controller";
 
     // DOM bindings
     let containerDiv: HTMLDivElement;
@@ -21,6 +22,7 @@
     let displayedSlice: number = 0;
     let newDisplayedSlice: number = 0;
     let renderedBoxes: Array<ColoredBox> = [];
+    let previouslyRenderedGrid: any;
 
     // THREE.js setup
     function setupScene() {
@@ -79,6 +81,15 @@
 
             for (let box of renderedBoxes) {
                 let color = new THREE.Color(box.getX() / size, 0.5, z / size);
+
+                if ($controller) {
+                    let chemical = $controller.get(box.getX(), box.getY());
+                    color = new THREE.Color(0, 0, 0);
+
+                    if (chemical == 1) {
+                        color = new THREE.Color(1, 1, 1);
+                    }
+                }
                 
                 if (sliceMovement == SliceMovement.MoveSlice) {
                     box.update(z, color);
@@ -105,12 +116,16 @@
             // Update the number of the slice that's displayed according to scroll
             // We'll only change the slice once the user has selected a different one.
             // If the new slice selection is different from the current slice
-            if (newDisplayedSlice != displayedSlice) {
+            if (newDisplayedSlice != displayedSlice || $controller != previouslyRenderedGrid) {
                 displayedSlice = newDisplayedSlice;
 
                 // Add new boxes to the scene
                 showSlice(displayedSlice);
 
+                // Register the current controller state
+                previouslyRenderedGrid = $controller;
+
+                console.log("Updating!");
             }
 
             renderer.render(scene, camera);
@@ -144,7 +159,8 @@
 
 
     // Svelte page-mount
-    onMount(() => {
+    onMount(async () => {
+        await controller.initialise();
         setupScene();
     })
 

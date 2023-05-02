@@ -1,5 +1,6 @@
 <script>
 
+    import ControlCenterOverlay from "$lib/components/ControlCenterOverlay.svelte";
     import MainStage from "$lib/components/MainStage.svelte";
 
 </script>
@@ -13,7 +14,7 @@
 
     <!-- Foreground that contains controls and other overlays -->
     <div id="foreground">
-
+        <ControlCenterOverlay/>
     </div>
 </div>
 

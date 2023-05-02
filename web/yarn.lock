@@ -1549,10 +1549,6 @@ vitest@^0.25.3:
     tinyspy "^1.0.2"
     vite "^3.0.0 || ^4.0.0"
 
-"wasm@file:../wasm/pkg":
-  version "1.0.0"
-  resolved "file:../wasm/pkg"
-
 which@^2.0.1:
   version "2.0.2"
   resolved "https://registry.npmjs.org/which/-/which-2.0.2.tgz"

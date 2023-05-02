@@ -15,15 +15,15 @@ impl CAGrid2D {
         }
     }
 
-    fn get(&self, x: usize, y: usize) -> u32 {
+    pub fn get(&self, x: usize, y: usize) -> u32 {
         self.data[x][y]
     }
 
-    fn set(&mut self, x: usize, y: usize, val: u32) {
+    pub fn set(&mut self, x: usize, y: usize, val: u32) {
         self.data[x][y] = val;
     }
 
-    fn size(&self) -> usize {
+    pub fn size(&self) -> usize {
         self.size
     }
 }
@@ -45,15 +45,15 @@ impl CAGrid3D {
         }
     }
 
-    fn get(&self, x: usize, y: usize, z: usize) -> u32 {
+    pub fn get(&self, x: usize, y: usize, z: usize) -> u32 {
         self.data[x][y][z]
     }
 
-    fn set(&mut self, x: usize, y: usize, z: usize, val: u32) {
+    pub fn set(&mut self, x: usize, y: usize, z: usize, val: u32) {
         self.data[x][y][z] = val;
     }
 
-    fn size(&self) -> usize {
+    pub fn size(&self) -> usize {
         self.size
     }
 }
