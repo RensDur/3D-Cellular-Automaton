@@ -103,7 +103,8 @@ impl CellularAutomaton2D {
 
 #[wasm_bindgen]
 pub struct CellularAutomaton3D {
-    grid: CAGrid3D,
+    prev_generation: CAGrid3D,
+    curr_generation: CAGrid3D,
     dc_range: f32,
     dc_influence: f32,
     uc_range: f32,
@@ -115,7 +116,8 @@ impl CellularAutomaton3D {
 
     pub fn new(size: usize, dc_range: f32, dc_influence: f32, uc_range: f32, uc_influence: f32) -> Self {
         CellularAutomaton3D {
-            grid: CAGrid3D::new(size),
+            prev_generation: CAGrid3D::new(size),
+            curr_generation: CAGrid3D::new(size),
             dc_range,
             dc_influence,
             uc_range,
@@ -123,16 +125,33 @@ impl CellularAutomaton3D {
         }
     }
 
-    pub fn resetAllVoxels(mut self) -> Self {
-        for x in 0..self.grid.size() {
-            for y in 0..self.grid.size() {
-                for z in 0..self.grid.size() {
-                    self.grid.set(x, y, z, 0);
+    pub fn reset_all_voxels(mut self) -> Self {
+        for x in 0..self.curr_generation.size() {
+            for y in 0..self.curr_generation.size() {
+                for z in 0..self.curr_generation.size() {
+                    self.prev_generation.set(x, y, z, 0);
+                    self.curr_generation.set(x, y, z, 0);
                 }
             }
         }
 
         self
+    }
+
+    pub fn get_dc_range(&self) -> f32 {
+        self.dc_range
+    }
+
+    pub fn get_dc_influence(&self) -> f32 {
+        self.dc_influence
+    }
+
+    pub fn get_uc_range(&self) -> f32 {
+        self.uc_range
+    }
+
+    pub fn get_uc_influence(&self) -> f32 {
+        self.uc_influence
     }
 
     pub fn set_dc_range(mut self, dc_range: f32) -> Self {
@@ -160,25 +179,27 @@ impl CellularAutomaton3D {
     }
 
     pub fn get(&self, x: usize, y: usize, z: usize) -> u32 {
-        self.grid.get(x, y, z)
+        self.curr_generation.get(x, y, z)
     }
 
     pub fn set(&mut self, x: usize, y: usize, z: usize, val: u32) {
-        self.grid.set(x, y, z, val);
+        self.prev_generation.set(x, y, z, val);
+        self.curr_generation.set(x, y, z, val);
     }
 
     pub fn size(&self) -> usize {
-        self.grid.size()
+        self.curr_generation.size()
     }
 
     fn total_influence(&self, px: usize, py: usize, pz: usize) -> f32 {
         let mut sum: f32 = 0.0;
 
-        for x in 0..self.grid.size() {
-            for y in 0..self.grid.size() {
-                for z in 0..self.grid.size() {
+        for x in 0..self.prev_generation.size() {
+            for y in 0..self.prev_generation.size() {
+                for z in 0..self.prev_generation.size() {
                 
-                    if self.grid.get(x, y, z) == 0 {
+                    if self.prev_generation.get(x, y, z) == 0
+                        && !(px == x && py == y && pz == z) {
                         let dist = CAGrid3D::dist(px, py, pz, x, y, z);
 
                         if dist <= self.dc_range {
@@ -200,10 +221,10 @@ impl CellularAutomaton3D {
         let mut rng = rand::thread_rng();
 
         // Loop over all the cells in the grid
-        for x in 0..self.grid.size() {
-            for y in 0..self.grid.size() {
-                for z in 0..self.grid.size() {
-                    self.grid.set(x, y, z, rng.gen_range(0..chem));
+        for x in 0..self.curr_generation.size() {
+            for y in 0..self.curr_generation.size() {
+                for z in 0..self.curr_generation.size() {
+                    self.set(x, y, z, rng.gen_range(0..chem));
                 }
             }
         }
@@ -212,16 +233,22 @@ impl CellularAutomaton3D {
     }
 
     pub fn run_iteration(mut self) -> Self {
-        for x in 0..self.grid.size() {
-            for y in 0..self.grid.size() {
-                for z in 0..self.grid.size() {
+        // The current generation becomes the previous one
+        // and we're going to render the new generation here.
+        let size = self.size();
+        self.prev_generation = self.curr_generation;
+        self.curr_generation = CAGrid3D::new(size);
+
+        for x in 0..self.curr_generation.size() {
+            for y in 0..self.curr_generation.size() {
+                for z in 0..self.curr_generation.size() {
                 
                     let influence = self.total_influence(x, y, z);
         
                     if influence > 0.0 {
-                        self.grid.set(x, y, z, 0);
+                        self.curr_generation.set(x, y, z, 0);
                     } else if influence < 0.0 {
-                        self.grid.set(x, y, z, 1);
+                        self.curr_generation.set(x, y, z, 1);
                     }
 
                 }

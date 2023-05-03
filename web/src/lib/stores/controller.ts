@@ -23,12 +23,12 @@ function createControllerStore() {
                 await init();
                 wasmInitialised = true;
 
-                set(wasm.CellularAutomaton3D.new(50, 2.3, 1.0, 6.01, -0.25));
+                set(wasm.CellularAutomaton3D.new(30, 2, 1.0, 4, -0.2));
             }
         },
 
         clearGrid: () => {
-            update(ca => ca.resetAllVoxels());
+            update(ca => ca.reset_all_voxels());
         },
 
         /**

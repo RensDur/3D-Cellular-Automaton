@@ -5,19 +5,20 @@
 
     // Binders to DOM-elements
     let containerDiv: HTMLDivElement;
-    let dcRange: number = 2.3;
-    let dcInfluence: number = 1;
-    let ucRange: number = 6.01;
-    let ucInfluence: number = -0.24;
-
-    $: if ($controller) { controller.updateDCRange(dcRange); }
-    $: if ($controller) { controller.updateDCInfluence(dcInfluence); }
-    $: if ($controller) { controller.updateUCRange(ucRange); }
-    $: if ($controller) { controller.updateUCInfluence(ucInfluence); }
+    let dcRange: number;
+    let dcInfluence: number;
+    let ucRange: number;
+    let ucInfluence: number;
 
     // Initialise wasm and then show the controls
     onMount(async () => {
         await controller.initialise();
+
+        dcRange = $controller.get_dc_range();
+        dcInfluence = $controller.get_dc_influence();
+        ucRange = $controller.get_uc_range();
+        ucInfluence = $controller.get_uc_influence();
+
         containerDiv.style.display = "block";
     })
 
@@ -29,10 +30,10 @@
     <button on:click={() => {controller.randomlySpreadChemicals(2);}}>Randomly spread 2 chemicals</button>
     <button on:click={() => {controller.runIteration();}}>Next iteration</button>
     
-    <br>DC Range: <input bind:value={dcRange} type="number">
-    <br>DC Influence: <input bind:value={dcInfluence} type="number">
-    <br>UC Range: <input bind:value={ucRange} type="number">
-    <br>UC Influence: <input bind:value={ucInfluence} type="number">
+    <br>DC Range:       <input bind:value={dcRange}     on:change={() => {controller.updateDCRange(dcRange)}} type="number">
+    <br>DC Influence:   <input bind:value={dcInfluence} on:change={() => {controller.updateDCInfluence(dcInfluence)}} type="number">
+    <br>UC Range:       <input bind:value={ucRange}     on:change={() => {controller.updateUCRange(ucRange)}} type="number">
+    <br>UC Influence:   <input bind:value={ucInfluence} on:change={() => {controller.updateUCInfluence(ucInfluence)}} type="number">
 
 
 </div>
