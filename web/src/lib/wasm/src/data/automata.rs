@@ -1,6 +1,12 @@
 use wasm_bindgen::prelude::*;
 use rand::prelude::*;
 
+use rayon::prelude::*;
+pub use wasm_bindgen_rayon::init_thread_pool;
+use std::sync::{Arc, Mutex};
+
+use crate::alert;
+
 use super::grids::*;
 use super::chemicals::*;
 
@@ -102,6 +108,7 @@ impl CellularAutomaton2D {
 
 
 #[wasm_bindgen]
+#[derive(Clone)]
 pub struct CellularAutomaton3D {
     prev_generation: CAGrid3D,
     curr_generation: CAGrid3D,
@@ -191,30 +198,7 @@ impl CellularAutomaton3D {
         self.curr_generation.size()
     }
 
-    fn total_influence(&self, px: usize, py: usize, pz: usize) -> f32 {
-        let mut sum: f32 = 0.0;
-
-        for x in 0..self.prev_generation.size() {
-            for y in 0..self.prev_generation.size() {
-                for z in 0..self.prev_generation.size() {
-                
-                    if self.prev_generation.get(x, y, z) == 0
-                        && !(px == x && py == y && pz == z) {
-                        let dist = CAGrid3D::dist(px, py, pz, x, y, z);
-
-                        if dist <= self.dc_range {
-                            sum += self.dc_influence;
-                        } else if dist <= self.uc_range {
-                            sum += self.uc_influence;
-                        }
-                    }
-
-                }
-            }
-        }
-
-        sum
-    }
+    
 
     pub fn spread_chemicals_randomly(mut self, chem: u32) -> Self {
         // Random number generator
@@ -232,18 +216,114 @@ impl CellularAutomaton3D {
         self
     }
 
+    fn start_thread(automaton: CellularAutomaton3D, computed_influences: Arc<Mutex<Vec<Vec<Vec<f32>>>>>, x: usize) -> std::thread::JoinHandle<()> {
+        let handle = thread::spawn(move || {
+            // Multiprocessing
+
+            for y in 0..automaton.size() {
+                for z in 0..automaton.size() {
+                    let influence = automaton.total_influence(x, y, z);
+
+                    let mut computed_influences_locked = computed_influences.lock().unwrap();
+                    computed_influences_locked[x][y][z] = influence;
+                    drop(computed_influences_locked);
+                }
+            }
+
+        });
+
+        handle
+    }
+
+    fn run_iteration_helper(&self) -> Vec<Vec<Vec<f32>>> {
+        let size: usize = self.size();
+
+        let mut handles: Vec<std::thread::JoinHandle<()>> = Vec::new();
+        let computed_influences: Arc<Mutex<Vec<Vec<Vec<f32>>>>> = Arc::new(Mutex::new(vec![vec![vec![0f32; size]; size]; size]));
+
+        for x in 0..size {
+
+            let computed_influences_clone = computed_influences.clone();
+
+            handles.push(
+                CellularAutomaton3D::start_thread(self.clone(), computed_influences_clone, x.clone())
+            );
+        }
+
+        // Join all threads again
+        for h in handles {
+            h.join().unwrap();
+        }
+
+        // Extract the resulting vector
+        let influence_results = computed_influences.lock().unwrap();
+
+        influence_results.to_vec()
+    }
+    
+    fn total_influence(&self, px: usize, py: usize, pz: usize) -> f32 {
+        let mut sum: f32 = 0.0;
+    
+        // Compute the boundaries of the proximity
+        let max_dist = f32::ceil(f32::max(self.dc_range, self.uc_range)) as isize + 1;
+    
+        let xmin = isize::max(0, (px as isize) - max_dist) as usize;
+        let ymin = isize::max(0, (py as isize) - max_dist) as usize;
+        let zmin = isize::max(0, (pz as isize) - max_dist) as usize;
+        let xmax = isize::min(self.prev_generation.size() as isize, (px as isize) + max_dist) as usize;
+        let ymax = isize::min(self.prev_generation.size() as isize, (py as isize) + max_dist) as usize;
+        let zmax = isize::min(self.prev_generation.size() as isize, (pz as isize) + max_dist) as usize;
+    
+        for x in xmin..xmax {
+            for y in ymin..ymax {
+                for z in zmin..zmax {
+                
+                    if self.prev_generation.get(x, y, z) == 0
+                        && !(px == x && py == y && pz == z) {
+                        let dist = CAGrid3D::dist(px, py, pz, x, y, z);
+    
+                        if dist <= self.dc_range {
+                            sum += self.dc_influence;
+                        } else if dist <= self.uc_range {
+                            sum += self.uc_influence;
+                        }
+                    }
+    
+                }
+            }
+        }
+    
+        sum
+    }
+
+    fn calc_influences(&self) -> Vec<Vec<Vec<f32>>> {
+
+        self.prev_generation.iter().map(|slice| {
+            slice.iter().map(|line| {
+
+            })
+        })
+
+    }
+
     pub fn run_iteration(mut self) -> Self {
         // The current generation becomes the previous one
         // and we're going to render the new generation here.
-        let size = self.size();
+        let size: usize = self.size();
         self.prev_generation = self.curr_generation;
         self.curr_generation = CAGrid3D::new(size);
 
-        for x in 0..self.curr_generation.size() {
-            for y in 0..self.curr_generation.size() {
-                for z in 0..self.curr_generation.size() {
+
+        // Step 1: Computing influences for every point in the grid
+        // Array of thread handles
+        let influence_results = self.calc_influences();
+
+        // Step 2: Using this influence to change the state of a voxel
+        for x in 0..size {
+            for y in 0..size {
+                for z in 0..size {
                 
-                    let influence = self.total_influence(x, y, z);
+                    let influence = influence_results[x][y][z];
         
                     if influence > 0.0 {
                         self.curr_generation.set(x, y, z, 0);

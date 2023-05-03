@@ -23,7 +23,7 @@ function createControllerStore() {
                 await init();
                 wasmInitialised = true;
 
-                set(wasm.CellularAutomaton3D.new(30, 2, 1.0, 4, -0.2));
+                set(wasm.CellularAutomaton3D.new(50, 2, 1.0, 4, -0.2));
             }
         },
 

@@ -86,10 +86,10 @@
 
                 if ($controller) {
                     let chemical = $controller.get(box.getX(), box.getY(), z);
-                    color = new THREE.Color(0, 0, 0);
+                    color = new THREE.Color(0xc2532b);
 
                     if (chemical == 1) {
-                        color = new THREE.Color(1, 1, 1);
+                        color = new THREE.Color(0xe3a474);
                     }
                 }
                 
