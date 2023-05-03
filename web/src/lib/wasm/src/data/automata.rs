@@ -300,7 +300,9 @@ impl CellularAutomaton3D {
 
         self.prev_generation.iter().map(|slice| {
             slice.iter().map(|line| {
-
+                line.iter().map(|voxel| {
+                    
+                })
             })
         })
 
