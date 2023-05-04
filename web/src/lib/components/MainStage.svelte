@@ -17,7 +17,7 @@
 
     // THREE.js behaviour variables
     let size: number = 20;
-    let sliceMovement = SliceMovement.MoveSlice;
+    let sliceMovement = SliceMovement.MoveBoundingBox;
     let scrollPosition = 0;
     let displayedSlice: number = 0;
     let newDisplayedSlice: number = 0;

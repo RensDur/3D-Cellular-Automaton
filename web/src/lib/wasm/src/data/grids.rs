@@ -46,31 +46,22 @@ pub struct GridEntry3D {
 #[derive(Clone)]
 pub struct CAGrid3D {
     size: usize,
-    data: Vec<Vec<Vec<GridEntry3D>>>
+    data: Vec<Vec<Vec<u32>>>
 }
 
 #[wasm_bindgen]
 impl CAGrid3D {
     pub fn new(size: usize) -> CAGrid3D {
-        let mut data: Vec<Vec<Vec<GridEntry3D>>> = vec![vec![vec![(); size]; size]; size];
-
-        for x in 0..size {
-            for y in 0..size {
-                for z in 0..size {
-                    data[x][y][z] = GridEntry3D {data: 0, x, y, z};
-                }
-            }
-        }
-
+        let data: Vec<Vec<Vec<u32>>> = vec![vec![vec![0; size]; size]; size];
         CAGrid3D {
             size: size,
             data
         }
     }
 
-    pub fn iter(&self) -> std::slice::Iter<Vec<Vec<u32>>> {
-        self.data.iter()
-    }
+    // pub fn iter(&self) -> std::slice::Iter<Vec<Vec<u32>>> {
+    //     self.data.iter()
+    // }
 
     pub fn get(&self, x: usize, y: usize, z: usize) -> u32 {
         self.data[x][y][z]
