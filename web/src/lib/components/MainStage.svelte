@@ -163,7 +163,7 @@
 
     // Svelte page-mount
     onMount(async () => {
-        await controller.initialise();
+        await controller.initialise(40, 0.0, 0.0, 0.0, 0.0);
         setupScene();
     })
 
