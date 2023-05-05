@@ -1,7 +1,7 @@
-use std::{sync::Mutex, cell::Cell};
+use std::sync::Mutex;
 
-use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder, Result};
-use super::super::appdata::dim3D::automaton::CellularAutomaton3D;
+use actix_web::{get, web, Responder, Result};
+use super::super::appdata::dim3d::automaton::CellularAutomaton3D;
 
 
 

@@ -1,8 +1,8 @@
 use std::sync::Mutex;
 
-use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder, Result};
+use actix_web::{post, web, HttpResponse, Responder};
 use serde::Deserialize;
-use super::super::appdata::dim3D::automaton::CellularAutomaton3D;
+use super::super::appdata::dim3d::automaton::CellularAutomaton3D;
 
 #[derive(Deserialize)]
 pub struct InfoPostInitialise {
@@ -16,6 +16,11 @@ pub struct InfoPostInitialise {
 #[derive(Deserialize)]
 pub struct InfoPostSpreadChemicals {
     chemicals: u32
+}
+
+#[derive(Deserialize)]
+pub struct InfoPostRunIteration {
+    num_iterations: u32
 }
 
 #[post("/initialise")]
@@ -52,9 +57,13 @@ pub async fn post_spread_chemicals_randomly(state: web::Data<Mutex<CellularAutom
 }
 
 #[post("/run-iteration")]
-pub async fn post_run_iteration(state: web::Data<Mutex<CellularAutomaton3D>>) -> impl Responder {
+pub async fn post_run_iteration(state: web::Data<Mutex<CellularAutomaton3D>>, info: web::Json<InfoPostRunIteration>) -> impl Responder {
     let mut state_mod = state.lock().unwrap();
-    state_mod.run_iteration();
+    
+    for _ in 0..info.num_iterations {
+        state_mod.run_iteration();
+    }
+
     drop(state_mod);
 
     HttpResponse::Ok()

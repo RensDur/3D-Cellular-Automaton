@@ -48,49 +48,49 @@ impl CellularAutomaton3D {
         }
     }
 
-    pub fn get_dc_range(&self) -> f32 {
-        self.dc_range
-    }
+    // pub fn get_dc_range(&self) -> f32 {
+    //     self.dc_range
+    // }
 
-    pub fn get_dc_influence(&self) -> f32 {
-        self.dc_influence
-    }
+    // pub fn get_dc_influence(&self) -> f32 {
+    //     self.dc_influence
+    // }
 
-    pub fn get_uc_range(&self) -> f32 {
-        self.uc_range
-    }
+    // pub fn get_uc_range(&self) -> f32 {
+    //     self.uc_range
+    // }
 
-    pub fn get_uc_influence(&self) -> f32 {
-        self.uc_influence
-    }
+    // pub fn get_uc_influence(&self) -> f32 {
+    //     self.uc_influence
+    // }
 
-    pub fn set_dc_range(mut self, dc_range: f32) -> Self {
-        self.dc_range = dc_range;
+    // pub fn set_dc_range(mut self, dc_range: f32) -> Self {
+    //     self.dc_range = dc_range;
 
-        self
-    }
+    //     self
+    // }
 
-    pub fn set_dc_influence(mut self, dc_influence: f32) -> Self {
-        self.dc_influence = dc_influence;
+    // pub fn set_dc_influence(mut self, dc_influence: f32) -> Self {
+    //     self.dc_influence = dc_influence;
 
-        self
-    }
+    //     self
+    // }
 
-    pub fn set_uc_range(mut self, uc_range: f32) -> Self {
-        self.uc_range = uc_range;
+    // pub fn set_uc_range(mut self, uc_range: f32) -> Self {
+    //     self.uc_range = uc_range;
 
-        self
-    }
+    //     self
+    // }
 
-    pub fn set_uc_influence(mut self, uc_influence: f32) -> Self {
-        self.uc_influence = uc_influence;
+    // pub fn set_uc_influence(mut self, uc_influence: f32) -> Self {
+    //     self.uc_influence = uc_influence;
 
-        self
-    }
+    //     self
+    // }
 
-    pub fn get(&self, x: usize, y: usize, z: usize) -> u32 {
-        self.curr_generation.get(x, y, z)
-    }
+    // pub fn get(&self, x: usize, y: usize, z: usize) -> u32 {
+    //     self.curr_generation.get(x, y, z)
+    // }
 
     pub fn set(&mut self, x: usize, y: usize, z: usize, val: u32) {
         self.prev_generation.set(x, y, z, val);

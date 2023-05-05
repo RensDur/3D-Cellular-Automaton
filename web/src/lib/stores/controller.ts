@@ -72,7 +72,15 @@ function createControllerStore() {
          * Method: run one iteration of the algorithm
          */
         runIteration: async () => {
-            await sendPost("/run-iteration");
+            await sendPostWithJson("/run-iteration", {num_iterations: 1});
+            await updateStore();
+        },
+
+        /**
+         * Method: run twenty iterations of the algorithm
+         */
+        run5Iterations: async () => {
+            await sendPostWithJson("/run-iteration", {num_iterations: 5});
             await updateStore();
         },
 

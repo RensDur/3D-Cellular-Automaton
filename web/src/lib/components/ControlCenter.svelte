@@ -27,6 +27,7 @@
     <button on:click={() => {controller.clearGrid();}}>Clear grid</button>
     <button on:click={() => {controller.randomlySpreadChemicals(2);}}>Randomly spread 2 chemicals</button>
     <button on:click={() => {controller.runIteration();}}>Next iteration</button>
+    <button on:click={() => {controller.run5Iterations();}}>Run 5 iterations</button>
     
     <br>DC Range:       <input bind:value={dcRange}     on:change={() => {controller.updateDCRange(dcRange)}} type="number">
     <br>DC Influence:   <input bind:value={dcInfluence} on:change={() => {controller.updateDCInfluence(dcInfluence)}} type="number">
