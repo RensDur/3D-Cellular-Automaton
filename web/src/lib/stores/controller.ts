@@ -19,7 +19,28 @@ function createControllerStore() {
 
     async function updateStore() {
         const state = await getCurrentGridFromServer();
-        update(_ => Grid3D.from(state.size, state.data));
+        const grid = Grid3D.from(state.size, state.data);
+
+        console.log("The current grid state was requested from the server. Response:");
+        console.log(grid);
+
+        update(_ => grid);
+    }
+
+    async function sendPost(path: string) {
+        const response = await fetch("http://localhost:7878" + path, {method: "POST"});
+        await response.text();
+    }
+
+    async function sendPostWithJson(path: string, data: object) {
+        const response = await fetch("http://localhost:7878" + path, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+        await response.text();
     }
 
     // Return the store and all functions to go along with it
@@ -30,20 +51,29 @@ function createControllerStore() {
          * Method: initialise wasm
          */
         initialise: async (size: number, dc_range: number, dc_influence: number, uc_range: number, uc_influence: number) => {
-            const response = await fetch("http://localhost:7878/initialise", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({size, dc_range, dc_influence, uc_range, uc_influence})
-            });
-            await response.text();
-
+            await sendPostWithJson("/initialise", {size, dc_range, dc_influence, uc_range, uc_influence});
             await updateStore();
         },
 
-        clearGrid: () => {
-            update(ca => ca.reset_all_voxels());
+        clearGrid: async () => {
+            await sendPost("/clear-all-voxels")
+            await updateStore();
+        },
+
+        /**
+         * Method: randomly spread the specified number of chemicals over the grid
+         */
+        randomlySpreadChemicals: async (chemicals: number) => {
+            await sendPostWithJson("/spread-chemicals-randomly", {chemicals});
+            await updateStore();
+        },
+
+        /**
+         * Method: run one iteration of the algorithm
+         */
+        runIteration: async () => {
+            await sendPost("/run-iteration");
+            await updateStore();
         },
 
         /**
@@ -60,20 +90,6 @@ function createControllerStore() {
         },
         updateUCInfluence: (uc_influence: number) => {
             update(ca => ca.set_uc_influence(uc_influence));
-        },
-
-        /**
-         * Method: randomly spread the specified number of chemicals over the grid
-         */
-        randomlySpreadChemicals: (chemicals: number) => {
-            update(ca => ca.spread_chemicals_randomly(chemicals));
-        },
-
-        /**
-         * Method: run one iteration of the algorithm
-         */
-        runIteration: () => {
-            update(ca => ca.run_iteration());
         }
     }
 }

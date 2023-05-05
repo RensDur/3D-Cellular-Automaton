@@ -14,7 +14,7 @@
 
     <!-- Foreground that contains controls and other overlays -->
     <div id="foreground">
-        <!-- <ControlCenterOverlay/> -->
+        <ControlCenterOverlay/>
     </div>
 </div>
 

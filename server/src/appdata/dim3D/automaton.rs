@@ -1,3 +1,6 @@
+use std::thread;
+use std::sync::{Arc, Mutex};
+
 use rand::prelude::*;
 use super::grid::CAGrid3D;
 use serde::{Serialize, Deserialize};
@@ -34,7 +37,7 @@ impl CellularAutomaton3D {
         self.uc_influence = uc_influence;
     }
 
-    pub fn reset_all_voxels(mut self) -> Self {
+    pub fn clear_all_voxels(&mut self) {
         for x in 0..self.curr_generation.size() {
             for y in 0..self.curr_generation.size() {
                 for z in 0..self.curr_generation.size() {
@@ -43,8 +46,6 @@ impl CellularAutomaton3D {
                 }
             }
         }
-
-        self
     }
 
     pub fn get_dc_range(&self) -> f32 {
@@ -102,7 +103,7 @@ impl CellularAutomaton3D {
 
     
 
-    pub fn spread_chemicals_randomly(mut self, chem: u32) -> Self {
+    pub fn spread_chemicals_randomly(&mut self, chem: u32) {
         // Random number generator
         let mut rng = rand::thread_rng();
 
@@ -114,54 +115,7 @@ impl CellularAutomaton3D {
                 }
             }
         }
-
-        self
     }
-
-    // fn start_thread(automaton: CellularAutomaton3D, computed_influences: Arc<Mutex<Vec<Vec<Vec<f32>>>>>, x: usize) -> std::thread::JoinHandle<()> {
-    //     let handle = thread::spawn(move || {
-    //         // Multiprocessing
-
-    //         for y in 0..automaton.size() {
-    //             for z in 0..automaton.size() {
-    //                 let influence = automaton.total_influence(x, y, z);
-
-    //                 let mut computed_influences_locked = computed_influences.lock().unwrap();
-    //                 computed_influences_locked[x][y][z] = influence;
-    //                 drop(computed_influences_locked);
-    //             }
-    //         }
-
-    //     });
-
-    //     handle
-    // }
-
-    // fn run_iteration_helper(&self) -> Vec<Vec<Vec<f32>>> {
-    //     let size: usize = self.size();
-
-    //     let mut handles: Vec<std::thread::JoinHandle<()>> = Vec::new();
-    //     let computed_influences: Arc<Mutex<Vec<Vec<Vec<f32>>>>> = Arc::new(Mutex::new(vec![vec![vec![0f32; size]; size]; size]));
-
-    //     for x in 0..size {
-
-    //         let computed_influences_clone = computed_influences.clone();
-
-    //         handles.push(
-    //             CellularAutomaton3D::start_thread(self.clone(), computed_influences_clone, x.clone())
-    //         );
-    //     }
-
-    //     // Join all threads again
-    //     for h in handles {
-    //         h.join().unwrap();
-    //     }
-
-    //     // Extract the resulting vector
-    //     let influence_results = computed_influences.lock().unwrap();
-
-    //     influence_results.to_vec()
-    // }
     
     fn total_influence(&self, px: usize, py: usize, pz: usize) -> f32 {
         let mut sum: f32 = 0.0;
@@ -198,36 +152,69 @@ impl CellularAutomaton3D {
         sum
     }
 
-    // fn calc_influences(&self) -> Vec<Vec<Vec<f32>>> {
+    fn start_thread(automaton: CellularAutomaton3D, computed_influences: Arc<Mutex<Vec<Vec<Vec<f32>>>>>, x: usize) -> std::thread::JoinHandle<()> {
+        let handle = thread::spawn(move || {
+            // Multiprocessing
 
-    //     self.prev_generation.iter().map(|slice| {
-    //         slice.iter().map(|line| {
-    //             line.iter().map(|voxel| {
-                    
-    //             })
-    //         })
-    //     })
+            for y in 0..automaton.size() {
+                for z in 0..automaton.size() {
+                    let influence = automaton.total_influence(x, y, z);
 
-    // }
+                    let mut computed_influences_locked = computed_influences.lock().unwrap();
+                    computed_influences_locked[x][y][z] = influence;
+                    drop(computed_influences_locked);
+                }
+            }
 
-    pub fn run_iteration(mut self) -> Self {
+        });
+
+        handle
+    }
+
+    fn run_iteration_helper(&self) -> Vec<Vec<Vec<f32>>> {
+        let size: usize = self.size();
+
+        let mut handles: Vec<std::thread::JoinHandle<()>> = Vec::new();
+        let computed_influences: Arc<Mutex<Vec<Vec<Vec<f32>>>>> = Arc::new(Mutex::new(vec![vec![vec![0f32; size]; size]; size]));
+
+        for x in 0..size {
+
+            let computed_influences_clone = computed_influences.clone();
+
+            handles.push(
+                CellularAutomaton3D::start_thread(self.clone(), computed_influences_clone, x.clone())
+            );
+        }
+
+        // Join all threads again
+        for h in handles {
+            h.join().unwrap();
+        }
+
+        // Extract the resulting vector
+        let influence_results = computed_influences.lock().unwrap();
+
+        influence_results.to_vec()
+    }
+
+    pub fn run_iteration(&mut self) {
         // The current generation becomes the previous one
         // and we're going to render the new generation here.
         let size: usize = self.size();
-        self.prev_generation = self.curr_generation;
+        self.prev_generation = self.curr_generation.clone();
         self.curr_generation = CAGrid3D::new(size);
 
 
         // Step 1: Computing influences for every point in the grid
         // Array of thread handles
-        //let influence_results = self.calc_influences();
+        let influence_results = self.run_iteration_helper();
 
         // Step 2: Using this influence to change the state of a voxel
         for x in 0..size {
             for y in 0..size {
                 for z in 0..size {
                 
-                    let influence = self.total_influence(x, y, z);
+                    let influence = influence_results[x][y][z];
         
                     if influence > 0.0 {
                         self.curr_generation.set(x, y, z, 0);
@@ -238,8 +225,6 @@ impl CellularAutomaton3D {
                 }
             }
         }
-
-        self
     }
 
 }
