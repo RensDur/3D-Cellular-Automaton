@@ -152,17 +152,19 @@ impl CellularAutomaton3D {
         sum
     }
 
-    fn start_thread(automaton: CellularAutomaton3D, computed_influences: Arc<Mutex<Vec<Vec<Vec<f32>>>>>, x: usize) -> std::thread::JoinHandle<()> {
+    fn start_thread(automaton: CellularAutomaton3D, computed_influences: Arc<Mutex<Vec<Vec<Vec<f32>>>>>, xmin: usize, xmax: usize) -> std::thread::JoinHandle<()> {
         let handle = thread::spawn(move || {
             // Multiprocessing
 
-            for y in 0..automaton.size() {
-                for z in 0..automaton.size() {
-                    let influence = automaton.total_influence(x, y, z);
+            for x in xmin..xmax {
+                for y in 0..automaton.size() {
+                    for z in 0..automaton.size() {
+                        let influence = automaton.total_influence(x, y, z);
 
-                    let mut computed_influences_locked = computed_influences.lock().unwrap();
-                    computed_influences_locked[x][y][z] = influence;
-                    drop(computed_influences_locked);
+                        let mut computed_influences_locked = computed_influences.lock().unwrap();
+                        computed_influences_locked[x][y][z] = influence;
+                        drop(computed_influences_locked);
+                    }
                 }
             }
 
@@ -174,15 +176,25 @@ impl CellularAutomaton3D {
     fn run_iteration_helper(&self) -> Vec<Vec<Vec<f32>>> {
         let size: usize = self.size();
 
+        const NUM_THREADS: usize = 16;
+        let num_x_per_thread: usize = size / NUM_THREADS;
+
         let mut handles: Vec<std::thread::JoinHandle<()>> = Vec::new();
         let computed_influences: Arc<Mutex<Vec<Vec<Vec<f32>>>>> = Arc::new(Mutex::new(vec![vec![vec![0f32; size]; size]; size]));
 
-        for x in 0..size {
+        for t in 0..NUM_THREADS {
+
+            let xmin = t * num_x_per_thread;
+            let mut xmax = (t + 1) * num_x_per_thread;
+
+            if t == NUM_THREADS - 1 {
+                xmax = size;
+            }
 
             let computed_influences_clone = computed_influences.clone();
 
             handles.push(
-                CellularAutomaton3D::start_thread(self.clone(), computed_influences_clone, x.clone())
+                CellularAutomaton3D::start_thread(self.clone(), computed_influences_clone, xmin, xmax)
             );
         }
 
