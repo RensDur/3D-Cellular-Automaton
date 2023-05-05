@@ -4,9 +4,9 @@ mod routes;
 use std::sync::Mutex;
 
 use actix_cors::Cors;
-use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{App, HttpServer, web};
 use routes::{debug_routes::*, get::*, post::*};
-use appdata::dim3D::automaton::CellularAutomaton3D;
+use appdata::dim3d::automaton::CellularAutomaton3D;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {

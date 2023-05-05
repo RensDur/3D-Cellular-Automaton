@@ -48,49 +48,49 @@ impl CellularAutomaton3D {
         }
     }
 
-    pub fn get_dc_range(&self) -> f32 {
-        self.dc_range
-    }
+    // pub fn get_dc_range(&self) -> f32 {
+    //     self.dc_range
+    // }
 
-    pub fn get_dc_influence(&self) -> f32 {
-        self.dc_influence
-    }
+    // pub fn get_dc_influence(&self) -> f32 {
+    //     self.dc_influence
+    // }
 
-    pub fn get_uc_range(&self) -> f32 {
-        self.uc_range
-    }
+    // pub fn get_uc_range(&self) -> f32 {
+    //     self.uc_range
+    // }
 
-    pub fn get_uc_influence(&self) -> f32 {
-        self.uc_influence
-    }
+    // pub fn get_uc_influence(&self) -> f32 {
+    //     self.uc_influence
+    // }
 
-    pub fn set_dc_range(mut self, dc_range: f32) -> Self {
-        self.dc_range = dc_range;
+    // pub fn set_dc_range(mut self, dc_range: f32) -> Self {
+    //     self.dc_range = dc_range;
 
-        self
-    }
+    //     self
+    // }
 
-    pub fn set_dc_influence(mut self, dc_influence: f32) -> Self {
-        self.dc_influence = dc_influence;
+    // pub fn set_dc_influence(mut self, dc_influence: f32) -> Self {
+    //     self.dc_influence = dc_influence;
 
-        self
-    }
+    //     self
+    // }
 
-    pub fn set_uc_range(mut self, uc_range: f32) -> Self {
-        self.uc_range = uc_range;
+    // pub fn set_uc_range(mut self, uc_range: f32) -> Self {
+    //     self.uc_range = uc_range;
 
-        self
-    }
+    //     self
+    // }
 
-    pub fn set_uc_influence(mut self, uc_influence: f32) -> Self {
-        self.uc_influence = uc_influence;
+    // pub fn set_uc_influence(mut self, uc_influence: f32) -> Self {
+    //     self.uc_influence = uc_influence;
 
-        self
-    }
+    //     self
+    // }
 
-    pub fn get(&self, x: usize, y: usize, z: usize) -> u32 {
-        self.curr_generation.get(x, y, z)
-    }
+    // pub fn get(&self, x: usize, y: usize, z: usize) -> u32 {
+    //     self.curr_generation.get(x, y, z)
+    // }
 
     pub fn set(&mut self, x: usize, y: usize, z: usize, val: u32) {
         self.prev_generation.set(x, y, z, val);
@@ -152,17 +152,19 @@ impl CellularAutomaton3D {
         sum
     }
 
-    fn start_thread(automaton: CellularAutomaton3D, computed_influences: Arc<Mutex<Vec<Vec<Vec<f32>>>>>, x: usize) -> std::thread::JoinHandle<()> {
+    fn start_thread(automaton: CellularAutomaton3D, computed_influences: Arc<Mutex<Vec<Vec<Vec<f32>>>>>, xmin: usize, xmax: usize) -> std::thread::JoinHandle<()> {
         let handle = thread::spawn(move || {
             // Multiprocessing
 
-            for y in 0..automaton.size() {
-                for z in 0..automaton.size() {
-                    let influence = automaton.total_influence(x, y, z);
+            for x in xmin..xmax {
+                for y in 0..automaton.size() {
+                    for z in 0..automaton.size() {
+                        let influence = automaton.total_influence(x, y, z);
 
-                    let mut computed_influences_locked = computed_influences.lock().unwrap();
-                    computed_influences_locked[x][y][z] = influence;
-                    drop(computed_influences_locked);
+                        let mut computed_influences_locked = computed_influences.lock().unwrap();
+                        computed_influences_locked[x][y][z] = influence;
+                        drop(computed_influences_locked);
+                    }
                 }
             }
 
@@ -174,15 +176,25 @@ impl CellularAutomaton3D {
     fn run_iteration_helper(&self) -> Vec<Vec<Vec<f32>>> {
         let size: usize = self.size();
 
+        const NUM_THREADS: usize = 16;
+        let num_x_per_thread: usize = size / NUM_THREADS;
+
         let mut handles: Vec<std::thread::JoinHandle<()>> = Vec::new();
         let computed_influences: Arc<Mutex<Vec<Vec<Vec<f32>>>>> = Arc::new(Mutex::new(vec![vec![vec![0f32; size]; size]; size]));
 
-        for x in 0..size {
+        for t in 0..NUM_THREADS {
+
+            let xmin = t * num_x_per_thread;
+            let mut xmax = (t + 1) * num_x_per_thread;
+
+            if t == NUM_THREADS - 1 {
+                xmax = size;
+            }
 
             let computed_influences_clone = computed_influences.clone();
 
             handles.push(
-                CellularAutomaton3D::start_thread(self.clone(), computed_influences_clone, x.clone())
+                CellularAutomaton3D::start_thread(self.clone(), computed_influences_clone, xmin, xmax)
             );
         }
 
@@ -194,7 +206,11 @@ impl CellularAutomaton3D {
         // Extract the resulting vector
         let influence_results = computed_influences.lock().unwrap();
 
-        influence_results.to_vec()
+        let result = influence_results.to_vec();
+
+        drop(influence_results);
+
+        result
     }
 
     pub fn run_iteration(&mut self) {

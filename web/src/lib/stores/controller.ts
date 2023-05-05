@@ -40,7 +40,7 @@ function createControllerStore() {
             },
             body: JSON.stringify(data)
         });
-        await response.text();
+        return await response.json();
     }
 
     // Return the store and all functions to go along with it
@@ -72,8 +72,20 @@ function createControllerStore() {
          * Method: run one iteration of the algorithm
          */
         runIteration: async () => {
-            await sendPost("/run-iteration");
+            const duration = await sendPostWithJson("/run-iteration", {num_iterations: 1});
             await updateStore();
+
+            console.log("Calculated 1 iteration in " + String(duration.duration) + " seconds")
+        },
+
+        /**
+         * Method: run twenty iterations of the algorithm
+         */
+        run5Iterations: async () => {
+            const duration = await sendPostWithJson("/run-iteration", {num_iterations: 5});
+            await updateStore();
+
+            console.log("Calculated 5 iterations in " + String(duration.duration) + " seconds")
         },
 
         /**
