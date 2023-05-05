@@ -17,7 +17,7 @@
 
     // THREE.js behaviour variables
     let size: number = 20;
-    let sliceMovement = SliceMovement.MoveBoundingBox;
+    let sliceMovement = SliceMovement.MoveSlice;
     let scrollPosition = 0;
     let displayedSlice: number = 0;
     let newDisplayedSlice: number = 0;
@@ -27,7 +27,7 @@
     // THREE.js setup
     function setupScene() {
 
-        size = $controller.size();
+        size = $controller.size;
 
         // Setup the three.js scene
         scene = new THREE.Scene();
@@ -163,7 +163,7 @@
 
     // Svelte page-mount
     onMount(async () => {
-        await controller.initialise();
+        await controller.initialise(50, 2, 1, 4, -0.2);
         setupScene();
     })
 

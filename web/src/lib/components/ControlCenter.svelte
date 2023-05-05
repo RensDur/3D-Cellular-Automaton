@@ -12,12 +12,10 @@
 
     // Initialise wasm and then show the controls
     onMount(async () => {
-        await controller.initialise();
-
-        dcRange = $controller.get_dc_range();
-        dcInfluence = $controller.get_dc_influence();
-        ucRange = $controller.get_uc_range();
-        ucInfluence = $controller.get_uc_influence();
+        // dcRange = $controller.get_dc_range();
+        // dcInfluence = $controller.get_dc_influence();
+        // ucRange = $controller.get_uc_range();
+        // ucInfluence = $controller.get_uc_influence();
 
         containerDiv.style.display = "block";
     })
