@@ -1,9 +1,12 @@
 export class Grid3D {
 
+    size: number;
     data: number[][][];
 
     // Constructor
     constructor(size: number) {
+        this.size = size;
+
         this.data = [];
 
         // Initialise all values in the array to zero
@@ -18,6 +21,13 @@ export class Grid3D {
             }
             this.data.push(xarr);
         }
+    }
+
+    static from(size: number, data: number[][][]): Grid3D {
+        const grid = new Grid3D(size);
+        grid.data = data;
+
+        return grid;
     }
 
     get(x: number, y: number, z: number): number {

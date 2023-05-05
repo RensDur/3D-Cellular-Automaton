@@ -2,20 +2,25 @@
  * The controller store is responsible for all communication between Svelte and Rust through WebAssembly
  */
 
-import type { Grid3D } from "$lib/classes/Grid3D";
+import { Grid3D } from "$lib/classes/Grid3D";
 import { writable } from "svelte/store";
-
-async function getCurrentGridFromServer() {
-    const response = await fetch("http://localhost:7878/get-current-state", {
-        method: "GET"
-    });
-
-    const result = await response.json();
-    return result.message;
-}
 
 function createControllerStore() {
     const { subscribe, set, update } = writable<Grid3D>();
+
+    async function getCurrentGridFromServer() {
+        const response = await fetch("http://localhost:7878/get-current-state", {
+            method: "GET"
+        });
+    
+        const result = await response.json();
+        return result.curr_generation;
+    }
+
+    async function updateStore() {
+        const state = await getCurrentGridFromServer();
+        update(_ => Grid3D.from(state.size, state.data));
+    }
 
     // Return the store and all functions to go along with it
     return {
@@ -27,13 +32,14 @@ function createControllerStore() {
         initialise: async (size: number, dc_range: number, dc_influence: number, uc_range: number, uc_influence: number) => {
             const response = await fetch("http://localhost:7878/initialise", {
                 method: "POST",
-                body: JSON.stringify({size})
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({size, dc_range, dc_influence, uc_range, uc_influence})
             });
-            await response.json();
+            await response.text();
 
-            getCurrentGridFromServer().then((state) => {
-                update(_ => state.curr_generation);
-            })
+            await updateStore();
         },
 
         clearGrid: () => {

@@ -15,13 +15,13 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(move || {
         App::new()
-            .wrap(Cors::default().allow_any_origin().send_wildcard())
+            .wrap(Cors::default().allow_any_origin().send_wildcard().allow_any_header().allow_any_method())
             .app_data(app_state.clone())
+            .route("/initialise", web::post().to(put_initialise))
             .service(performance_check)
             .service(grid3d)
             .service(get_current_state)
             .service(get_reset_state)
-            .service(put_initialise)
             
     })
     .bind(("127.0.0.1", 7878))?
