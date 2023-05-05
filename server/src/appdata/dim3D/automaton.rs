@@ -206,7 +206,11 @@ impl CellularAutomaton3D {
         // Extract the resulting vector
         let influence_results = computed_influences.lock().unwrap();
 
-        influence_results.to_vec()
+        let result = influence_results.to_vec();
+
+        drop(influence_results);
+
+        result
     }
 
     pub fn run_iteration(&mut self) {
