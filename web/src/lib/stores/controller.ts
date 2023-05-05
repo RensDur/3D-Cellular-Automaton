@@ -21,8 +21,8 @@ function createControllerStore() {
         const state = await getCurrentGridFromServer();
         const grid = Grid3D.from(state.size, state.data);
 
-        console.log("The current grid state was requested from the server. Response:");
-        console.log(grid);
+        // console.log("The current grid state was requested from the server. Response:");
+        // console.log(grid);
 
         update(_ => grid);
     }
