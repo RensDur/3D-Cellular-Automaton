@@ -3,14 +3,14 @@ use serde::{Serialize, Deserialize};
 #[derive(Clone, Serialize, Deserialize)]
 pub struct CAGrid3D {
     size: usize,
-    data: Vec<Vec<Vec<u32>>>
+    pub data: Vec<Vec<Vec<u32>>>
 }
 
 impl CAGrid3D {
     pub fn new(size: usize) -> CAGrid3D {
         let data: Vec<Vec<Vec<u32>>> = vec![vec![vec![0; size]; size]; size];
         CAGrid3D {
-            size: size,
+            size,
             data
         }
     }

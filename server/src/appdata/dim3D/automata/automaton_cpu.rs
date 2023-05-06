@@ -2,23 +2,24 @@ use std::thread;
 use std::sync::{Arc, Mutex};
 
 use rand::prelude::*;
-use super::grid::CAGrid3D;
+use super::super::grid::CAGrid3D;
+use super::automaton::CellularAutomaton3D;
 use serde::{Serialize, Deserialize};
 
 #[derive(Clone, Serialize, Deserialize)]
-pub struct CellularAutomaton3D {
-    prev_generation: CAGrid3D,
-    curr_generation: CAGrid3D,
-    dc_range: f32,
-    dc_influence: f32,
-    uc_range: f32,
-    uc_influence: f32
+pub struct CPUCellularAutomaton3D {
+    pub prev_generation: CAGrid3D,
+    pub curr_generation: CAGrid3D,
+    pub dc_range: f32,
+    pub dc_influence: f32,
+    pub uc_range: f32,
+    pub uc_influence: f32
 }
 
-impl CellularAutomaton3D {
+impl CPUCellularAutomaton3D {
 
     pub fn new(size: usize, dc_range: f32, dc_influence: f32, uc_range: f32, uc_influence: f32) -> Self {
-        CellularAutomaton3D {
+        CPUCellularAutomaton3D {
             prev_generation: CAGrid3D::new(size),
             curr_generation: CAGrid3D::new(size),
             dc_range,
@@ -37,86 +38,6 @@ impl CellularAutomaton3D {
         self.uc_influence = uc_influence;
     }
 
-    pub fn clear_all_voxels(&mut self) {
-        for x in 0..self.curr_generation.size() {
-            for y in 0..self.curr_generation.size() {
-                for z in 0..self.curr_generation.size() {
-                    self.prev_generation.set(x, y, z, 0);
-                    self.curr_generation.set(x, y, z, 0);
-                }
-            }
-        }
-    }
-
-    // pub fn get_dc_range(&self) -> f32 {
-    //     self.dc_range
-    // }
-
-    // pub fn get_dc_influence(&self) -> f32 {
-    //     self.dc_influence
-    // }
-
-    // pub fn get_uc_range(&self) -> f32 {
-    //     self.uc_range
-    // }
-
-    // pub fn get_uc_influence(&self) -> f32 {
-    //     self.uc_influence
-    // }
-
-    // pub fn set_dc_range(mut self, dc_range: f32) -> Self {
-    //     self.dc_range = dc_range;
-
-    //     self
-    // }
-
-    // pub fn set_dc_influence(mut self, dc_influence: f32) -> Self {
-    //     self.dc_influence = dc_influence;
-
-    //     self
-    // }
-
-    // pub fn set_uc_range(mut self, uc_range: f32) -> Self {
-    //     self.uc_range = uc_range;
-
-    //     self
-    // }
-
-    // pub fn set_uc_influence(mut self, uc_influence: f32) -> Self {
-    //     self.uc_influence = uc_influence;
-
-    //     self
-    // }
-
-    // pub fn get(&self, x: usize, y: usize, z: usize) -> u32 {
-    //     self.curr_generation.get(x, y, z)
-    // }
-
-    pub fn set(&mut self, x: usize, y: usize, z: usize, val: u32) {
-        self.prev_generation.set(x, y, z, val);
-        self.curr_generation.set(x, y, z, val);
-    }
-
-    pub fn size(&self) -> usize {
-        self.curr_generation.size()
-    }
-
-    
-
-    pub fn spread_chemicals_randomly(&mut self, chem: u32) {
-        // Random number generator
-        let mut rng = rand::thread_rng();
-
-        // Loop over all the cells in the grid
-        for x in 0..self.curr_generation.size() {
-            for y in 0..self.curr_generation.size() {
-                for z in 0..self.curr_generation.size() {
-                    self.set(x, y, z, rng.gen_range(0..chem));
-                }
-            }
-        }
-    }
-    
     fn total_influence(&self, px: usize, py: usize, pz: usize) -> f32 {
         let mut sum: f32 = 0.0;
     
@@ -152,7 +73,7 @@ impl CellularAutomaton3D {
         sum
     }
 
-    fn start_thread(automaton: CellularAutomaton3D, computed_influences: Arc<Mutex<Vec<Vec<Vec<f32>>>>>, xmin: usize, xmax: usize) -> std::thread::JoinHandle<()> {
+    fn start_thread(automaton: CPUCellularAutomaton3D, computed_influences: Arc<Mutex<Vec<Vec<Vec<f32>>>>>, xmin: usize, xmax: usize) -> std::thread::JoinHandle<()> {
         let handle = thread::spawn(move || {
             // Multiprocessing
 
@@ -194,7 +115,7 @@ impl CellularAutomaton3D {
             let computed_influences_clone = computed_influences.clone();
 
             handles.push(
-                CellularAutomaton3D::start_thread(self.clone(), computed_influences_clone, xmin, xmax)
+                CPUCellularAutomaton3D::start_thread(self.clone(), computed_influences_clone, xmin, xmax)
             );
         }
 
@@ -213,7 +134,51 @@ impl CellularAutomaton3D {
         result
     }
 
-    pub fn run_iteration(&mut self) {
+}
+
+
+
+impl CellularAutomaton3D for CPUCellularAutomaton3D {
+
+    fn clear_all_voxels(&mut self) {
+        for x in 0..self.curr_generation.size() {
+            for y in 0..self.curr_generation.size() {
+                for z in 0..self.curr_generation.size() {
+                    self.prev_generation.set(x, y, z, 0);
+                    self.curr_generation.set(x, y, z, 0);
+                }
+            }
+        }
+    }
+
+    fn get(&self, x: usize, y: usize, z: usize) -> u32 {
+        self.curr_generation.get(x, y, z)
+    }
+
+    fn set(&mut self, x: usize, y: usize, z: usize, val: u32) {
+        self.prev_generation.set(x, y, z, val);
+        self.curr_generation.set(x, y, z, val);
+    }
+
+    fn size(&self) -> usize {
+        self.curr_generation.size()
+    }
+
+    fn spread_chemicals_randomly(&mut self, chem: u32) {
+        // Random number generator
+        let mut rng = rand::thread_rng();
+
+        // Loop over all the cells in the grid
+        for x in 0..self.curr_generation.size() {
+            for y in 0..self.curr_generation.size() {
+                for z in 0..self.curr_generation.size() {
+                    self.set(x, y, z, rng.gen_range(0..chem));
+                }
+            }
+        }
+    }
+
+    fn run_iteration(&mut self) {
         // The current generation becomes the previous one
         // and we're going to render the new generation here.
         let size: usize = self.size();

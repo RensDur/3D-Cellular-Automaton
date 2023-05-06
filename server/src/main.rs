@@ -6,12 +6,12 @@ use std::sync::Mutex;
 use actix_cors::Cors;
 use actix_web::{App, HttpServer, web};
 use routes::{debug_routes::*, get::*, post::*};
-use appdata::dim3d::automaton::CellularAutomaton3D;
+use appdata::dim3d::automata::automaton_cpu::CPUCellularAutomaton3D;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
 
-    let app_state = web::Data::new(Mutex::new(CellularAutomaton3D::new(20, 0.0, 0.0, 0.0, 0.0)));
+    let app_state = web::Data::new(Mutex::new(CPUCellularAutomaton3D::new(20, 0.0, 0.0, 0.0, 0.0)));
 
     HttpServer::new(move || {
         App::new()
