@@ -29,15 +29,6 @@ impl CPUCellularAutomaton3D {
         }
     }
 
-    pub fn reset(&mut self, size: usize, dc_range: f32, dc_influence: f32, uc_range: f32, uc_influence: f32) {
-        self.prev_generation = CAGrid3D::new(size);
-        self.curr_generation = CAGrid3D::new(size);
-        self.dc_range = dc_range;
-        self.dc_influence = dc_influence;
-        self.uc_range = uc_range;
-        self.uc_influence = uc_influence;
-    }
-
     fn total_influence(&self, px: usize, py: usize, pz: usize) -> f32 {
         let mut sum: f32 = 0.0;
     
@@ -149,6 +140,15 @@ impl CellularAutomaton3D for CPUCellularAutomaton3D {
                 }
             }
         }
+    }
+
+    fn reset(&mut self, size: usize, dc_range: f32, dc_influence: f32, uc_range: f32, uc_influence: f32) {
+        self.prev_generation = CAGrid3D::new(size);
+        self.curr_generation = CAGrid3D::new(size);
+        self.dc_range = dc_range;
+        self.dc_influence = dc_influence;
+        self.uc_range = uc_range;
+        self.uc_influence = uc_influence;
     }
 
     fn get(&self, x: usize, y: usize, z: usize) -> u32 {

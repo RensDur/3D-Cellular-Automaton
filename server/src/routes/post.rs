@@ -2,7 +2,7 @@ use std::{sync::Mutex, time::Instant};
 
 use actix_web::{post, web, Responder, Result};
 use serde::{Deserialize, Serialize};
-use super::super::appdata::dim3d::automaton::CellularAutomaton3D;
+use crate::appdata::dim3d::automata::{automaton::CellularAutomaton3D, automaton_cpu::CPUCellularAutomaton3D};
 
 #[derive(Deserialize)]
 pub struct InfoPostInitialise {
@@ -34,7 +34,7 @@ pub struct ResponsePostRunIteration {
 }
 
 #[post("/initialise")]
-pub async fn post_initialise(state: web::Data<Mutex<CellularAutomaton3D>>, info: web::Json<InfoPostInitialise>) -> Result<impl Responder> {
+pub async fn post_initialise(state: web::Data<Mutex<CPUCellularAutomaton3D>>, info: web::Json<InfoPostInitialise>) -> Result<impl Responder> {
     let mut state_mod = state.lock().unwrap();
     state_mod.reset(
         info.size,
@@ -49,7 +49,7 @@ pub async fn post_initialise(state: web::Data<Mutex<CellularAutomaton3D>>, info:
 }
 
 #[post("/clear-all-voxels")]
-pub async fn post_clear_all_voxels(state: web::Data<Mutex<CellularAutomaton3D>>) -> Result<impl Responder> {
+pub async fn post_clear_all_voxels(state: web::Data<Mutex<CPUCellularAutomaton3D>>) -> Result<impl Responder> {
     let mut state_mod = state.lock().unwrap();
     state_mod.clear_all_voxels();
     drop(state_mod);
@@ -58,7 +58,7 @@ pub async fn post_clear_all_voxels(state: web::Data<Mutex<CellularAutomaton3D>>)
 }
 
 #[post("/spread-chemicals-randomly")]
-pub async fn post_spread_chemicals_randomly(state: web::Data<Mutex<CellularAutomaton3D>>, info: web::Json<InfoPostSpreadChemicals>) -> Result<impl Responder> {
+pub async fn post_spread_chemicals_randomly(state: web::Data<Mutex<CPUCellularAutomaton3D>>, info: web::Json<InfoPostSpreadChemicals>) -> Result<impl Responder> {
     let mut state_mod = state.lock().unwrap();
     state_mod.spread_chemicals_randomly(info.chemicals);
     drop(state_mod);
@@ -67,7 +67,7 @@ pub async fn post_spread_chemicals_randomly(state: web::Data<Mutex<CellularAutom
 }
 
 #[post("/run-iteration")]
-pub async fn post_run_iteration(state: web::Data<Mutex<CellularAutomaton3D>>, info: web::Json<InfoPostRunIteration>) -> Result<impl Responder> {
+pub async fn post_run_iteration(state: web::Data<Mutex<CPUCellularAutomaton3D>>, info: web::Json<InfoPostRunIteration>) -> Result<impl Responder> {
     let mut state_mod = state.lock().unwrap();
     
     let start = Instant::now();

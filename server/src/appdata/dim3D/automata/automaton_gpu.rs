@@ -39,6 +39,10 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
         }
     }
 
+    fn reset(&mut self, size: usize, dc_range: f32, dc_influence: f32, uc_range: f32, uc_influence: f32) {
+        
+    }
+
     fn get(&self, x: usize, y: usize, z: usize) -> u32 {
         self.grid[x][y][z]
     }
@@ -107,18 +111,59 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
             );
 
             // The input buffer holds the current values for each pigment cell
-            let data_input_buffer = device.new_buffer_with_data(
+            // let data_input_buffer = device.new_buffer_with_data(
+            //     unsafe { mem::transmute(data_input.as_ptr()) },
+            //     (data_input.len() * mem::size_of::<[[u32; AUTOMATON_SIZE]; AUTOMATON_SIZE]>()) as u64,
+            //     MTLResourceOptions::CPUCacheModeDefaultCache
+            // );
+
+            // Create a texture-descriptor of the type R32Uint with 3D automaton size
+            let data_input_texture_descriptor = TextureDescriptor::new();
+            data_input_texture_descriptor.set_pixel_format(MTLPixelFormat::R32Uint);
+            data_input_texture_descriptor.set_width(AUTOMATON_SIZE as u64);
+            data_input_texture_descriptor.set_height(AUTOMATON_SIZE as u64);
+            data_input_texture_descriptor.set_depth(AUTOMATON_SIZE as u64);
+
+            // Create a texture for the data input corresponding to this descriptor for the
+            // installed device.
+            let data_input_texture = device.new_texture(&data_input_texture_descriptor);
+            
+            // Define the region in which this texture will act
+            let data_input_region = MTLRegion {
+                origin: MTLOrigin {x: 0, y: 0, z: 0},
+                size: MTLSize {
+                    width: AUTOMATON_SIZE as u64,
+                    height: AUTOMATON_SIZE as u64,
+                    depth: AUTOMATON_SIZE as u64
+                }
+            };
+
+            // Fill the texture with the current CA data
+            data_input_texture.replace_region(
+                data_input_region,
+                0,
                 unsafe { mem::transmute(data_input.as_ptr()) },
-                (data_input.len() * mem::size_of::<[[u32; AUTOMATON_SIZE]; AUTOMATON_SIZE]>()) as u64,
-                MTLResourceOptions::CPUCacheModeDefaultCache
+                4*AUTOMATON_SIZE as u64
             );
 
             // The output buffer will hold the new values for each pigment cell
-            let data_output_buffer = device.new_buffer_with_data(
-                unsafe { mem::transmute(data_output.as_ptr()) },
-                (data_output.len() * mem::size_of::<[[u32; AUTOMATON_SIZE]; AUTOMATON_SIZE]>()) as u64,
-                MTLResourceOptions::CPUCacheModeDefaultCache
-            );
+            // let data_output_buffer = device.new_buffer_with_data(
+            //     unsafe { mem::transmute(data_output.as_ptr()) },
+            //     (data_output.len() * mem::size_of::<[[u32; AUTOMATON_SIZE]; AUTOMATON_SIZE]>()) as u64,
+            //     MTLResourceOptions::CPUCacheModeDefaultCache
+            // );
+
+            // Create a texture-descriptor of the type R32Uint with 3D automaton size
+            let data_output_texture_descriptor = TextureDescriptor::new();
+            data_output_texture_descriptor.set_pixel_format(MTLPixelFormat::R32Uint);
+            data_output_texture_descriptor.set_width(AUTOMATON_SIZE as u64);
+            data_output_texture_descriptor.set_height(AUTOMATON_SIZE as u64);
+            data_output_texture_descriptor.set_depth(AUTOMATON_SIZE as u64);
+
+            // Create a texture for the data output corresponding to this descriptor for the
+            // installed device.
+            // This is the texture where the resuting CA generation will be simulated through the shaders
+            let data_output_texture = device.new_texture(&data_output_texture_descriptor);
 
             // 6. Create a Command Buffer
             let command_buffer = command_queue.new_command_buffer();
@@ -132,9 +177,11 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
 
             // 8.2. Set data for any arguments that the pipeline needs to send into the shader function.
             encoder.set_buffer(0, Some(&data_args_buffer), 0);
+            encoder.set_texture(1, Some(&data_input_texture));
+            encoder.set_texture(2, Some(&data_output_texture));
 
-            encoder.use_resource(&data_input_buffer, MTLResourceUsage::Read);
-            encoder.use_resource(&data_output_buffer, MTLResourceUsage::Write);
+            // encoder.use_resource(&data_input_buffer, MTLResourceUsage::Read);
+            // encoder.use_resource(&data_output_buffer, MTLResourceUsage::Write);
 
             // 9. Specify Thread Count and Organisation
             //    Decide how many threads to create and how to organize those threads. Metal can create 3D grids.
@@ -175,10 +222,14 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
             command_buffer.wait_until_completed();
 
             // 14. Extract the information from the GPU and update the information in this Automaton
-            let ptr = data_output_buffer.contents() as *mut [[[u32; AUTOMATON_SIZE]; AUTOMATON_SIZE]; AUTOMATON_SIZE];
-            unsafe {
-                self.grid = *ptr;
-            }
+            data_output_texture.get_bytes(
+                unsafe { mem::transmute(data_input.as_ptr()) },
+                4*AUTOMATON_SIZE as u64,
+                data_input_region,
+                0
+            );
+
+            self.grid = data_input;
 
 
         });
