@@ -9,7 +9,7 @@ use objc::rc::autoreleasepool;
 use std::{mem, ffi::c_void};
 
 const AUTOMATON_SHADER_SRC: &str = include_str!("automaton_shader.metal");
-pub const AUTOMATON_SIZE: usize = 30;
+pub const AUTOMATON_SIZE: usize = 20;
 const CHEMICALS: [f32; 4] = [2.0, 1.0, 4.0, -0.25];
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -129,13 +129,86 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
                 )
             };
 
+            let arg_chemicals = {
+                let data = CHEMICALS;
+                device.new_buffer_with_data(
+                    unsafe { mem::transmute(data.as_ptr()) },
+                    (data.len() * mem::size_of::<f32>()) as u64,
+                    MTLResourceOptions::CPUCacheModeDefaultCache
+                )
+            };
+
+            let dc_neighbours = {
+                let mut data: Vec<i32> = vec![];
+
+                let dc_range = f32::ceil(CHEMICALS[0]) as i32;
+
+                for x in -dc_range..dc_range+1 {
+                    for y in -dc_range..dc_range+1 {
+                        for z in -dc_range..dc_range+1 {
+                            // Comparing to (0, 0, 0)
+                            let dist = x*x + y*y + z*z;
+
+                            if dist as f32 <= CHEMICALS[0] && !(x == 0 && y == 0 && z == 0) {
+                                data.push(x + y*AUTOMATON_SIZE as i32 + z*AUTOMATON_SIZE as i32*AUTOMATON_SIZE as i32);
+                            }
+                        }
+                    }
+                }
+
+                data
+            };
+
+            let arg_dc_neighbours = device.new_buffer_with_data(
+                unsafe { mem::transmute(dc_neighbours.as_ptr()) },
+                (dc_neighbours.len() * mem::size_of::<i32>()) as u64,
+                MTLResourceOptions::CPUCacheModeDefaultCache
+            );
+
+
+            let uc_neighbours = {
+                let mut data: Vec<i32> = vec![];
+
+                let uc_range = f32::ceil(CHEMICALS[2]) as i32;
+
+                for x in -uc_range..uc_range+1 {
+                    for y in -uc_range..uc_range+1 {
+                        for z in -uc_range..uc_range+1 {
+                            // Comparing to (0, 0, 0)
+                            let dist = x*x + y*y + z*z;
+
+                            if dist as f32 <= CHEMICALS[2] && !(x == 0 && y == 0 && z == 0) {
+                                data.push(x + y*AUTOMATON_SIZE as i32 + z*AUTOMATON_SIZE as i32*AUTOMATON_SIZE as i32);
+                            }
+                        }
+                    }
+                }
+
+                data
+            };
+
+            let arg_uc_neighbours = device.new_buffer_with_data(
+                unsafe { mem::transmute(uc_neighbours.as_ptr()) },
+                (uc_neighbours.len() * mem::size_of::<i32>()) as u64,
+                MTLResourceOptions::CPUCacheModeDefaultCache
+            );
+
+            let arg_size_container = {
+                let data: [u32; 3] = [AUTOMATON_SIZE as u32, dc_neighbours.len() as u32, uc_neighbours.len() as u32];
+                device.new_buffer_with_data(
+                    unsafe { mem::transmute(data.as_ptr()) },
+                    (data.len() * mem::size_of::<u32>()) as u64,
+                    MTLResourceOptions::CPUCacheModeDefaultCache
+                )
+            };
+
             let command_buffer = command_queue.new_command_buffer();
             let encoder = command_buffer.new_compute_command_encoder();
 
             let library = device
                 .new_library_with_source(AUTOMATON_SHADER_SRC, &CompileOptions::new())
                 .unwrap();
-            let kernel = library.get_function("sum", None).unwrap();
+            let kernel = library.get_function("compute_iteration", None).unwrap();
 
             let argument_encoder = kernel.new_argument_encoder(0);
             let arg_buffer = device.new_buffer(
@@ -145,6 +218,10 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
             argument_encoder.set_argument_buffer(&arg_buffer, 0);
             argument_encoder.set_buffer(0, &buffer, 0);
             argument_encoder.set_buffer(1, &sum, 0);
+            argument_encoder.set_buffer(2, &arg_size_container, 0);
+            argument_encoder.set_buffer(3, &arg_chemicals, 0);
+            argument_encoder.set_buffer(4, &arg_dc_neighbours, 0);
+            argument_encoder.set_buffer(5, &arg_uc_neighbours, 0);
 
             let pipeline_state_descriptor = ComputePipelineDescriptor::new();
             pipeline_state_descriptor.set_compute_function(Some(&kernel));
@@ -160,6 +237,10 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
 
             encoder.use_resource(&buffer, MTLResourceUsage::Read);
             encoder.use_resource(&sum, MTLResourceUsage::Write);
+            encoder.use_resource(&arg_size_container, MTLResourceUsage::Read);
+            encoder.use_resource(&arg_chemicals, MTLResourceUsage::Read);
+            encoder.use_resource(&arg_dc_neighbours, MTLResourceUsage::Read);
+            encoder.use_resource(&arg_uc_neighbours, MTLResourceUsage::Read);
 
             let width = 16;
 
