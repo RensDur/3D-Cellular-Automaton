@@ -2,21 +2,13 @@
 
 using namespace metal;
 
-struct
-TextureInput
-{
-    device uint* inTex;
-    volatile device uint* outTex;
+struct SumInput {
+    device uint *data;
+    volatile device uint *sum;
 };
 
-kernel
-void
-compute_iteration(
-    volatile device TextureInput &input [[buffer(0)]],
-    uint3 gid [[thread_position_in_grid]]
-)
+kernel void sum(device SumInput& input [[ buffer(0) ]],
+                uint gid [[ thread_position_in_grid ]])
 {
-
-    input.outTex[gid[0]] = 1;
-
+    input.sum[gid] = 0;
 }
