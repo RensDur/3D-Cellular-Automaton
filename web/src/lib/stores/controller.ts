@@ -14,15 +14,15 @@ function createControllerStore() {
         });
     
         const result = await response.json();
-        return result.curr_generation;
+        return result.grid;
     }
 
     async function updateStore() {
         const state = await getCurrentGridFromServer();
-        const grid = Grid3D.from(state.size, state.data);
+        const grid = Grid3D.from(state.length, state);
 
-        // console.log("The current grid state was requested from the server. Response:");
-        // console.log(grid);
+        console.log("The current grid state was requested from the server. Response:");
+        console.log(grid);
 
         update(_ => grid);
     }
