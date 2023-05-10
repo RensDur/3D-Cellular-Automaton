@@ -6,15 +6,15 @@ use rand::prelude::*;
 
 use metal::*;
 use objc::rc::autoreleasepool;
-use std::{mem, ffi::c_void};
+use std::mem;
 
 const AUTOMATON_SHADER_SRC: &str = include_str!("automaton_shader.metal");
-pub const AUTOMATON_SIZE: usize = 20;
+pub const AUTOMATON_SIZE: usize = 50;
 const CHEMICALS: [f32; 4] = [2.0, 1.0, 4.0, -0.25];
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct GPUCellularAutomaton3D {
-    pub grid: [[[u32; AUTOMATON_SIZE]; AUTOMATON_SIZE]; AUTOMATON_SIZE],
+    pub grid: Vec<Vec<Vec<u32>>>,
     pub dc_range: f32,
     pub dc_influence: f32,
     pub uc_range: f32,
@@ -25,7 +25,7 @@ impl GPUCellularAutomaton3D {
 
     pub fn new(size: usize, dc_range: f32, dc_influence: f32, uc_range: f32, uc_influence: f32) -> Self {
         GPUCellularAutomaton3D {
-            grid: [[[0u32; AUTOMATON_SIZE]; AUTOMATON_SIZE]; AUTOMATON_SIZE],
+            grid: vec![vec![vec![0u32; AUTOMATON_SIZE]; AUTOMATON_SIZE]; AUTOMATON_SIZE],
             dc_range,
             dc_influence,
             uc_range,
@@ -147,9 +147,9 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
                     for y in -dc_range..dc_range+1 {
                         for z in -dc_range..dc_range+1 {
                             // Comparing to (0, 0, 0)
-                            let dist = x*x + y*y + z*z;
+                            let dist = f32::sqrt((x*x + y*y + z*z) as f32);
 
-                            if dist as f32 <= CHEMICALS[0] && !(x == 0 && y == 0 && z == 0) {
+                            if dist <= CHEMICALS[0] && !(x == 0 && y == 0 && z == 0) {
                                 data.push(x + y*AUTOMATON_SIZE as i32 + z*AUTOMATON_SIZE as i32*AUTOMATON_SIZE as i32);
                             }
                         }
@@ -175,9 +175,9 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
                     for y in -uc_range..uc_range+1 {
                         for z in -uc_range..uc_range+1 {
                             // Comparing to (0, 0, 0)
-                            let dist = x*x + y*y + z*z;
+                            let dist = f32::sqrt((x*x + y*y + z*z) as f32);
 
-                            if dist as f32 <= CHEMICALS[2] && !(x == 0 && y == 0 && z == 0) {
+                            if dist <= CHEMICALS[2] && !(x == 0 && y == 0 && z == 0) {
                                 data.push(x + y*AUTOMATON_SIZE as i32 + z*AUTOMATON_SIZE as i32*AUTOMATON_SIZE as i32);
                             }
                         }
@@ -242,6 +242,8 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
             encoder.use_resource(&arg_dc_neighbours, MTLResourceUsage::Read);
             encoder.use_resource(&arg_uc_neighbours, MTLResourceUsage::Read);
 
+            
+            
             let width = 16;
 
             let thread_group_count = MTLSize {

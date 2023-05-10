@@ -12,8 +12,10 @@ struct SumInput {
 };
 
 kernel void compute_iteration(device SumInput& input [[ buffer(0) ]],
-                uint gid [[ thread_position_in_grid ]])
+                uint ugid [[ thread_position_in_grid ]])
 {
+    int gid = ugid;
+
     uint size = input.arg_size_container[0];
     uint dc_neighbours_len = input.arg_size_container[1];
     uint uc_neighbours_len = input.arg_size_container[2];
@@ -27,16 +29,24 @@ kernel void compute_iteration(device SumInput& input [[ buffer(0) ]],
     float influence_sum = 0;
 
     for (uint i = 0; i < dc_neighbours_len; i++) {
-        if (input.data[gid + i] == 0) {
-            // DC
-            influence_sum += dc_influence;
+        int index = gid + input.arg_dc_neighbours[i];
+
+        if (index >= 0 && index < dc_neighbours_len) {
+            if (input.data[index] == 0) {
+                // DC
+                influence_sum += dc_influence;
+            }
         }
     }
 
     for (uint i = 0; i < uc_neighbours_len; i++) {
-        if (input.data[gid + i] == 1) {
-            // UC
-            influence_sum += uc_influence;
+        int index = gid + input.arg_uc_neighbours[i];
+
+        if (index >= 0 && index < uc_neighbours_len) {
+            if (input.data[index] == 1) {
+                // UC
+                influence_sum += uc_influence;
+            }
         }
     }
 
@@ -44,6 +54,8 @@ kernel void compute_iteration(device SumInput& input [[ buffer(0) ]],
         input.sum[gid] = 0;
     } else if (influence_sum < 0) {
         input.sum[gid] = 1;
+    } else {
+        input.sum[gid] = input.data[gid];
     }
     
 
