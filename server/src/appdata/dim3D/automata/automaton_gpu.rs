@@ -9,8 +9,8 @@ use objc::rc::autoreleasepool;
 use std::mem;
 
 const AUTOMATON_SHADER_SRC: &str = include_str!("automaton_shader.metal");
-pub const AUTOMATON_SIZE: usize = 10;
-const CHEMICALS: [f32; 4] = [2.0, 1.0, 4.0, -0.25];
+pub const AUTOMATON_SIZE: usize = 50;
+const CHEMICALS: [f32; 4] = [2.3, 1.0, 4.4, -0.19];
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct GPUCellularAutomaton3D {
@@ -142,7 +142,7 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
             let dc_neighbours = {
                 let mut data: Vec<i32> = vec![];
 
-                let dc_range = f32::ceil(CHEMICALS[0]) as i32;
+                let dc_range = f32::ceil(CHEMICALS[0]) as i32 + 10;
 
                 for x in -dc_range..dc_range+1 {
                     for y in -dc_range..dc_range+1 {
@@ -170,7 +170,7 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
             let uc_neighbours = {
                 let mut data: Vec<i32> = vec![];
 
-                let uc_range = f32::ceil(CHEMICALS[2]) as i32;
+                let uc_range = f32::ceil(CHEMICALS[2]) as i32 + 10;
 
                 for x in -uc_range..uc_range+1 {
                     for y in -uc_range..uc_range+1 {
@@ -178,7 +178,7 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
                             // Comparing to (0, 0, 0)
                             let dist = f32::sqrt((x*x + y*y + z*z) as f32);
 
-                            if dist <= CHEMICALS[2] && !(x == 0 && y == 0 && z == 0) {
+                            if dist <= CHEMICALS[2] && dist > CHEMICALS[0] && !(x == 0 && y == 0 && z == 0) {
                                 data.push(x + y*AUTOMATON_SIZE as i32 + z*AUTOMATON_SIZE as i32*AUTOMATON_SIZE as i32);
                             }
                         }
@@ -187,6 +187,8 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
 
                 data
             };
+
+            println!("Considering {} dc neighbours and {} uc neighbours", dc_neighbours.len(), uc_neighbours.len());
 
             let arg_uc_neighbours = device.new_buffer_with_data(
                 unsafe { mem::transmute(uc_neighbours.as_ptr()) },
@@ -245,7 +247,7 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
 
             
             
-            let width = 16;
+            let width = 50*50;
 
             let thread_group_count = MTLSize {
                 width,
