@@ -9,7 +9,7 @@ use objc::rc::autoreleasepool;
 use std::mem;
 
 const AUTOMATON_SHADER_SRC: &str = include_str!("automaton_shader.metal");
-pub const AUTOMATON_SIZE: usize = 50;
+pub const AUTOMATON_SIZE: usize = 10;
 const CHEMICALS: [f32; 4] = [2.0, 1.0, 4.0, -0.25];
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -110,6 +110,7 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
         autoreleasepool(|| {
 
             let device = Device::system_default().expect("no device found");
+            println!("Simulating on GPU: {}", device.name());
             let command_queue = device.new_command_queue();
 
             let data = self.export();

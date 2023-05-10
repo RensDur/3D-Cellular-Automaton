@@ -12,9 +12,8 @@ struct SumInput {
 };
 
 kernel void compute_iteration(device SumInput& input [[ buffer(0) ]],
-                uint ugid [[ thread_position_in_grid ]])
+                uint gid [[ thread_position_in_grid ]])
 {
-    int gid = ugid;
 
     uint size = input.arg_size_container[0];
     uint dc_neighbours_len = input.arg_size_container[1];
@@ -57,6 +56,8 @@ kernel void compute_iteration(device SumInput& input [[ buffer(0) ]],
     } else {
         input.sum[gid] = input.data[gid];
     }
+
+    //input.sum[gid] = 0;
     
 
 }
