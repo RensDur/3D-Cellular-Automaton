@@ -7,11 +7,10 @@ use crate::CAAppData;
 
 
 
-
-#[get("/cpu/get-current-state")]
-async fn cpu_get_current_state(state: web::Data<Mutex<CAAppData>>) -> Result<impl Responder> {
+#[get("/gpu/get-current-state")]
+async fn gpu_get_current_state(state: web::Data<Mutex<CAAppData>>) -> Result<impl Responder> {
     let state_mod = state.lock().unwrap();
-    let response = web::Json(state_mod.cpu_ca.clone());
+    let response = web::Json(state_mod.gpu_ca.clone());
     drop(state_mod);
 
     Ok(response)

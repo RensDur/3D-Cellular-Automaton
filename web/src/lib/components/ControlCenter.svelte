@@ -5,10 +5,7 @@
 
     // Binders to DOM-elements
     let containerDiv: HTMLDivElement;
-    let dcRange: number;
-    let dcInfluence: number;
-    let ucRange: number;
-    let ucInfluence: number;
+    let simdev: string;
 
     // Initialise wasm and then show the controls
     onMount(async () => {
@@ -24,16 +21,14 @@
 
 
 <div id="container" bind:this={containerDiv}>
-    <button on:click={() => {controller.clearGrid();}}>Clear grid</button>
-    <button on:click={() => {controller.randomlySpreadChemicals(2);}}>Randomly spread 2 chemicals</button>
-    <button on:click={() => {controller.runIteration();}}>Next iteration</button>
-    <button on:click={() => {controller.run5Iterations();}}>Run 5 iterations</button>
-    
-    <br>DC Range:       <input bind:value={dcRange}     on:change={() => {controller.updateDCRange(dcRange)}} type="number">
-    <br>DC Influence:   <input bind:value={dcInfluence} on:change={() => {controller.updateDCInfluence(dcInfluence)}} type="number">
-    <br>UC Range:       <input bind:value={ucRange}     on:change={() => {controller.updateUCRange(ucRange)}} type="number">
-    <br>UC Influence:   <input bind:value={ucInfluence} on:change={() => {controller.updateUCInfluence(ucInfluence)}} type="number">
-
+    <button on:click={() => {controller.clearGrid();}}>Clear grid</button><br>
+    <button on:click={() => {controller.randomlySpreadChemicals(2);}}>Randomly spread 2 chemicals</button><br>
+    <button on:click={() => {controller.runIteration();}}>Next iteration</button><br>
+    <button on:click={() => {controller.run5Iterations();}}>Run 5 iterations</button><br>
+    Select simulation device: <select name="simdev" bind:value={simdev} on:change={() => {controller.selectSimulationDevice(simdev);}}>
+        <option value="gpu">GPU</option>
+        <option value="cpu">CPU - Multi threaded</option>
+    </select>
 
 </div>
 

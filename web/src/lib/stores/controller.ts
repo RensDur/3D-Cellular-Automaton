@@ -8,13 +8,20 @@ import { writable } from "svelte/store";
 function createControllerStore() {
     const { subscribe, set, update } = writable<Grid3D>();
 
+    let serverAddress = "http://localhost:7878/gpu";
+
     async function getCurrentGridFromServer() {
-        const response = await fetch("http://localhost:7878/get-current-state", {
+        const response = await fetch(serverAddress + "/get-current-state", {
             method: "GET"
         });
     
         const result = await response.json();
-        return result.grid;
+        
+        if (serverAddress.includes("cpu")) {
+            return result.curr_generation.data;
+        } else {
+            return result.grid;
+        }
     }
 
     async function updateStore() {
@@ -28,12 +35,12 @@ function createControllerStore() {
     }
 
     async function sendPost(path: string) {
-        const response = await fetch("http://localhost:7878" + path, {method: "POST"});
+        const response = await fetch(serverAddress + path, {method: "POST"});
         await response.text();
     }
 
     async function sendPostWithJson(path: string, data: object) {
-        const response = await fetch("http://localhost:7878" + path, {
+        const response = await fetch(serverAddress + path, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -50,8 +57,12 @@ function createControllerStore() {
         /**
          * Method: initialise wasm
          */
-        initialise: async (size: number, dc_range: number, dc_influence: number, uc_range: number, uc_influence: number) => {
-            await sendPostWithJson("/initialise", {size, dc_range, dc_influence, uc_range, uc_influence});
+        initialise: async () => {
+            await updateStore();
+        },
+
+        selectSimulationDevice: async (device: string) => {
+            serverAddress = "http://localhost:7878/" + device;
             await updateStore();
         },
 

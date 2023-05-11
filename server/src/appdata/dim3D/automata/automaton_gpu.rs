@@ -8,9 +8,9 @@ use metal::*;
 use objc::rc::autoreleasepool;
 use std::mem;
 
+use crate::AUTOMATON_SIZE;
+
 const AUTOMATON_SHADER_SRC: &str = include_str!("automaton_shader.metal");
-pub const AUTOMATON_SIZE: usize = 50;
-const CHEMICALS: [f32; 4] = [2.3, 1.0, 4.4, -0.19];
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct GPUCellularAutomaton3D {
@@ -23,7 +23,7 @@ pub struct GPUCellularAutomaton3D {
 
 impl GPUCellularAutomaton3D {
 
-    pub fn new(size: usize, dc_range: f32, dc_influence: f32, uc_range: f32, uc_influence: f32) -> Self {
+    pub fn new(dc_range: f32, dc_influence: f32, uc_range: f32, uc_influence: f32) -> Self {
         GPUCellularAutomaton3D {
             grid: vec![vec![vec![0u32; AUTOMATON_SIZE]; AUTOMATON_SIZE]; AUTOMATON_SIZE],
             dc_range,
@@ -114,6 +114,7 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
             let command_queue = device.new_command_queue();
 
             let data = self.export();
+            let chemicals = [self.dc_range, self.dc_influence, self.uc_range, self.uc_influence];
 
             let buffer = device.new_buffer_with_data(
                 unsafe { mem::transmute(data.as_ptr()) },
@@ -131,7 +132,7 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
             };
 
             let arg_chemicals = {
-                let data = CHEMICALS;
+                let data = chemicals;
                 device.new_buffer_with_data(
                     unsafe { mem::transmute(data.as_ptr()) },
                     (data.len() * mem::size_of::<f32>()) as u64,
@@ -142,7 +143,7 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
             let dc_neighbours = {
                 let mut data: Vec<i32> = vec![];
 
-                let dc_range = f32::ceil(CHEMICALS[0]) as i32 + 10;
+                let dc_range = f32::ceil(chemicals[0]) as i32 + 10;
 
                 for x in -dc_range..dc_range+1 {
                     for y in -dc_range..dc_range+1 {
@@ -150,7 +151,7 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
                             // Comparing to (0, 0, 0)
                             let dist = f32::sqrt((x*x + y*y + z*z) as f32);
 
-                            if dist <= CHEMICALS[0] && !(x == 0 && y == 0 && z == 0) {
+                            if dist <= chemicals[0] && !(x == 0 && y == 0 && z == 0) {
                                 data.push(x + y*AUTOMATON_SIZE as i32 + z*AUTOMATON_SIZE as i32*AUTOMATON_SIZE as i32);
                             }
                         }
@@ -170,7 +171,7 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
             let uc_neighbours = {
                 let mut data: Vec<i32> = vec![];
 
-                let uc_range = f32::ceil(CHEMICALS[2]) as i32 + 10;
+                let uc_range = f32::ceil(chemicals[2]) as i32 + 10;
 
                 for x in -uc_range..uc_range+1 {
                     for y in -uc_range..uc_range+1 {
@@ -178,7 +179,7 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
                             // Comparing to (0, 0, 0)
                             let dist = f32::sqrt((x*x + y*y + z*z) as f32);
 
-                            if dist <= CHEMICALS[2] && dist > CHEMICALS[0] && !(x == 0 && y == 0 && z == 0) {
+                            if dist <= chemicals[2] && dist > chemicals[0] && !(x == 0 && y == 0 && z == 0) {
                                 data.push(x + y*AUTOMATON_SIZE as i32 + z*AUTOMATON_SIZE as i32*AUTOMATON_SIZE as i32);
                             }
                         }
