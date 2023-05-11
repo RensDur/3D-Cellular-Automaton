@@ -13,7 +13,8 @@ pub struct CPUCellularAutomaton3D {
     pub dc_range: f32,
     pub dc_influence: f32,
     pub uc_range: f32,
-    pub uc_influence: f32
+    pub uc_influence: f32,
+    iteration_count: u32
 }
 
 impl CPUCellularAutomaton3D {
@@ -25,7 +26,8 @@ impl CPUCellularAutomaton3D {
             dc_range,
             dc_influence,
             uc_range,
-            uc_influence
+            uc_influence,
+            iteration_count: 0
         }
     }
 
@@ -206,6 +208,13 @@ impl CellularAutomaton3D for CPUCellularAutomaton3D {
                 }
             }
         }
+
+        self.iteration_count += 1;
+
+    }
+
+    fn get_iteration_count(&self) -> u32 {
+        self.iteration_count
     }
 
 }

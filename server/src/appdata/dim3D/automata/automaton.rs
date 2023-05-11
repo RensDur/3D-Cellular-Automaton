@@ -6,4 +6,25 @@ pub trait CellularAutomaton3D {
     fn size(&self) -> usize;
     fn spread_chemicals_randomly(&mut self, chem: u32);
     fn run_iteration(&mut self);
+    fn get_iteration_count(&self) -> u32;
+    fn compare(&self, other: &dyn CellularAutomaton3D) -> bool {
+        // If the automata are of different size, they can't be equal
+        if self.size() != other.size() {
+            return false;
+        }
+
+        // Otherwise, continue and check the values of every cell
+        for x in 0..self.size() {
+            for y in 0..self.size() {
+                for z in 0..self.size() {
+                    if self.get(x, y, z) != other.get(x, y, z) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        // No mismatches have been found, return true
+        true
+    }
 }
