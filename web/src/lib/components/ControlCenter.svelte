@@ -1,4 +1,6 @@
 <script lang="ts">
+    import ControlCenterGroup from "./ControlCenterGroup.svelte";
+    import ControlCenterButton from "./ControlCenterButton.svelte";
     import { createEventDispatcher } from "svelte";
     import { controller } from "$lib/stores/controller";
 	import { onMount } from "svelte";
@@ -7,12 +9,13 @@
     let containerDiv: HTMLDivElement;
     let simdev: string;
 
+    // Toggle attachers
+    let deviceToggleAttach = 0;
+
     // Initialise wasm and then show the controls
     onMount(async () => {
-        // dcRange = $controller.get_dc_range();
-        // dcInfluence = $controller.get_dc_influence();
-        // ucRange = $controller.get_uc_range();
-        // ucInfluence = $controller.get_uc_influence();
+        // Initialisation before the controlcenter is shown to the user
+
 
         containerDiv.style.display = "block";
     })
@@ -21,14 +24,41 @@
 
 
 <div id="container" bind:this={containerDiv}>
-    <button on:click={() => {controller.clearGrid();}}>Clear grid</button><br>
+
+    <ControlCenterGroup title="Device selection" columns={2}>
+        <ControlCenterButton text="CPU"
+                            type="toggle"
+                            bind:toggleAttach={deviceToggleAttach}
+                            toggleAttachId={0}
+                            columnSpan={2}
+                            on:toggleOn={() => {controller.selectSimulationDevice("cpu");}}/>
+        <ControlCenterButton text="GPU"
+                            type="toggle"
+                            bind:toggleAttach={deviceToggleAttach}
+                            toggleAttachId={1}
+                            columnSpan={2}
+                            on:toggleOn={() => {controller.selectSimulationDevice("gpu");}}/>
+    </ControlCenterGroup>
+
+    <ControlCenterGroup title="Debugging controls">
+        <ControlCenterButton text="Clear grid" on:click={() => {controller.clearGrid();}}/>
+        <ControlCenterButton text="Spread chemicals randomly" on:click={() => {controller.randomlySpreadChemicals(2);}}/>
+        <ControlCenterButton text="Run iteration" on:click={() => {controller.runIteration();}}/>
+        <ControlCenterButton text="Run 5 iterations" on:click={() => {controller.run5Iterations();}}/>
+    </ControlCenterGroup>
+
+    <ControlCenterGroup title="Benchmarks">
+
+    </ControlCenterGroup>
+
+    <!-- <button on:click={() => {controller.clearGrid();}}>Clear grid</button><br>
     <button on:click={() => {controller.randomlySpreadChemicals(2);}}>Randomly spread 2 chemicals</button><br>
     <button on:click={() => {controller.runIteration();}}>Next iteration</button><br>
     <button on:click={() => {controller.run5Iterations();}}>Run 5 iterations</button><br>
     Select simulation device: <select name="simdev" bind:value={simdev} on:change={() => {controller.selectSimulationDevice(simdev);}}>
         <option value="gpu">GPU</option>
         <option value="cpu">CPU - Multi threaded</option>
-    </select>
+    </select> -->
 
 </div>
 
@@ -36,7 +66,7 @@
 <style>
 
     div#container {
-        width: 350px;
+        width: 100%;
 
         display: none;
     }

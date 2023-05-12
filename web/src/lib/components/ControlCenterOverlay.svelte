@@ -2,7 +2,8 @@
 	import { onMount } from 'svelte';
     import ControlCenter from './ControlCenter.svelte';
 
-    import { spring } from 'svelte/motion';
+    import { tweened } from 'svelte/motion';
+    import { quadInOut } from 'svelte/easing';
 
     // State boolean
     let csShown = false;
@@ -12,11 +13,11 @@
     const hiddenHoverSize = 40;
 
     const animationProperties = {
-        stiffness: 0.15,
-        damping: 0.5
+        duration: 300,
+        easing: quadInOut
     }
 
-    const csWidth = spring(hiddenSize, animationProperties);
+    const csWidth = tweened(hiddenSize, animationProperties);
 
 
     // Event handlers
@@ -51,7 +52,7 @@
     }
 
     onMount(() => {
-        //toggleControlCenter();
+        toggleControlCenter();
     })
 
 </script>
@@ -88,9 +89,10 @@
         left: 0;
         top: 30px;
 
-        background: #eee;
+        backdrop-filter: blur(12px);
 
-        box-shadow: 0 0 5px 1px #aaa;
+        background: #eeeeee55;
+        box-shadow: 0 0 8px 2px #aaaaaa99;
 
         box-sizing: border-box;
         border-right: 1px solid #999;
@@ -116,17 +118,17 @@
         border: none;
         border-radius: var(--border-radius);
 
-        background: #aaa;
+        background: #555;
     }
 
     div#control-center-wrapper {
-        max-height: calc(100% - 100px);
+        width: calc(100% - 60px);
+        min-width: 150px;
+        max-height: calc(100% - 60px);
 
         position: absolute;
-        right: 50px;
-        top: 50px;
-
-        border-radius: var(--border-radius);
+        right: 30px;
+        top: 30px;
     }
 
 </style>
