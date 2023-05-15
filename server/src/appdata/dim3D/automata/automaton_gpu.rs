@@ -35,9 +35,37 @@ impl GPUCellularAutomaton3D {
         }
     }
 
-    fn export(&self) -> [u8; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE] {
+    // fn export(&self) -> [u8; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE] {
 
-        let mut res = [0u8; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE];
+    //     let mut res = [0u8; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE];
+
+    //     for x in 0..AUTOMATON_SIZE {
+    //         for y in 0..AUTOMATON_SIZE {
+    //             for z in 0..AUTOMATON_SIZE {
+    //                 res[x + y*AUTOMATON_SIZE + z*AUTOMATON_SIZE*AUTOMATON_SIZE] = self.grid[x][y][z];
+    //             }
+    //         }
+    //     }
+
+    //     res
+
+    // }
+
+    // fn import(&mut self, data: [u8; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE]) {
+
+    //     for x in 0..AUTOMATON_SIZE {
+    //         for y in 0..AUTOMATON_SIZE {
+    //             for z in 0..AUTOMATON_SIZE {
+    //                 self.grid[x][y][z] = data[x + y*AUTOMATON_SIZE + z*AUTOMATON_SIZE*AUTOMATON_SIZE];
+    //             }
+    //         }
+    //     }
+
+    // }
+
+    fn export(&self) -> Vec<u8> {
+
+        let mut res = vec![0u8; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE];
 
         for x in 0..AUTOMATON_SIZE {
             for y in 0..AUTOMATON_SIZE {
@@ -51,7 +79,7 @@ impl GPUCellularAutomaton3D {
 
     }
 
-    fn import(&mut self, data: [u8; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE]) {
+    fn import(&mut self, data: Vec<u8>) {
 
         for x in 0..AUTOMATON_SIZE {
             for y in 0..AUTOMATON_SIZE {
@@ -277,7 +305,7 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
 
             let ptr = sum.contents() as *mut [u8; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE];
             unsafe {
-                self.import(*ptr);
+                self.import((*ptr).to_vec());
             }
 
         });

@@ -11,7 +11,7 @@ use appdata::dim3d::automata::automaton_gpu::GPUCellularAutomaton3D;
 
 use serde::{Serialize, Deserialize};
 
-pub const AUTOMATON_SIZE: usize = 50;
+pub const AUTOMATON_SIZE: usize = 100;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct CAAppData {
