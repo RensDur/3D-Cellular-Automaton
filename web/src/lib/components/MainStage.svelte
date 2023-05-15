@@ -31,7 +31,7 @@
 
         // Setup the three.js scene
         scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xf5f5f5);
+        scene.background = new THREE.Color(0xf5f5f3);
 
         // Setup the WebGL renderer
         renderer = new THREE.WebGLRenderer({antialias: true});

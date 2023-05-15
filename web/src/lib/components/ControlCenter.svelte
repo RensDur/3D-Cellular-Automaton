@@ -1,6 +1,7 @@
 <script lang="ts">
     import ControlCenterGroup from "./ControlCenterGroup.svelte";
     import ControlCenterButton from "./ControlCenterButton.svelte";
+    import ControlCenterTextbox from "./ControlCenterTextbox.svelte";
     import { createEventDispatcher } from "svelte";
     import { controller } from "$lib/stores/controller";
 	import { onMount } from "svelte";
@@ -12,11 +13,12 @@
     // Toggle attachers
     let deviceToggleAttach = 0;
 
+    // Feedback message binders
+    let benchmarkCorrectnessFeedback = "Start benchmark to receive feedback";
+
     // Initialise wasm and then show the controls
     onMount(async () => {
         // Initialisation before the controlcenter is shown to the user
-
-
         containerDiv.style.display = "block";
     })
 
@@ -38,6 +40,10 @@
                             toggleAttachId={1}
                             columnSpan={2}
                             on:toggleOn={() => {controller.selectSimulationDevice("gpu");}}/>
+        {#if $controller}
+            <ControlCenterTextbox bind:text={$controller.cpuIterations} columnSpan={4} />
+            <ControlCenterTextbox bind:text={$controller.gpuIterations} columnSpan={4} />
+        {/if}
     </ControlCenterGroup>
 
     <ControlCenterGroup title="Debugging controls">
@@ -47,8 +53,13 @@
         <ControlCenterButton text="Run 5 iterations" on:click={() => {controller.run5Iterations();}}/>
     </ControlCenterGroup>
 
-    <ControlCenterGroup title="Benchmarks">
+    <ControlCenterGroup title="Benchmarks: CPU vs. GPU output" columns={2}>
+        <ControlCenterButton text="Compare now" on:click={async () => {benchmarkCorrectnessFeedback = await controller.compareCPUvsGPUNow();}} columnSpan={2}/>
+        <ControlCenterButton text="Compare after catch-up" on:click={async () => {benchmarkCorrectnessFeedback = await controller.compareCPUvsGPUAfterCatchUp();}} columnSpan={2}/>
+    </ControlCenterGroup>
 
+    <ControlCenterGroup columns={1}>
+        <ControlCenterTextbox bind:text={benchmarkCorrectnessFeedback} columnSpan={4} />
     </ControlCenterGroup>
 
     <!-- <button on:click={() => {controller.clearGrid();}}>Clear grid</button><br>

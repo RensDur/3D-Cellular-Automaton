@@ -91,7 +91,7 @@
 
         backdrop-filter: blur(12px);
 
-        background: #eeeeee55;
+        background: #c5c5c055;
         box-shadow: 0 0 8px 2px #aaaaaa99;
 
         box-sizing: border-box;
@@ -118,12 +118,19 @@
         border: none;
         border-radius: var(--border-radius);
 
-        background: #555;
+        background: #959590;
+
+        transition: width 0.1s ease-in-out;
+        -webkit-transition: width 0.1s ease-in-out;
+    }
+
+    div#container:hover button#toggleButton {
+        width: 15px;
     }
 
     div#control-center-wrapper {
         width: calc(100% - 60px);
-        min-width: 150px;
+        min-width: 200px;
         max-height: calc(100% - 60px);
 
         position: absolute;

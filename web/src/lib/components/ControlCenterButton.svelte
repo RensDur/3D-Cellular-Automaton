@@ -61,7 +61,7 @@
 
         box-shadow: 0 0 8px 2px #aaaaaa55;
 
-        background: #eeeeee77;
+        background: #e5e5e055;
 
         user-select: none;
     }
@@ -93,7 +93,7 @@
     }
 
     div#csbutton.toggleActive {
-        background: #88ee8877;
+        background: #f5f5f555;
     }
 
     div#csbutton.toggleNotActive {

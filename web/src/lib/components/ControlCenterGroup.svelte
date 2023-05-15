@@ -44,6 +44,8 @@
         box-shadow: inset 0 0 8px 2px #aaaaaa55;
 
         background: transparent;
+
+        overflow: hidden;
     }
 
 </style>

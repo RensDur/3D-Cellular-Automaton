@@ -5,13 +5,13 @@ use std::sync::Mutex;
 
 use actix_cors::Cors;
 use actix_web::{App, HttpServer, web};
-use routes::{debug_routes::*, cpu_get::*, cpu_post::*, gpu_get::*, gpu_post::*};
+use routes::{debug_routes::*, cpu_get::*, cpu_post::*, gpu_get::*, gpu_post::*, benchmarks::compare_cpu_gpu::{benchmarks_compare_cpu_gpu, benchmarks_compare_cpu_gpu_catch_up}};
 use appdata::dim3d::automata::automaton_cpu::CPUCellularAutomaton3D;
 use appdata::dim3d::automata::automaton_gpu::GPUCellularAutomaton3D;
 
 use serde::{Serialize, Deserialize};
 
-pub const AUTOMATON_SIZE: usize = 20;
+pub const AUTOMATON_SIZE: usize = 50;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct CAAppData {
@@ -31,7 +31,7 @@ impl CAAppData {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
 
-    let app_state = web::Data::new(Mutex::new(CAAppData::new(2.3, 1.0, 4.4, -0.19)));
+    let app_state = web::Data::new(Mutex::new(CAAppData::new(2.0, 1.0, 4.0, -0.2)));
 
     HttpServer::new(move || {
         App::new()
@@ -40,15 +40,19 @@ async fn main() -> std::io::Result<()> {
             .service(performance_check)
             .service(grid3d)
             .service(cpu_get_current_state)
+            .service(cpu_get_iterations)
             .service(cpu_post_initialise)
             .service(cpu_post_clear_all_voxels)
             .service(cpu_post_spread_chemicals_randomly)
             .service(cpu_post_run_iteration)
             .service(gpu_get_current_state)
+            .service(gpu_get_iterations)
             .service(gpu_post_initialise)
             .service(gpu_post_clear_all_voxels)
             .service(gpu_post_spread_chemicals_randomly)
             .service(gpu_post_run_iteration)
+            .service(benchmarks_compare_cpu_gpu)
+            .service(benchmarks_compare_cpu_gpu_catch_up)
             
     })
     .bind(("127.0.0.1", 7878))?

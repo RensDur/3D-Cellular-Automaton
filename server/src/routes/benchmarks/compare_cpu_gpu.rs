@@ -1,6 +1,6 @@
 use std::sync::Mutex;
 
-use actix_web::{get, web, Responder, Result};
+use actix_web::{post, web, Responder, Result};
 use crate::{CAAppData, appdata::dim3d::automata::{automaton::CellularAutomaton3D, automaton_cpu::CPUCellularAutomaton3D, automaton_gpu::GPUCellularAutomaton3D}};
 
 
@@ -21,9 +21,9 @@ fn compare_with_human_feedback(cpu_ca: &CPUCellularAutomaton3D, gpu_ca: &GPUCell
         let comparison = cpu_ca.compare(gpu_ca);
 
         if comparison {
-            message = format!("Outcome mismatch");
-        } else {
             message = format!("Complete match");
+        } else {
+            message = format!("Outcome mismatch");
         }
 
     }
@@ -32,7 +32,7 @@ fn compare_with_human_feedback(cpu_ca: &CPUCellularAutomaton3D, gpu_ca: &GPUCell
 }
 
 
-#[get("/benchmarks/compare-cpu-gpu")]
+#[post("/benchmarks/compare-cpu-gpu")]
 async fn benchmarks_compare_cpu_gpu(state: web::Data<Mutex<CAAppData>>) -> Result<impl Responder> {
 
     let state_mod = state.lock().unwrap();
@@ -44,7 +44,7 @@ async fn benchmarks_compare_cpu_gpu(state: web::Data<Mutex<CAAppData>>) -> Resul
     Ok(message)
 }
 
-#[get("/benchmarks/compare-cpu-gpu-catch-up")]
+#[post("/benchmarks/compare-cpu-gpu-catch-up")]
 async fn benchmarks_compare_cpu_gpu_catch_up(state: web::Data<Mutex<CAAppData>>) -> Result<impl Responder> {
 
     let mut state_mod = state.lock().unwrap();

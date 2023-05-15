@@ -3,6 +3,9 @@ export class Grid3D {
     size: number;
     data: number[][][];
 
+    cpuIterations: string;
+    gpuIterations: string;
+
     // Constructor
     constructor(size: number) {
         this.size = size;
@@ -21,6 +24,9 @@ export class Grid3D {
             }
             this.data.push(xarr);
         }
+
+        this.cpuIterations = "0";
+        this.gpuIterations = "0";
     }
 
     static from(size: number, data: number[][][]): Grid3D {

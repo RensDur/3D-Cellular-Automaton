@@ -76,6 +76,9 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
                 }
             }
         }
+
+        // Reset the iteration count
+        self.iteration_count = 0;
     }
 
     fn reset(&mut self, size: usize, dc_range: f32, dc_influence: f32, uc_range: f32, uc_influence: f32) {
@@ -106,6 +109,9 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
                 }
             }
         }
+
+        // Reset the iteration count
+        self.iteration_count = 0;
     }
 
     fn run_iteration(&mut self) {
