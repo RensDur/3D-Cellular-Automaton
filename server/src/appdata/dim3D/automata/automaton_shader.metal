@@ -3,8 +3,8 @@
 using namespace metal;
 
 struct SumInput {
-    device uint *data;
-    volatile device uint *sum;
+    device uint8_t *data;
+    volatile device uint8_t *sum;
     device uint* arg_size_container;
     device float* arg_chemicals;
     device int* arg_dc_neighbours;
