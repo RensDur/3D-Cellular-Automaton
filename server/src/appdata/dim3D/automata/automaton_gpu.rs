@@ -14,7 +14,7 @@ const AUTOMATON_SHADER_SRC: &str = include_str!("automaton_shader.metal");
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct GPUCellularAutomaton3D {
-    pub grid: Vec<Vec<Vec<u32>>>,
+    pub grid: Vec<Vec<Vec<u8>>>,
     pub dc_range: f32,
     pub dc_influence: f32,
     pub uc_range: f32,
@@ -26,7 +26,7 @@ impl GPUCellularAutomaton3D {
 
     pub fn new(dc_range: f32, dc_influence: f32, uc_range: f32, uc_influence: f32) -> Self {
         GPUCellularAutomaton3D {
-            grid: vec![vec![vec![0u32; AUTOMATON_SIZE]; AUTOMATON_SIZE]; AUTOMATON_SIZE],
+            grid: vec![vec![vec![0u8; AUTOMATON_SIZE]; AUTOMATON_SIZE]; AUTOMATON_SIZE],
             dc_range,
             dc_influence,
             uc_range,
@@ -35,9 +35,37 @@ impl GPUCellularAutomaton3D {
         }
     }
 
-    fn export(&self) -> [u32; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE] {
+    // fn export(&self) -> [u8; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE] {
 
-        let mut res = [0u32; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE];
+    //     let mut res = [0u8; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE];
+
+    //     for x in 0..AUTOMATON_SIZE {
+    //         for y in 0..AUTOMATON_SIZE {
+    //             for z in 0..AUTOMATON_SIZE {
+    //                 res[x + y*AUTOMATON_SIZE + z*AUTOMATON_SIZE*AUTOMATON_SIZE] = self.grid[x][y][z];
+    //             }
+    //         }
+    //     }
+
+    //     res
+
+    // }
+
+    // fn import(&mut self, data: [u8; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE]) {
+
+    //     for x in 0..AUTOMATON_SIZE {
+    //         for y in 0..AUTOMATON_SIZE {
+    //             for z in 0..AUTOMATON_SIZE {
+    //                 self.grid[x][y][z] = data[x + y*AUTOMATON_SIZE + z*AUTOMATON_SIZE*AUTOMATON_SIZE];
+    //             }
+    //         }
+    //     }
+
+    // }
+
+    fn export(&self) -> Vec<u8> {
+
+        let mut res = vec![0u8; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE];
 
         for x in 0..AUTOMATON_SIZE {
             for y in 0..AUTOMATON_SIZE {
@@ -51,7 +79,7 @@ impl GPUCellularAutomaton3D {
 
     }
 
-    fn import(&mut self, data: [u32; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE]) {
+    fn import(&mut self, data: Vec<u8>) {
 
         for x in 0..AUTOMATON_SIZE {
             for y in 0..AUTOMATON_SIZE {
@@ -86,11 +114,11 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
     }
 
     fn get(&self, x: usize, y: usize, z: usize) -> u32 {
-        self.grid[x][y][z]
+        self.grid[x][y][z] as u32
     }
 
     fn set(&mut self, x: usize, y: usize, z: usize, val: u32) {
-        self.grid[x][y][z] = val;
+        self.grid[x][y][z] = val as u8;
     }
 
     fn size(&self) -> usize {
@@ -126,7 +154,7 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
 
             let buffer = device.new_buffer_with_data(
                 unsafe { mem::transmute(data.as_ptr()) },
-                (data.len() * mem::size_of::<u32>()) as u64,
+                (data.len() * mem::size_of::<u8>()) as u64,
                 MTLResourceOptions::CPUCacheModeDefaultCache,
             );
 
@@ -134,7 +162,7 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
                 let data = self.export();
                 device.new_buffer_with_data(
                     unsafe { mem::transmute(data.as_ptr()) },
-                    (data.len() * mem::size_of::<u32>()) as u64,
+                    (data.len() * mem::size_of::<u8>()) as u64,
                     MTLResourceOptions::CPUCacheModeDefaultCache,
                 )
             };
@@ -275,9 +303,9 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
             command_buffer.commit();
             command_buffer.wait_until_completed();
 
-            let ptr = sum.contents() as *mut [u32; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE];
+            let ptr = sum.contents() as *mut [u8; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE];
             unsafe {
-                self.import(*ptr);
+                self.import((*ptr).to_vec());
             }
 
         });
