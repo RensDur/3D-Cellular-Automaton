@@ -31,7 +31,7 @@ impl CAAppData {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
 
-    let app_state = web::Data::new(Mutex::new(CAAppData::new(10.0, 1.0, 15.0, -0.2)));
+    let app_state = web::Data::new(Mutex::new(CAAppData::new(2.2, 1.0, 4.0, -0.14)));
 
     HttpServer::new(move || {
         App::new()

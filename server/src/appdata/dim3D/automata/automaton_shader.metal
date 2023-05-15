@@ -34,60 +34,78 @@ kernel void compute_iteration(device SumInput& input [[ buffer(0) ]],
     for (uint i = 0; i < dc_neighbours_len; i++) {
         int index = gid + input.arg_dc_neighbours[i];
 
-        if (index >= 0 && index < array_size) {
-            if (input.data[index] == 0) {
-                // DC
-                influence_sum += dc_influence;
-            }
+        if (index >= array_size_i) {
+            index = index - array_size_i;
+        }
+
+        if (index < 0) {
+            index = array_size_i + index;
+        }
+
+        if (input.data[index] == 0) {
+            // DC
+            influence_sum += dc_influence;
         }
     }
 
     for (uint i = 0; i < uc_neighbours_len; i++) {
         int index = gid + input.arg_uc_neighbours[i];
 
-        if (index >= 0 && index < array_size) {
-            if (input.data[index] == 1) {
-                // UC
-                influence_sum += uc_influence;
-            }
+        if (index >= array_size_i) {
+            index = index - array_size_i;
+        }
+
+        if (index < 0) {
+            index = array_size_i + index;
+        }
+
+        if (input.data[index] == 1) {
+            // UC
+            influence_sum += uc_influence;
         }
     }
 
-    // if (influence_sum > 0.0) {
-    //     input.sum[gid] = 0;
-    // } else if (influence_sum < 0.0) {
-    //     input.sum[gid] = 1;
-    // }
+    // PRODUCTION CODE
+    if (influence_sum > 0.0) {
+        input.sum[gid] = 0;
+    } else if (influence_sum < 0.0) {
+        input.sum[gid] = 1;
+    }
 
+
+
+    // DEBUGGING CODE: CHECK INDEX COVERAGE
     //input.sum[gid] = 0;
 
-    if (gid == 12 + 25*50 + 25*50*50 || gid == 0) {
-        for (uint i = 0; i < dc_neighbours_len; i++) {
-            int index = (gid + input.arg_dc_neighbours[i]);
 
-            if (index >= array_size_i) {
-                index = index - array_size_i;
-            }
+    // DEBUGGING CODE: NEIGHBOURS SHOULD CRAWL AROUND BORDERS
+    // if (gid == 12 + 25*50 + 25*50*50 || gid == 0) {
+    //     for (uint i = 0; i < dc_neighbours_len; i++) {
+    //         int index = (gid + input.arg_dc_neighbours[i]);
 
-            if (index < 0) {
-                index = array_size_i + index;
-            }
+    //         if (index >= array_size_i) {
+    //             index = index - array_size_i;
+    //         }
 
-            input.sum[index] = 1;
-        }
-    }
+    //         if (index < 0) {
+    //             index = array_size_i + index;
+    //         }
 
-    if (gid == 38 + 25*50 + 25*50*50 || gid == 49 + 49*50 + 49*50*50) {
-        for (uint i = 0; i < uc_neighbours_len; i++) {
-            int index = (gid + input.arg_uc_neighbours[i]) % array_size;
+    //         input.sum[index] = 1;
+    //     }
+    // }
 
-            if (index < 0) {
-                index = array_size - index;
-            }
+    // if (gid == 38 + 25*50 + 25*50*50 || gid == 49 + 49*50 + 49*50*50) {
+    //     for (uint i = 0; i < uc_neighbours_len; i++) {
+    //         int index = (gid + input.arg_uc_neighbours[i]) % array_size;
 
-            input.sum[index] = 1;
-        }
-    }
+    //         if (index < 0) {
+    //             index = array_size - index;
+    //         }
+
+    //         input.sum[index] = 1;
+    //     }
+    // }
     
 
 }
