@@ -70,6 +70,8 @@ kernel void compute_iteration(device SumInput& input [[ buffer(0) ]],
         input.sum[gid] = 0;
     } else if (influence_sum < 0.0) {
         input.sum[gid] = 1;
+    } else {
+        input.sum[gid] = input.data[gid];
     }
 
 

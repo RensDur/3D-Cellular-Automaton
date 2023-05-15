@@ -37,20 +37,61 @@ impl CPUCellularAutomaton3D {
         // Compute the boundaries of the proximity
         let max_dist = f32::ceil(f32::max(self.dc_range, self.uc_range)) as isize + 1;
     
-        let xmin = isize::max(0, (px as isize) - max_dist) as usize;
-        let ymin = isize::max(0, (py as isize) - max_dist) as usize;
-        let zmin = isize::max(0, (pz as isize) - max_dist) as usize;
-        let xmax = isize::min(self.prev_generation.size() as isize, (px as isize) + max_dist) as usize;
-        let ymax = isize::min(self.prev_generation.size() as isize, (py as isize) + max_dist) as usize;
-        let zmax = isize::min(self.prev_generation.size() as isize, (pz as isize) + max_dist) as usize;
+        // Compute minimal and maximal values for each x, y and z
+        let xmin = (px as isize) - max_dist;
+        let ymin = (py as isize) - max_dist;
+        let zmin = (pz as isize) - max_dist;
+        let xmax = (px as isize) + max_dist;
+        let ymax = (py as isize) + max_dist;
+        let zmax = (pz as isize) + max_dist;
+
+        // Convert then register the size of this automaton into isize
+        let size_i = self.size() as isize;
     
-        for x in xmin..xmax {
-            for y in ymin..ymax {
-                for z in zmin..zmax {
+        for xi in xmin..xmax {
+            for yi in ymin..ymax {
+                for zi in zmin..zmax {
+
+                    let dx = xi - px as isize;
+                    let dy = yi - py as isize;
+                    let dz = zi - pz as isize;
+
+                    // Calculate the distance before wrapping around the cube
+                    let dist = f32::sqrt((dx*dx + dy*dy + dz*dz) as f32);
+
+                    // It's possible that x, y or z are (1) negative or (2) exceed the boundaries of the array.
+                    // Tweak x, y and z in such a way that they wrap around the borders correctly.
+
+                    let mut xi_wrap: isize = xi;
+                    let mut yi_wrap: isize = yi;
+                    let mut zi_wrap: isize = zi;
+
+                    // Checking for negative indices
+                    if xi >= size_i {
+                        xi_wrap = xi - size_i;
+                    } else if xi < 0 {
+                        xi_wrap = size_i + xi;
+                    }
+
+                    if yi >= size_i {
+                        yi_wrap = yi - size_i;
+                    } else if yi < 0 {
+                        yi_wrap = size_i + yi;
+                    }
+
+                    if zi >= size_i {
+                        zi_wrap = zi - size_i;
+                    } else if zi < 0 {
+                        zi_wrap = size_i + zi;
+                    }
+
+                    // Convert these back into usizes
+                    let x = xi_wrap as usize;
+                    let y = yi_wrap as usize;
+                    let z = zi_wrap as usize;
                 
                     if self.prev_generation.get(x, y, z) == 0
                         && !(px == x && py == y && pz == z) {
-                        let dist = CAGrid3D::dist(px, py, pz, x, y, z);
     
                         if dist <= self.dc_range {
                             sum += self.dc_influence;
