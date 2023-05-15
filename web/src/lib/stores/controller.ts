@@ -126,8 +126,15 @@ function createControllerStore() {
         },
 
         compareCPUvsGPUAfterCatchUp: async () => {
-            return await sendPost("/benchmarks/compare-cpu-gpu-catch-up");
+            const result = await sendPost("/benchmarks/compare-cpu-gpu-catch-up");
             await updateStore();
+            return result;
+        },
+
+        benchmarkGPUShaderIncrement: async () => {
+            const result = await sendPost("/benchmarks/gpu-shader-increment");
+            await updateStore();
+            return result;
         }
     }
 }

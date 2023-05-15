@@ -53,9 +53,10 @@
         <ControlCenterButton text="Run 5 iterations" on:click={() => {controller.run5Iterations();}}/>
     </ControlCenterGroup>
 
-    <ControlCenterGroup title="Benchmarks: CPU vs. GPU output" columns={2}>
-        <ControlCenterButton text="Compare now" on:click={async () => {benchmarkCorrectnessFeedback = await controller.compareCPUvsGPUNow();}} columnSpan={2}/>
-        <ControlCenterButton text="Compare after catch-up" on:click={async () => {benchmarkCorrectnessFeedback = await controller.compareCPUvsGPUAfterCatchUp();}} columnSpan={2}/>
+    <ControlCenterGroup title="Benchmarks: CPU vs. GPU output" columns={4}>
+        <ControlCenterButton text="Compare now" on:click={async () => {benchmarkCorrectnessFeedback = await controller.compareCPUvsGPUNow();}} columnSpan={1}/>
+        <ControlCenterButton text="Compare after catch-up" on:click={async () => {benchmarkCorrectnessFeedback = await controller.compareCPUvsGPUAfterCatchUp();}} columnSpan={1}/>
+        <ControlCenterButton text="GPU Shader Benchmark" on:click={async () => {benchmarkCorrectnessFeedback = await controller.benchmarkGPUShaderIncrement();}} columnSpan={1}/>
     </ControlCenterGroup>
 
     <ControlCenterGroup columns={1}>

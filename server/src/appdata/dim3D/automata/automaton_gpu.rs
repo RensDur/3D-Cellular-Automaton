@@ -153,14 +153,14 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
 
                 let dc_range = f32::ceil(chemicals[0]) as i32 + 10;
 
-                for x in -dc_range..dc_range+1 {
-                    for y in -dc_range..dc_range+1 {
-                        for z in -dc_range..dc_range+1 {
+                for x in -dc_range..dc_range {
+                    for y in -dc_range..dc_range {
+                        for z in -dc_range..dc_range {
                             // Comparing to (0, 0, 0)
                             let dist = f32::sqrt((x*x + y*y + z*z) as f32);
 
                             if dist <= chemicals[0] && !(x == 0 && y == 0 && z == 0) {
-                                data.push(x + y*AUTOMATON_SIZE as i32 + z*AUTOMATON_SIZE as i32*AUTOMATON_SIZE as i32);
+                                data.push(x + y*(AUTOMATON_SIZE as i32) + z*(AUTOMATON_SIZE as i32)*(AUTOMATON_SIZE as i32));
                             }
                         }
                     }
@@ -170,7 +170,7 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
             };
 
             let arg_dc_neighbours = device.new_buffer_with_data(
-                unsafe { mem::transmute(dc_neighbours.as_ptr()) },
+                unsafe { mem::transmute(dc_neighbours.as_slice().as_ptr()) },
                 (dc_neighbours.len() * mem::size_of::<i32>()) as u64,
                 MTLResourceOptions::CPUCacheModeDefaultCache
             );

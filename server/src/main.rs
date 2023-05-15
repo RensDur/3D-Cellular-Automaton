@@ -5,7 +5,7 @@ use std::sync::Mutex;
 
 use actix_cors::Cors;
 use actix_web::{App, HttpServer, web};
-use routes::{debug_routes::*, cpu_get::*, cpu_post::*, gpu_get::*, gpu_post::*, benchmarks::compare_cpu_gpu::{benchmarks_compare_cpu_gpu, benchmarks_compare_cpu_gpu_catch_up}};
+use routes::{debug_routes::*, cpu_get::*, cpu_post::*, gpu_get::*, gpu_post::*, benchmarks::{compare_cpu_gpu::{benchmarks_compare_cpu_gpu, benchmarks_compare_cpu_gpu_catch_up}, gpu_shader_increment::benchmarks_gpu_shader_increment}};
 use appdata::dim3d::automata::automaton_cpu::CPUCellularAutomaton3D;
 use appdata::dim3d::automata::automaton_gpu::GPUCellularAutomaton3D;
 
@@ -31,7 +31,7 @@ impl CAAppData {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
 
-    let app_state = web::Data::new(Mutex::new(CAAppData::new(2.0, 1.0, 4.0, -0.2)));
+    let app_state = web::Data::new(Mutex::new(CAAppData::new(10.0, 1.0, 15.0, -0.2)));
 
     HttpServer::new(move || {
         App::new()
@@ -53,6 +53,7 @@ async fn main() -> std::io::Result<()> {
             .service(gpu_post_run_iteration)
             .service(benchmarks_compare_cpu_gpu)
             .service(benchmarks_compare_cpu_gpu_catch_up)
+            .service(benchmarks_gpu_shader_increment)
             
     })
     .bind(("127.0.0.1", 7878))?
