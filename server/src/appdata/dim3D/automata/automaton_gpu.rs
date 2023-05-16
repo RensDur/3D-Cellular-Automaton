@@ -176,26 +176,80 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
                 )
             };
 
-            let dc_neighbours = {
-                let mut data: Vec<i32> = vec![];
+            // Computing relative neighbours: DC and UC
+            let mut dc_neighbours: Vec<i32> = vec![];
+            let mut uc_neighbours: Vec<i32> = vec![];
 
-                let dc_range = f32::ceil(chemicals[0]) as i32 + 10;
+            // UC has a larger range than DC, so pull it up to the closest larger integer and use it as range
+            let uc_range = f32::ceil(self.uc_range) as i32 + 1; // +1 as the x..y excludes y
 
-                for x in -dc_range..dc_range {
-                    for y in -dc_range..dc_range {
-                        for z in -dc_range..dc_range {
-                            // Comparing to (0, 0, 0)
-                            let dist = f32::sqrt((x*x + y*y + z*z) as f32);
+            for x in -uc_range..uc_range {
+                for y in -uc_range..uc_range {
+                    for z in -uc_range..uc_range {
+                        // Compute the distance from the point (0, 0, 0)
+                        let dist = f32::sqrt((x*x + y*y + z*z) as f32);
 
-                            if dist <= chemicals[0] && !(x == 0 && y == 0 && z == 0) {
-                                data.push(x + y*(AUTOMATON_SIZE as i32) + z*(AUTOMATON_SIZE as i32)*(AUTOMATON_SIZE as i32));
+                        // A voxel cannot be its own neighbour, so (0, 0, 0) must be excluded from the neighbour-pack
+                        if !(x == 0 && y == 0 && z == 0) {
+                            // If this point falls within the range of Differentiated Cells
+                            if dist <= self.dc_range {
+                                // Append it to the dc_neighbour pack
+                                dc_neighbours.push(x + y*(AUTOMATON_SIZE as i32) + z*(AUTOMATON_SIZE as i32)*(AUTOMATON_SIZE as i32));
+                            }
+
+                            // Else: if this point falls within the range of Undifferentiated Cells
+                            if dist <= self.uc_range {
+                                // Append it to the uc_neighbour pack
+                                uc_neighbours.push(x + y*(AUTOMATON_SIZE as i32) + z*(AUTOMATON_SIZE as i32)*(AUTOMATON_SIZE as i32));
                             }
                         }
+                        
                     }
                 }
+            }
 
-                data
-            };
+            // let dc_neighbours = {
+            //     let mut data: Vec<i32> = vec![];
+
+            //     let dc_range = f32::ceil(chemicals[0]) as i32 + 10;
+
+            //     for x in -dc_range..dc_range {
+            //         for y in -dc_range..dc_range {
+            //             for z in -dc_range..dc_range {
+            //                 // Comparing to (0, 0, 0)
+            //                 let dist = f32::sqrt((x*x + y*y + z*z) as f32);
+
+            //                 if dist <= chemicals[0] && !(x == 0 && y == 0 && z == 0) {
+            //                     data.push(x + y*(AUTOMATON_SIZE as i32) + z*(AUTOMATON_SIZE as i32)*(AUTOMATON_SIZE as i32));
+            //                 }
+            //             }
+            //         }
+            //     }
+
+            //     data
+            // };
+
+
+            // let uc_neighbours = {
+            //     let mut data: Vec<i32> = vec![];
+
+            //     let uc_range = f32::ceil(chemicals[2]) as i32 + 10;
+
+            //     for x in -uc_range..uc_range+1 {
+            //         for y in -uc_range..uc_range+1 {
+            //             for z in -uc_range..uc_range+1 {
+            //                 // Comparing to (0, 0, 0)
+            //                 let dist = f32::sqrt((x*x + y*y + z*z) as f32);
+
+            //                 if dist <= chemicals[2] && dist > chemicals[0] && !(x == 0 && y == 0 && z == 0) {
+            //                     data.push(x + y*AUTOMATON_SIZE as i32 + z*AUTOMATON_SIZE as i32*AUTOMATON_SIZE as i32);
+            //                 }
+            //             }
+            //         }
+            //     }
+
+            //     data
+            // };
 
             let arg_dc_neighbours = device.new_buffer_with_data(
                 unsafe { mem::transmute(dc_neighbours.as_slice().as_ptr()) },
@@ -203,29 +257,9 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
                 MTLResourceOptions::CPUCacheModeDefaultCache
             );
 
-
-            let uc_neighbours = {
-                let mut data: Vec<i32> = vec![];
-
-                let uc_range = f32::ceil(chemicals[2]) as i32 + 10;
-
-                for x in -uc_range..uc_range+1 {
-                    for y in -uc_range..uc_range+1 {
-                        for z in -uc_range..uc_range+1 {
-                            // Comparing to (0, 0, 0)
-                            let dist = f32::sqrt((x*x + y*y + z*z) as f32);
-
-                            if dist <= chemicals[2] && dist > chemicals[0] && !(x == 0 && y == 0 && z == 0) {
-                                data.push(x + y*AUTOMATON_SIZE as i32 + z*AUTOMATON_SIZE as i32*AUTOMATON_SIZE as i32);
-                            }
-                        }
-                    }
-                }
-
-                data
-            };
-
             println!("Considering {} dc neighbours and {} uc neighbours", dc_neighbours.len(), uc_neighbours.len());
+
+            println!("The integral of influences over neighbours is {}", dc_neighbours.len() as f32 * self.dc_influence + uc_neighbours.len() as f32 * self.uc_influence);
 
             let arg_uc_neighbours = device.new_buffer_with_data(
                 unsafe { mem::transmute(uc_neighbours.as_ptr()) },
@@ -312,6 +346,10 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
 
         self.iteration_count += 1;
 
+    }
+
+    fn set_iteration_count(&mut self, iterations: u32) {
+        self.iteration_count = iterations;
     }
 
     fn get_iteration_count(&self) -> u32 {

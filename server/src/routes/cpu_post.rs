@@ -16,7 +16,7 @@ pub struct InfoPostInitialise {
 
 #[derive(Deserialize)]
 pub struct InfoPostSpreadChemicals {
-    chemicals: u32
+    pub chemicals: u32
 }
 
 #[derive(Deserialize)]
@@ -26,7 +26,7 @@ pub struct InfoPostRunIteration {
 
 #[derive(Serialize)]
 pub struct ResponsePostGeneral {
-    status: u32
+    pub status: u32
 }
 
 #[derive(Serialize)]
