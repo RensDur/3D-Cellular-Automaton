@@ -1,5 +1,17 @@
 use marching_cubes::marching::{MarchingCubes, GridCell, Triangle};
+use serde::Serialize;
 use crate::appdata::dim3d::automata::automaton::CellularAutomaton3D;
+
+
+
+
+/**
+ * Struct: a serialisable version of the triangle that's provided by the Marching Cubes library
+ */
+#[derive(Serialize)]
+pub struct MeshTriangle {
+    pub vertices: [[f32; 3]; 3]
+}
 
 
 /**
@@ -47,10 +59,10 @@ impl MCVoxel {
 }
 
 
-pub fn generate_gltf_marching_cubes(ca: &dyn CellularAutomaton3D) -> String {
+pub fn generate_triangles_marching_cubes(ca: &dyn CellularAutomaton3D) -> Vec<MeshTriangle> {
 
     // Create a vector that stores all the triangles that form the surface between the two chemicals.
-    let mut all_triangles: Vec<Triangle> = vec![];
+    let mut all_triangles: Vec<MeshTriangle> = vec![];
 
     // The isolevel determines the value at which separation of the chemicals occurs
     let isolevel: f32 = 0.5;
@@ -88,13 +100,11 @@ pub fn generate_gltf_marching_cubes(ca: &dyn CellularAutomaton3D) -> String {
                 mc.polygonise(&mut triangles);
 
                 for t in triangles {
-                    all_triangles.push(t);
+                    all_triangles.push(MeshTriangle { vertices: t.positions });
                 }
             }
         }
     }
-
-
-    String::from("meui man!")
-
+    
+    all_triangles
 }

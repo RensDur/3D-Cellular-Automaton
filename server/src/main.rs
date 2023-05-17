@@ -41,6 +41,7 @@ async fn main() -> std::io::Result<()> {
             .service(performance_check)
             .service(grid3d)
             .service(cpu_get_current_state)
+            .service(cpu_get_current_state_triangles)
             .service(cpu_get_iterations)
             .service(cpu_post_initialise)
             .service(cpu_post_clear_all_voxels)
