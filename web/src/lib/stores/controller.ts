@@ -55,8 +55,20 @@ function createControllerStore() {
         return await response.json();
     }
 
-    async function sendPost(path: string) {
-        const response = await fetch(serverAddress + path, {method: "POST"});
+    async function sendPost(path: string, data?: object) {
+        let fields: object = {method: "POST"};
+
+        if (data) {
+            fields = {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            }
+        }
+
+        const response = await fetch(serverAddress + path, fields);
         return await response.text();
     }
 
@@ -94,7 +106,7 @@ function createControllerStore() {
          * Method: randomly spread the specified number of chemicals over the grid
          */
         randomlySpreadChemicals: async (chemicals: number) => {
-            await sendDevicePostWithJson("/spread-chemicals-randomly", {chemicals});
+            await sendPost("/general/spread-chemicals-randomly", {chemicals});
             await updateStore();
         },
 

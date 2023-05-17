@@ -33,32 +33,81 @@ impl CPUCellularAutomaton3D {
 
     fn total_influence(&self, px: usize, py: usize, pz: usize) -> f32 {
         let mut sum: f32 = 0.0;
-    
-        // Compute the boundaries of the proximity
-        let max_dist = f32::ceil(f32::max(self.dc_range, self.uc_range)) as isize + 1;
-    
-        let xmin = isize::max(0, (px as isize) - max_dist) as usize;
-        let ymin = isize::max(0, (py as isize) - max_dist) as usize;
-        let zmin = isize::max(0, (pz as isize) - max_dist) as usize;
-        let xmax = isize::min(self.prev_generation.size() as isize, (px as isize) + max_dist) as usize;
-        let ymax = isize::min(self.prev_generation.size() as isize, (py as isize) + max_dist) as usize;
-        let zmax = isize::min(self.prev_generation.size() as isize, (pz as isize) + max_dist) as usize;
-    
-        for x in xmin..xmax {
-            for y in ymin..ymax {
-                for z in zmin..zmax {
-                
-                    if self.prev_generation.get(x, y, z) == 0
-                        && !(px == x && py == y && pz == z) {
-                        let dist = CAGrid3D::dist(px, py, pz, x, y, z);
-    
+
+        let size_i = self.size() as i32;
+
+        // UC has a larger range than DC, so pull it up to the closest larger integer and use it as range
+        let uc_range = f32::ceil(self.uc_range) as i32 + 1; // +1 as the x..y excludes y
+
+        for x in -uc_range..uc_range {
+            for y in -uc_range..uc_range {
+                for z in -uc_range..uc_range {
+                    // Compute the distance from the point (0, 0, 0)
+                    let dist = f32::sqrt((x*x + y*y + z*z) as f32);
+
+                    // Calculate the (x,y,z) coordinates when they wrap around the cube
+                    // in either x, y or z-direction
+
+                    // 1. Calculate the signed index, obtained when you sum (px, py, pz) with (x, y, z)
+                    let mut x_wrapped = (px as i32) + x;
+                    let mut y_wrapped = (py as i32) + y;
+                    let mut z_wrapped = (pz as i32) + z;
+
+                    // WRAPPING X
+                    // If smaller than zero
+                    if x_wrapped < 0 {
+                        // Adjust so that it wraps around the cube
+                        x_wrapped = size_i + x_wrapped;
+                    }
+
+                    // If larger than or equal to array-size
+                    if x_wrapped >= size_i {
+                        // Adjust so that it wraps around the cube
+                        x_wrapped = x_wrapped - size_i;
+                    }
+
+                    // WRAPPING Y
+                    // If smaller than zero
+                    if y_wrapped < 0 {
+                        // Adjust so that it wraps around the cube
+                        y_wrapped = size_i + y_wrapped;
+                    }
+
+                    // If larger than or equal to array-size
+                    if y_wrapped >= size_i {
+                        // Adjust so that it wraps around the cube
+                        y_wrapped = y_wrapped - size_i;
+                    }
+
+                    // WRAPPING Z
+                    // If smaller than zero
+                    if z_wrapped < 0 {
+                        // Adjust so that it wraps around the cube
+                        z_wrapped = size_i + z_wrapped;
+                    }
+
+                    // If larger than or equal to array-size
+                    if z_wrapped >= size_i {
+                        // Adjust so that it wraps around the cube
+                        z_wrapped = z_wrapped - size_i;
+                    }
+
+                    // A voxel cannot be its own neighbour, so (0, 0, 0) must be excluded from the neighbour-pack
+                    if self.prev_generation.get(x_wrapped as usize, y_wrapped as usize, z_wrapped as usize) == 0
+                        && !(x == 0 && y == 0 && z == 0) {
+                        // If this point falls within the range of Differentiated Cells
                         if dist <= self.dc_range {
+                            // Add the DC-influence to the sum
                             sum += self.dc_influence;
-                        } else if dist <= self.uc_range {
+                        }
+
+                        // Else: if this point falls within the range of Undifferentiated Cells
+                        else if dist <= self.uc_range {
+                            // Add the UC-influence to the sum
                             sum += self.uc_influence;
                         }
                     }
-    
+                    
                 }
             }
         }
@@ -209,6 +258,8 @@ impl CellularAutomaton3D for CPUCellularAutomaton3D {
                         self.curr_generation.set(x, y, z, 0);
                     } else if influence < 0.0 {
                         self.curr_generation.set(x, y, z, 1);
+                    } else {
+                        self.curr_generation.set(x, y, z, self.prev_generation.get(x, y, z));
                     }
 
                 }
@@ -217,6 +268,10 @@ impl CellularAutomaton3D for CPUCellularAutomaton3D {
 
         self.iteration_count += 1;
 
+    }
+
+    fn set_iteration_count(&mut self, iterations: u32) {
+        self.iteration_count = iterations;
     }
 
     fn get_iteration_count(&self) -> u32 {

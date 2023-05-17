@@ -7,8 +7,12 @@ struct SumInput {
     volatile device uint8_t *sum;
     device uint* arg_size_container;
     device float* arg_chemicals;
-    device int* arg_dc_neighbours;
-    device int* arg_uc_neighbours;
+    device int* arg_dc_neighbours_x;
+    device int* arg_dc_neighbours_y;
+    device int* arg_dc_neighbours_z;
+    device int* arg_uc_neighbours_x;
+    device int* arg_uc_neighbours_y;
+    device int* arg_uc_neighbours_z;
 };
 
 kernel void compute_iteration(device SumInput& input [[ buffer(0) ]],
@@ -18,10 +22,15 @@ kernel void compute_iteration(device SumInput& input [[ buffer(0) ]],
     int gid = ugid;
 
     uint size = input.arg_size_container[0];
+    int size_i = (int) size;
     uint array_size = size*size*size;
     int array_size_i = (int) array_size;
     uint dc_neighbours_len = input.arg_size_container[1];
     uint uc_neighbours_len = input.arg_size_container[2];
+
+    int z = gid / (size_i*size_i);
+    int y = (gid % (size_i*size_i)) / size_i;
+    int x = (gid % (size_i*size_i)) % size_i;
 
     float dc_range = input.arg_chemicals[0];
     float dc_influence = input.arg_chemicals[1];
@@ -29,18 +38,59 @@ kernel void compute_iteration(device SumInput& input [[ buffer(0) ]],
     float uc_influence = input.arg_chemicals[3];
 
     // Calculate the influence of neighbours on this voxel
-    float influence_sum = 0;
+    float influence_sum = 0.0;
 
     for (uint i = 0; i < dc_neighbours_len; i++) {
-        int index = gid + input.arg_dc_neighbours[i];
+        int dx = input.arg_dc_neighbours_x[i];
+        int dy = input.arg_dc_neighbours_y[i];
+        int dz = input.arg_dc_neighbours_z[i];
 
-        if (index >= array_size_i) {
-            index = index - array_size_i;
+        int x_wrapped = x + dx;
+        int y_wrapped = y + dy;
+        int z_wrapped = z + dz;
+
+        // Wrap x, y and z around the cube individually
+        // WRAPPING X
+        // If smaller than zero
+        if (x_wrapped < 0) {
+            // Adjust so that it wraps around the cube
+            x_wrapped = size_i + x_wrapped;
         }
 
-        if (index < 0) {
-            index = array_size_i + index;
+        // If larger than or equal to array-size
+        if (x_wrapped >= size_i) {
+            // Adjust so that it wraps around the cube
+            x_wrapped = x_wrapped - size_i;
         }
+
+        // WRAPPING Y
+        // If smaller than zero
+        if (y_wrapped < 0) {
+            // Adjust so that it wraps around the cube
+            y_wrapped = size_i + y_wrapped;
+        }
+
+        // If larger than or equal to array-size
+        if (y_wrapped >= size_i) {
+            // Adjust so that it wraps around the cube
+            y_wrapped = y_wrapped - size_i;
+        }
+
+        // WRAPPING Z
+        // If smaller than zero
+        if (z_wrapped < 0) {
+            // Adjust so that it wraps around the cube
+            z_wrapped = size_i + z_wrapped;
+        }
+
+        // If larger than or equal to array-size
+        if (z_wrapped >= size_i) {
+            // Adjust so that it wraps around the cube
+            z_wrapped = z_wrapped - size_i;
+        }
+
+        // Compute the new gid by using these wrapped values
+        int index = x_wrapped + y_wrapped * size_i + z_wrapped * size_i * size_i;
 
         if (input.data[index] == 0) {
             // DC
@@ -49,17 +99,58 @@ kernel void compute_iteration(device SumInput& input [[ buffer(0) ]],
     }
 
     for (uint i = 0; i < uc_neighbours_len; i++) {
-        int index = gid + input.arg_uc_neighbours[i];
+        int dx = input.arg_uc_neighbours_x[i];
+        int dy = input.arg_uc_neighbours_y[i];
+        int dz = input.arg_uc_neighbours_z[i];
 
-        if (index >= array_size_i) {
-            index = index - array_size_i;
+        int x_wrapped = x + dx;
+        int y_wrapped = y + dy;
+        int z_wrapped = z + dz;
+
+        // Wrap x, y and z around the cube individually
+        // WRAPPING X
+        // If smaller than zero
+        if (x_wrapped < 0) {
+            // Adjust so that it wraps around the cube
+            x_wrapped = size_i + x_wrapped;
         }
 
-        if (index < 0) {
-            index = array_size_i + index;
+        // If larger than or equal to array-size
+        if (x_wrapped >= size_i) {
+            // Adjust so that it wraps around the cube
+            x_wrapped = x_wrapped - size_i;
         }
 
-        if (input.data[index] == 1) {
+        // WRAPPING Y
+        // If smaller than zero
+        if (y_wrapped < 0) {
+            // Adjust so that it wraps around the cube
+            y_wrapped = size_i + y_wrapped;
+        }
+
+        // If larger than or equal to array-size
+        if (y_wrapped >= size_i) {
+            // Adjust so that it wraps around the cube
+            y_wrapped = y_wrapped - size_i;
+        }
+
+        // WRAPPING Z
+        // If smaller than zero
+        if (z_wrapped < 0) {
+            // Adjust so that it wraps around the cube
+            z_wrapped = size_i + z_wrapped;
+        }
+
+        // If larger than or equal to array-size
+        if (z_wrapped >= size_i) {
+            // Adjust so that it wraps around the cube
+            z_wrapped = z_wrapped - size_i;
+        }
+
+        // Compute the new gid by using these wrapped values
+        int index = x_wrapped + y_wrapped * size_i + z_wrapped * size_i * size_i;
+
+        if (input.data[index] == 0) {
             // UC
             influence_sum += uc_influence;
         }
@@ -70,42 +161,9 @@ kernel void compute_iteration(device SumInput& input [[ buffer(0) ]],
         input.sum[gid] = 0;
     } else if (influence_sum < 0.0) {
         input.sum[gid] = 1;
+    } else {
+        input.sum[gid] = input.data[gid];
     }
-
-
-
-    // DEBUGGING CODE: CHECK INDEX COVERAGE
-    //input.sum[gid] = 0;
-
-
-    // DEBUGGING CODE: NEIGHBOURS SHOULD CRAWL AROUND BORDERS
-    // if (gid == 12 + 25*50 + 25*50*50 || gid == 0) {
-    //     for (uint i = 0; i < dc_neighbours_len; i++) {
-    //         int index = (gid + input.arg_dc_neighbours[i]);
-
-    //         if (index >= array_size_i) {
-    //             index = index - array_size_i;
-    //         }
-
-    //         if (index < 0) {
-    //             index = array_size_i + index;
-    //         }
-
-    //         input.sum[index] = 1;
-    //     }
-    // }
-
-    // if (gid == 38 + 25*50 + 25*50*50 || gid == 49 + 49*50 + 49*50*50) {
-    //     for (uint i = 0; i < uc_neighbours_len; i++) {
-    //         int index = (gid + input.arg_uc_neighbours[i]) % array_size;
-
-    //         if (index < 0) {
-    //             index = array_size - index;
-    //         }
-
-    //         input.sum[index] = 1;
-    //     }
-    // }
     
 
 }
