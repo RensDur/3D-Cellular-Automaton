@@ -1,5 +1,6 @@
 mod appdata;
 mod routes;
+mod gltfgeneration;
 
 use std::sync::Mutex;
 
