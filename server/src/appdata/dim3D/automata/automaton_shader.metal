@@ -95,7 +95,6 @@ kernel void compute_iteration(device SumInput& input [[ buffer(0) ]],
         if (input.data[index] == 0) {
             // DC
             influence_sum += dc_influence;
-            influence_sum -= uc_influence;
         }
     }
 
@@ -165,45 +164,6 @@ kernel void compute_iteration(device SumInput& input [[ buffer(0) ]],
     } else {
         input.sum[gid] = input.data[gid];
     }
-
-
-
-    // DEBUGGING CODE: CHECK INDEX COVERAGE
-    //input.sum[gid] = 0;
-
-
-    // DEBUGGING CODE: NEIGHBOURS SHOULD CRAWL AROUND BORDERS
-    // if (gid == 12 + 25*50 + 25*50*50 || gid == 0) {
-    //     for (uint i = 0; i < dc_neighbours_len; i++) {
-    //         int index = (gid + input.arg_dc_neighbours[i]);
-
-    //         if (index >= array_size_i) {
-    //             index = index - array_size_i;
-    //         }
-
-    //         if (index < 0) {
-    //             index = array_size_i + index;
-    //         }
-
-    //         input.sum[index] = 1;
-    //     }
-    // }
-
-    // if (gid == 38 + 25*50 + 25*50*50 || gid == 49 + 49*50 + 49*50*50) {
-    //     for (uint i = 0; i < uc_neighbours_len; i++) {
-    //         int index = (gid + input.arg_uc_neighbours[i]);
-
-    //         if (index >= array_size_i) {
-    //             index = index - array_size_i;
-    //         }
-
-    //         if (index < 0) {
-    //             index = array_size_i + index;
-    //         }
-
-    //         input.sum[index] = 1;
-    //     }
-    // }
     
 
 }

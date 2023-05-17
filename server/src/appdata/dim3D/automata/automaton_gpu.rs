@@ -204,7 +204,7 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
                             }
 
                             // Else: if this point falls within the range of Undifferentiated Cells
-                            if dist <= self.uc_range {
+                            else if dist <= self.uc_range {
                                 // Append it to the uc_neighbour pack
                                 uc_neighbours_x.push(x);
                                 uc_neighbours_y.push(y);
