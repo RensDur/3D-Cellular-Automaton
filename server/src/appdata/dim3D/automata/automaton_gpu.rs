@@ -177,11 +177,15 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
             };
 
             // Computing relative neighbours: DC and UC
-            let mut dc_neighbours: Vec<i32> = vec![];
-            let mut uc_neighbours: Vec<i32> = vec![];
+            let mut dc_neighbours_x: Vec<i32> = vec![];
+            let mut dc_neighbours_y: Vec<i32> = vec![];
+            let mut dc_neighbours_z: Vec<i32> = vec![];
+            let mut uc_neighbours_x: Vec<i32> = vec![];
+            let mut uc_neighbours_y: Vec<i32> = vec![];
+            let mut uc_neighbours_z: Vec<i32> = vec![];
 
             // UC has a larger range than DC, so pull it up to the closest larger integer and use it as range
-            let uc_range = f32::ceil(self.uc_range) as i32 + 1; // +1 as the x..y excludes y
+            let uc_range = f32::ceil(self.uc_range) as i32 + 2; // +1 as the x..y excludes y
 
             for x in -uc_range..uc_range {
                 for y in -uc_range..uc_range {
@@ -194,13 +198,17 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
                             // If this point falls within the range of Differentiated Cells
                             if dist <= self.dc_range {
                                 // Append it to the dc_neighbour pack
-                                dc_neighbours.push(x + y*(AUTOMATON_SIZE as i32) + z*(AUTOMATON_SIZE as i32)*(AUTOMATON_SIZE as i32));
+                                dc_neighbours_x.push(x);
+                                dc_neighbours_y.push(y);
+                                dc_neighbours_z.push(z);
                             }
 
                             // Else: if this point falls within the range of Undifferentiated Cells
                             if dist <= self.uc_range {
                                 // Append it to the uc_neighbour pack
-                                uc_neighbours.push(x + y*(AUTOMATON_SIZE as i32) + z*(AUTOMATON_SIZE as i32)*(AUTOMATON_SIZE as i32));
+                                uc_neighbours_x.push(x);
+                                uc_neighbours_y.push(y);
+                                uc_neighbours_z.push(z);
                             }
                         }
                         
@@ -208,67 +216,48 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
                 }
             }
 
-            // let dc_neighbours = {
-            //     let mut data: Vec<i32> = vec![];
-
-            //     let dc_range = f32::ceil(chemicals[0]) as i32 + 10;
-
-            //     for x in -dc_range..dc_range {
-            //         for y in -dc_range..dc_range {
-            //             for z in -dc_range..dc_range {
-            //                 // Comparing to (0, 0, 0)
-            //                 let dist = f32::sqrt((x*x + y*y + z*z) as f32);
-
-            //                 if dist <= chemicals[0] && !(x == 0 && y == 0 && z == 0) {
-            //                     data.push(x + y*(AUTOMATON_SIZE as i32) + z*(AUTOMATON_SIZE as i32)*(AUTOMATON_SIZE as i32));
-            //                 }
-            //             }
-            //         }
-            //     }
-
-            //     data
-            // };
-
-
-            // let uc_neighbours = {
-            //     let mut data: Vec<i32> = vec![];
-
-            //     let uc_range = f32::ceil(chemicals[2]) as i32 + 10;
-
-            //     for x in -uc_range..uc_range+1 {
-            //         for y in -uc_range..uc_range+1 {
-            //             for z in -uc_range..uc_range+1 {
-            //                 // Comparing to (0, 0, 0)
-            //                 let dist = f32::sqrt((x*x + y*y + z*z) as f32);
-
-            //                 if dist <= chemicals[2] && dist > chemicals[0] && !(x == 0 && y == 0 && z == 0) {
-            //                     data.push(x + y*AUTOMATON_SIZE as i32 + z*AUTOMATON_SIZE as i32*AUTOMATON_SIZE as i32);
-            //                 }
-            //             }
-            //         }
-            //     }
-
-            //     data
-            // };
-
-            let arg_dc_neighbours = device.new_buffer_with_data(
-                unsafe { mem::transmute(dc_neighbours.as_slice().as_ptr()) },
-                (dc_neighbours.len() * mem::size_of::<i32>()) as u64,
+            let arg_dc_neighbours_x = device.new_buffer_with_data(
+                unsafe { mem::transmute(dc_neighbours_x.as_slice().as_ptr()) },
+                (dc_neighbours_x.len() * mem::size_of::<i32>()) as u64,
                 MTLResourceOptions::CPUCacheModeDefaultCache
             );
 
-            println!("Considering {} dc neighbours and {} uc neighbours", dc_neighbours.len(), uc_neighbours.len());
-
-            println!("The integral of influences over neighbours is {}", dc_neighbours.len() as f32 * self.dc_influence + uc_neighbours.len() as f32 * self.uc_influence);
-
-            let arg_uc_neighbours = device.new_buffer_with_data(
-                unsafe { mem::transmute(uc_neighbours.as_ptr()) },
-                (uc_neighbours.len() * mem::size_of::<i32>()) as u64,
+            let arg_dc_neighbours_y = device.new_buffer_with_data(
+                unsafe { mem::transmute(dc_neighbours_y.as_slice().as_ptr()) },
+                (dc_neighbours_y.len() * mem::size_of::<i32>()) as u64,
                 MTLResourceOptions::CPUCacheModeDefaultCache
             );
+
+            let arg_dc_neighbours_z = device.new_buffer_with_data(
+                unsafe { mem::transmute(dc_neighbours_z.as_slice().as_ptr()) },
+                (dc_neighbours_z.len() * mem::size_of::<i32>()) as u64,
+                MTLResourceOptions::CPUCacheModeDefaultCache
+            );
+
+            let arg_uc_neighbours_x = device.new_buffer_with_data(
+                unsafe { mem::transmute(uc_neighbours_x.as_ptr()) },
+                (uc_neighbours_x.len() * mem::size_of::<i32>()) as u64,
+                MTLResourceOptions::CPUCacheModeDefaultCache
+            );
+
+            let arg_uc_neighbours_y = device.new_buffer_with_data(
+                unsafe { mem::transmute(uc_neighbours_y.as_ptr()) },
+                (uc_neighbours_y.len() * mem::size_of::<i32>()) as u64,
+                MTLResourceOptions::CPUCacheModeDefaultCache
+            );
+
+            let arg_uc_neighbours_z = device.new_buffer_with_data(
+                unsafe { mem::transmute(uc_neighbours_z.as_ptr()) },
+                (uc_neighbours_z.len() * mem::size_of::<i32>()) as u64,
+                MTLResourceOptions::CPUCacheModeDefaultCache
+            );
+
+            println!("Considering {} dc neighbours and {} uc neighbours", dc_neighbours_x.len(), uc_neighbours_x.len());
+
+            println!("The integral of influences over neighbours is {}", dc_neighbours_x.len() as f32 * self.dc_influence + uc_neighbours_x.len() as f32 * self.uc_influence);
 
             let arg_size_container = {
-                let data: [u32; 3] = [AUTOMATON_SIZE as u32, dc_neighbours.len() as u32, uc_neighbours.len() as u32];
+                let data: [u32; 3] = [AUTOMATON_SIZE as u32, dc_neighbours_x.len() as u32, uc_neighbours_x.len() as u32];
                 device.new_buffer_with_data(
                     unsafe { mem::transmute(data.as_ptr()) },
                     (data.len() * mem::size_of::<u32>()) as u64,
@@ -294,8 +283,12 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
             argument_encoder.set_buffer(1, &sum, 0);
             argument_encoder.set_buffer(2, &arg_size_container, 0);
             argument_encoder.set_buffer(3, &arg_chemicals, 0);
-            argument_encoder.set_buffer(4, &arg_dc_neighbours, 0);
-            argument_encoder.set_buffer(5, &arg_uc_neighbours, 0);
+            argument_encoder.set_buffer(4, &arg_dc_neighbours_x, 0);
+            argument_encoder.set_buffer(5, &arg_dc_neighbours_y, 0);
+            argument_encoder.set_buffer(6, &arg_dc_neighbours_z, 0);
+            argument_encoder.set_buffer(7, &arg_uc_neighbours_x, 0);
+            argument_encoder.set_buffer(8, &arg_uc_neighbours_y, 0);
+            argument_encoder.set_buffer(9, &arg_uc_neighbours_z, 0);
 
             let pipeline_state_descriptor = ComputePipelineDescriptor::new();
             pipeline_state_descriptor.set_compute_function(Some(&kernel));
@@ -313,8 +306,12 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
             encoder.use_resource(&sum, MTLResourceUsage::Write);
             encoder.use_resource(&arg_size_container, MTLResourceUsage::Read);
             encoder.use_resource(&arg_chemicals, MTLResourceUsage::Read);
-            encoder.use_resource(&arg_dc_neighbours, MTLResourceUsage::Read);
-            encoder.use_resource(&arg_uc_neighbours, MTLResourceUsage::Read);
+            encoder.use_resource(&arg_dc_neighbours_x, MTLResourceUsage::Read);
+            encoder.use_resource(&arg_dc_neighbours_y, MTLResourceUsage::Read);
+            encoder.use_resource(&arg_dc_neighbours_z, MTLResourceUsage::Read);
+            encoder.use_resource(&arg_uc_neighbours_x, MTLResourceUsage::Read);
+            encoder.use_resource(&arg_uc_neighbours_y, MTLResourceUsage::Read);
+            encoder.use_resource(&arg_uc_neighbours_z, MTLResourceUsage::Read);
 
             
             
