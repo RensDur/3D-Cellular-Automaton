@@ -25,9 +25,33 @@ function createControllerStore() {
         }
     }
 
+    async function getCurrentMCMeshFromServer() {
+        const response = await fetch(serverAddress + "/" + workingAddress + "/get-current-state-triangles", {
+            method: "GET"
+        });
+
+        const result = await response.json();
+
+        const listOfPositions: number[][] = [];
+
+        // Loop over every triangle in the response
+        for (let i = 0; i < result.length; ++i) {
+            // Add the three vertices of this triangle to the listOfPositions in the right order
+            listOfPositions.push(result[i].vertices[0]);
+            listOfPositions.push(result[i].vertices[1]);
+            listOfPositions.push(result[i].vertices[2]);
+        }
+
+        return listOfPositions;
+    }
+
     async function updateStore() {
         const state = await getCurrentGridFromServer();
         const grid = Grid3D.from(state.length, state);
+
+        // Get the MC Mesh from the server
+        const mcMesh = await getCurrentMCMeshFromServer();
+        grid.setMCPositions(mcMesh);
 
         // Update both the cpu and gpu number of iterations
         grid.cpuIterations = await sendGet("/cpu/get-iterations");

@@ -1,7 +1,7 @@
 use std::sync::Mutex;
 
 use actix_web::{get, web, Responder, Result};
-use crate::{CAAppData, appdata::dim3d::automata::automaton::CellularAutomaton3D, gltfgeneration::mcubes::generate_triangles_marching_cubes};
+use crate::{CAAppData, appdata::dim3d::automata::automaton::CellularAutomaton3D};
 
 
 
@@ -20,7 +20,7 @@ async fn cpu_get_current_state_triangles(state: web::Data<Mutex<CAAppData>>) -> 
     let state_mod = state.lock().unwrap();
 
     // Create a list of triangles according to the marching cubes algorithm
-    let triangles = generate_triangles_marching_cubes(&state_mod.cpu_ca);
+    let triangles = state_mod.cpu_ca.get_marching_cubes_mesh();
 
     let response = web::Json(triangles);
 

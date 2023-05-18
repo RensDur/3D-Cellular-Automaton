@@ -609,6 +609,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "isosurface"
+version = "0.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a4caf4535490ed52ef057093edbd2e30440c997ae5e65b95691c694e0321dc54"
+
+[[package]]
 name = "itoa"
 version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -680,12 +686,6 @@ checksum = "62bb907fe88d54d8d9ce32a3cceab4218ed2f6b7d35617cafe9adf84e43919cb"
 dependencies = [
  "libc",
 ]
-
-[[package]]
-name = "marching-cubes"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3789d0ce591676c041a2c460cdca511777fed6eacccd3acf25e6c35fc23d28f0"
 
 [[package]]
 name = "memchr"
@@ -978,7 +978,7 @@ version = "0.1.0"
 dependencies = [
  "actix-cors",
  "actix-web",
- "marching-cubes",
+ "isosurface",
  "metal",
  "objc",
  "rand",

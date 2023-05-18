@@ -12,7 +12,7 @@ use appdata::dim3d::automata::automaton_gpu::GPUCellularAutomaton3D;
 
 use serde::{Serialize, Deserialize};
 
-pub const AUTOMATON_SIZE: usize = 50;
+pub const AUTOMATON_SIZE: usize = 100;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct CAAppData {
@@ -48,6 +48,7 @@ async fn main() -> std::io::Result<()> {
             .service(cpu_post_spread_chemicals_randomly)
             .service(cpu_post_run_iteration)
             .service(gpu_get_current_state)
+            .service(gpu_get_current_state_triangles)
             .service(gpu_get_iterations)
             .service(gpu_post_initialise)
             .service(gpu_post_clear_all_voxels)

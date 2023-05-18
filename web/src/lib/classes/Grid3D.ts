@@ -68,4 +68,16 @@ export class Grid3D {
         return this.mcPositions;
     }
 
+    exportMCMeshPositions() {
+        const result: number[] = [];
+
+        for (const vec of this.mcPositions) {
+            result.push(vec[0]);
+            result.push(vec[1]);
+            result.push(vec[2]);
+        }
+
+        return result;
+    }
+
 }

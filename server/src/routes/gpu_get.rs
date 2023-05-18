@@ -17,6 +17,20 @@ async fn gpu_get_current_state(state: web::Data<Mutex<CAAppData>>) -> Result<imp
     Ok(response)
 }
 
+#[get("/gpu/get-current-state-triangles")]
+async fn gpu_get_current_state_triangles(state: web::Data<Mutex<CAAppData>>) -> Result<impl Responder> {
+    let state_mod = state.lock().unwrap();
+
+    // Create a list of triangles according to the marching cubes algorithm
+    let triangles = state_mod.gpu_ca.get_marching_cubes_mesh();
+
+    let response = web::Json(triangles);
+
+    drop(state_mod);
+
+    Ok(response)
+}
+
 #[get("/gpu/get-iterations")]
 async fn gpu_get_iterations(state: web::Data<Mutex<CAAppData>>) -> Result<impl Responder> {
     let state_mod = state.lock().unwrap();

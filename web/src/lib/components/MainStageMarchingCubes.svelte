@@ -60,12 +60,22 @@
 
         // Add the mesh for the Cellullar Automaton
         let meshGeometry = new THREE.BufferGeometry();
-        
+        meshGeometry.setAttribute("position", new THREE.Float32BufferAttribute($controller.exportMCMeshPositions(), 3));
+        meshGeometry.computeVertexNormals();
+        meshGeometry.translate(-size/2, -size/2, -size/2);
+
+        const meshObject = new THREE.Mesh(meshGeometry, new THREE.MeshNormalMaterial());
+        scene.add(meshObject);
 
 
+        function updateMeshObject() {
+            meshGeometry.setAttribute("position", new THREE.Float32BufferAttribute($controller.exportMCMeshPositions(), 3));
+            meshGeometry.computeVertexNormals();
+            meshGeometry.translate(-size/2, -size/2, -size/2);
 
-
-        
+            console.log("meshGeometry: ");
+            console.log(meshGeometry);
+        }
 
 
         function animate() {
@@ -80,6 +90,7 @@
             if ($controller != previouslyRenderedGrid) {
 
                 // Update the displayed mesh
+                updateMeshObject();
 
                 // Register the current controller state
                 previouslyRenderedGrid = $controller;

@@ -2,9 +2,22 @@ use std::thread;
 use std::sync::{Arc, Mutex};
 
 use rand::prelude::*;
+
 use super::super::grid::CAGrid3D;
 use super::automaton::CellularAutomaton3D;
 use serde::{Serialize, Deserialize};
+
+use isosurface::marching_cubes::MarchingCubes;
+use isosurface::source::Source;
+
+
+/**
+ * Struct: a serialisable version of the triangle that's provided by the Marching Cubes library
+ */
+#[derive(Serialize)]
+pub struct MeshTriangle {
+    pub vertices: [[f32; 3]; 3]
+}
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct CPUCellularAutomaton3D {
@@ -29,6 +42,63 @@ impl CPUCellularAutomaton3D {
             uc_influence,
             iteration_count: 0
         }
+    }
+
+    /**
+     * Method: transform this automaton into a mesh using Marching Cubes
+     */
+    pub fn get_marching_cubes_mesh(&self) -> Vec<MeshTriangle> {
+
+        // Create a vector that stores all the triangles that form the surface between the two chemicals.
+        let mut all_triangles: Vec<MeshTriangle> = vec![];
+
+        // Loop over all voxels in the cellular automaton
+        let mut mc = MarchingCubes::new(self.size());
+
+        let mut vertices: Vec<f32> = vec![];
+        let mut indices: Vec<u32> = vec![];
+
+        mc.extract(self, &mut vertices, &mut indices);
+
+        // 'vertices' contains (x, y, z) values in sequential manner
+        // 'indices' creates triangles by indexing three vertices sequentially
+        
+        // 1. Transform 'vertices' into (x,y,z) coordinates (group by 3)
+        if vertices.len() % 3 != 0 {
+            panic!("Marching Cubes: vertices array length not multiple of three");
+        }
+
+        let mut vertices_coords: Vec<[f32; 3]> = vec![];
+
+        for v in (0..vertices.len()).step_by(3) {
+            // v:   x
+            // v+1: y
+            // v+2: z
+            vertices_coords.push([vertices[v] * self.size() as f32, vertices[v+1] * self.size() as f32, vertices[v+2] * self.size() as f32]);
+        }
+
+        // 2. Transform 'indices' into triangles (group by three vertices)
+        if indices.len() % 3 != 0 {
+            panic!("Marching Cubes: indices array length not multiple of three");
+        }
+
+        for i in (0..indices.len()).step_by(3) {
+            // i:   vertex 1
+            // i+1: vertex 2
+            // i+2: vertex 3
+            all_triangles.push(
+                MeshTriangle {
+                    vertices: [
+                        vertices_coords[indices[i] as usize],
+                        vertices_coords[indices[i+1] as usize],
+                        vertices_coords[indices[i+2] as usize]
+                    ]
+                }
+            );
+        }
+
+        all_triangles
+
     }
 
     fn total_influence(&self, px: usize, py: usize, pz: usize) -> f32 {
@@ -278,4 +348,26 @@ impl CellularAutomaton3D for CPUCellularAutomaton3D {
         self.iteration_count
     }
 
+}
+
+
+impl Source for CPUCellularAutomaton3D {
+    fn sample(&self, x: f32, y: f32, z: f32) -> f32 {
+        // Assignment: return negative values for 'inside' and positive for 'outside'.
+        // We'll return -1 for chemical 1 and +1 for chemical 0.
+
+        // Caution: the source will be sampled between (0, 0, 0) and (1, 1, 1)
+
+        let xindex = usize::min((x * (self.size() - 1) as f32).round() as usize, self.size() - 1);
+        let yindex = usize::min((y * (self.size() - 1) as f32).round() as usize, self.size() - 1);
+        let zindex = usize::min((z * (self.size() - 1) as f32).round() as usize, self.size() - 1);
+
+        let chemical = self.get(xindex as usize, yindex as usize, zindex as usize);
+
+        if chemical == 0 {
+            return 1.0;
+        } else {
+            return -1.0;
+        }
+    }
 }

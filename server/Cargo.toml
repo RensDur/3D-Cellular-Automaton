@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 actix-cors = "0.6.4"
 actix-web = "4.3.1"
-marching-cubes = "0.1.2"
+isosurface = "0.0.4"
 metal = "0.24.0"
 objc = "0.2.7"
 rand = "0.8.5"

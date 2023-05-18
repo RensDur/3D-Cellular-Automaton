@@ -1,3 +1,5 @@
+
+
 pub trait CellularAutomaton3D {
     fn clear_all_voxels(&mut self);
     fn reset(&mut self, size: usize, dc_range: f32, dc_influence: f32, uc_range: f32, uc_influence: f32);
