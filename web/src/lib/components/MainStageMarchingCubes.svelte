@@ -12,6 +12,8 @@
     // THREE.js elements
     let scene: THREE.Scene;
     let renderer: THREE.WebGLRenderer;
+    let ambientLight: THREE.AmbientLight;
+    let pointLight: THREE.PointLight;
     let camera: THREE.PerspectiveCamera;
     let orbitControls: OrbitControls;
 
@@ -26,11 +28,21 @@
 
         // Setup the three.js scene
         scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xf5f5f3);
+        scene.background = new THREE.Color(0xf5f5f5);
 
         // Setup the WebGL renderer
         renderer = new THREE.WebGLRenderer({antialias: true});
         renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.BasicShadowMap;
+
+        ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+        scene.add(ambientLight);
+
+        pointLight = new THREE.PointLight(0xffffff, 1);
+        pointLight.position.set(2*size, 2*size, 2*size);
+        pointLight.castShadow = true;
+        scene.add(pointLight);
 
         // Add the dom-element of the renderer to the container
         containerDiv.appendChild(renderer.domElement);
@@ -64,8 +76,18 @@
         meshGeometry.computeVertexNormals();
         meshGeometry.translate(-size/2, -size/2, -size/2);
 
-        const meshObject = new THREE.Mesh(meshGeometry, new THREE.MeshNormalMaterial());
-        scene.add(meshObject);
+        const meshObjectBackSide = new THREE.Mesh(meshGeometry, new THREE.MeshPhongMaterial({color: "#c2532b", side: THREE.BackSide}));
+        const meshObjectFrontSide = new THREE.Mesh(meshGeometry, new THREE.MeshPhongMaterial({color: "#e3a474", side: THREE.FrontSide}));
+
+        // Set the shadow casting properties
+        meshObjectBackSide.castShadow = true;
+        meshObjectBackSide.receiveShadow = false;
+
+        meshObjectFrontSide.castShadow = true;
+        meshObjectFrontSide.receiveShadow = false;
+
+        scene.add(meshObjectBackSide);
+        scene.add(meshObjectFrontSide);
 
 
         function updateMeshObject() {

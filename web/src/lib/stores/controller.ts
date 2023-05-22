@@ -171,6 +171,12 @@ function createControllerStore() {
             const result = await sendPost("/benchmarks/gpu-shader-increment");
             await updateStore();
             return result;
+        },
+
+        generatePatch: async () => {
+            const result = await sendPost("/general/create-activator-patch");
+            await updateStore();
+            return result;
         }
     }
 }
