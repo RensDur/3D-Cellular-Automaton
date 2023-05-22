@@ -36,63 +36,6 @@ impl GPUCellularAutomaton3D {
         }
     }
 
-    /**
-     * Method: transform this automaton into a mesh using Marching Cubes
-     */
-    pub fn get_marching_cubes_mesh(&self) -> Vec<MeshTriangle> {
-
-        // Create a vector that stores all the triangles that form the surface between the two chemicals.
-        let mut all_triangles: Vec<MeshTriangle> = vec![];
-
-        // Loop over all voxels in the cellular automaton
-        let mut mc = MarchingCubes::new(self.size());
-
-        let mut vertices: Vec<f32> = vec![];
-        let mut indices: Vec<u32> = vec![];
-
-        mc.extract(self, &mut vertices, &mut indices);
-
-        // 'vertices' contains (x, y, z) values in sequential manner
-        // 'indices' creates triangles by indexing three vertices sequentially
-        
-        // 1. Transform 'vertices' into (x,y,z) coordinates (group by 3)
-        if vertices.len() % 3 != 0 {
-            panic!("Marching Cubes: vertices array length not multiple of three");
-        }
-
-        let mut vertices_coords: Vec<[f32; 3]> = vec![];
-
-        for v in (0..vertices.len()).step_by(3) {
-            // v:   x
-            // v+1: y
-            // v+2: z
-            vertices_coords.push([vertices[v] * self.size() as f32, vertices[v+1] * self.size() as f32, vertices[v+2] * self.size() as f32]);
-        }
-
-        // 2. Transform 'indices' into triangles (group by three vertices)
-        if indices.len() % 3 != 0 {
-            panic!("Marching Cubes: indices array length not multiple of three");
-        }
-
-        for i in (0..indices.len()).step_by(3) {
-            // i:   vertex 1
-            // i+1: vertex 2
-            // i+2: vertex 3
-            all_triangles.push(
-                MeshTriangle {
-                    vertices: [
-                        vertices_coords[indices[i] as usize],
-                        vertices_coords[indices[i+1] as usize],
-                        vertices_coords[indices[i+2] as usize]
-                    ]
-                }
-            );
-        }
-
-        all_triangles
-
-    }
-
     // fn export(&self) -> [u8; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE] {
 
     //     let mut res = [0u8; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE];
@@ -411,8 +354,12 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
         self.iteration_count
     }
 
-}
+    fn mc_extract(&self, vertices: &mut Vec<f32>, indices: &mut Vec<u32>) {
+        let mut mc = MarchingCubes::new(self.size());
+        mc.extract(self, vertices, indices);
+    }
 
+}
 
 impl Source for GPUCellularAutomaton3D {
     fn sample(&self, x: f32, y: f32, z: f32) -> f32 {
