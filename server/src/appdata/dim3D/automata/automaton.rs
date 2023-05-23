@@ -1,5 +1,6 @@
-use super::automaton_cpu::MeshTriangle;
+use crate::gltfgeneration::gltf_conversion::generate_gltf;
 
+use super::automaton_cpu::MeshTriangle;
 
 pub trait CellularAutomaton3D {
     fn clear_all_voxels(&mut self);
@@ -49,9 +50,9 @@ pub trait CellularAutomaton3D {
 
     // Methods concerned with Marching Cubes
     fn mc_extract(&self, vertices: &mut Vec<f32>, indices: &mut Vec<u32>);
-    fn get_marching_cubes_mesh(&self) -> Vec<MeshTriangle> {
+    fn get_marching_cubes_mesh(&self) -> String {
         // Create a vector that stores all the triangles that form the surface between the two chemicals.
-        let mut all_triangles: Vec<MeshTriangle> = vec![];
+        let mut all_triangles: Vec<([f32; 3], [f32; 3])> = vec![];
 
         // Loop over all voxels in the cellular automaton
         let mut vertices: Vec<f32> = vec![];
@@ -87,17 +88,19 @@ pub trait CellularAutomaton3D {
             // i:   vertex 1
             // i+1: vertex 2
             // i+2: vertex 3
-            all_triangles.push(
-                MeshTriangle {
-                    vertices: [
-                        vertices_coords[indices[i] as usize],
-                        vertices_coords[indices[i+1] as usize],
-                        vertices_coords[indices[i+2] as usize]
-                    ]
-                }
-            );
+            all_triangles.push((vertices_coords[indices[i] as usize], [0.0, 0.0, 0.0]));
+            all_triangles.push((vertices_coords[indices[i+1] as usize], [0.0, 0.0, 0.0]));
+            all_triangles.push((vertices_coords[indices[i+2] as usize], [0.0, 0.0, 0.0]));
+            //     MeshTriangle {
+            //         vertices: [
+            //             vertices_coords[indices[i] as usize],
+            //             vertices_coords[indices[i+1] as usize],
+            //             vertices_coords[indices[i+2] as usize]
+            //         ]
+            //     }
+            // );
         }
 
-        all_triangles
+        generate_gltf(&all_triangles.as_slice()).unwrap()
     }
 }
