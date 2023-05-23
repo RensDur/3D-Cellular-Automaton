@@ -13,7 +13,8 @@
     let scene: THREE.Scene;
     let renderer: THREE.WebGLRenderer;
     let ambientLight: THREE.AmbientLight;
-    let pointLight: THREE.PointLight;
+    let pointLight1: THREE.PointLight;
+    let pointLight2: THREE.PointLight;
     let camera: THREE.PerspectiveCamera;
     let orbitControls: OrbitControls;
 
@@ -39,10 +40,15 @@
         ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
         scene.add(ambientLight);
 
-        pointLight = new THREE.PointLight(0xffffff, 1);
-        pointLight.position.set(2*size, 2*size, 2*size);
-        pointLight.castShadow = true;
-        scene.add(pointLight);
+        pointLight1 = new THREE.PointLight(0xffffff, 1);
+        pointLight1.position.set(2*size, 2*size, 2*size);
+        pointLight1.castShadow = true;
+        scene.add(pointLight1);
+
+        pointLight2 = new THREE.PointLight(0xffffff, 1);
+        pointLight2.position.set(-2*size, -2*size, -2*size);
+        pointLight2.castShadow = true;
+        scene.add(pointLight2);
 
         // Add the dom-element of the renderer to the container
         containerDiv.appendChild(renderer.domElement);
