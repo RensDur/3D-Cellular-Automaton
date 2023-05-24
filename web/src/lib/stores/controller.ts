@@ -30,7 +30,9 @@ function createControllerStore() {
             method: "GET"
         });
 
-        return await response.text();
+        const res = await response.json();
+        
+        return res;
     }
 
     async function updateStore() {
@@ -95,6 +97,10 @@ function createControllerStore() {
 
         getWorkingDevice: () => {
             return workingAddress;
+        },
+
+        getGltfUrl: () => {
+            return serverAddress + "/" + workingAddress + "/get-current-state-triangles"
         },
 
         /**

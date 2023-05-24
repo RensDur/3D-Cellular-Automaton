@@ -68,6 +68,8 @@ pub fn generate_gltf(triangle_vertices: &[([f32; 3], [f32; 3])]) -> Result<Strin
 	let triangle_vertices: Vec<Vertex> = triangle_vertices.iter().map(|v| Vertex { position: v.0, color: v.1 }).collect();
 	let triangle_vertices_len = triangle_vertices.len();
 
+	println!("Triangle vertices length: {}", triangle_vertices_len);
+
 	let bounding_coords = BoundingCoords::from_points(&triangle_vertices)?;
 
 	let bin_content = to_padded_byte_vector(triangle_vertices);
@@ -171,5 +173,5 @@ pub fn generate_gltf(triangle_vertices: &[([f32; 3], [f32; 3])]) -> Result<Strin
 		..Default::default()
 	};
 
-	json::serialize::to_string_pretty(&root).into_diagnostic()
+	json::serialize::to_string(&root).into_diagnostic()
 }

@@ -5,6 +5,7 @@
 	import { onMount } from "svelte";
     import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
+    import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
     import { controller } from "$lib/stores/controller";
 
     // DOM bindings
@@ -12,6 +13,12 @@
 
     // THREE.js elements
     let gltfLoader = new GLTFLoader();
+
+    // Optional: Provide a DRACOLoader instance to decode compressed mesh data
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath( '/examples/jsm/libs/draco/' );
+    gltfLoader.setDRACOLoader( dracoLoader );
+
     let scene: THREE.Scene;
     let renderer: THREE.WebGLRenderer;
     let ambientLight: THREE.AmbientLight;
@@ -83,12 +90,13 @@
         scene.add(outline);
 
         // Add the mesh for the Cellullar Automaton
-        gltfLoader.parse(
-            $controller.getMarchingCubesGltf(),
-
-            '',
+        gltfLoader.load(
+            controller.getGltfUrl(),
 
             function (gltf: GLTF) {
+                console.log("This is the gltf:");
+                console.log(gltf);
+
                 meshGeometry = gltf.scene.children[0].geometry;
                 meshGeometry.computeVertexNormals();
                 meshGeometry.translate(-size/2, -size/2, -size/2);
@@ -110,12 +118,13 @@
 
 
         function updateMeshObject() {
-            gltfLoader.parse(
-                $controller.getMarchingCubesGltf(),
-
-                '',
+            gltfLoader.load(
+                controller.getGltfUrl(),
 
                 function (gltf: GLTF) {
+                    console.log("This is the gltf:");
+                    console.log(gltf);
+
                     meshGeometry = gltf.scene.children[0].geometry;
                     meshGeometry.computeVertexNormals();
                     meshGeometry.translate(-size/2, -size/2, -size/2);
