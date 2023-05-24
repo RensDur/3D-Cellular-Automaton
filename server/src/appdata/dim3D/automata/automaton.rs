@@ -101,6 +101,10 @@ pub trait CellularAutomaton3D {
             // );
         }
 
-        generate_gltf(&all_triangles.as_slice()).unwrap()
+        if all_triangles.len() > 0 {
+            return generate_gltf(&all_triangles.as_slice()).unwrap();
+        }
+
+        String::from("")
     }
 }
