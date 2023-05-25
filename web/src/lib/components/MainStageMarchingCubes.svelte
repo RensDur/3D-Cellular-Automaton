@@ -113,6 +113,12 @@
 
                 scene.add(meshObjectBackSide);
                 scene.add(meshObjectFrontSide);
+            },
+            
+            undefined,
+
+            function(event: ErrorEvent) {
+                
             }
         );
 
@@ -131,6 +137,12 @@
 
                     meshObjectBackSide.geometry = meshGeometry;
                     meshObjectFrontSide.geometry = meshGeometry;
+                },
+            
+                undefined,
+
+                function(event: ErrorEvent) {
+                    
                 }
             );
         }
