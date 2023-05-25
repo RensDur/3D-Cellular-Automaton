@@ -4,12 +4,21 @@
 	import { SliceMovement } from "$lib/data/SliceMovement";
 	import { onMount } from "svelte";
     import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+    import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
+    import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
     import { controller } from "$lib/stores/controller";
 
     // DOM bindings
     let containerDiv: HTMLDivElement;
 
     // THREE.js elements
+    let gltfLoader = new GLTFLoader();
+
+    // Optional: Provide a DRACOLoader instance to decode compressed mesh data
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath( '/examples/jsm/libs/draco/' );
+    gltfLoader.setDRACOLoader( dracoLoader );
+
     let scene: THREE.Scene;
     let renderer: THREE.WebGLRenderer;
     let ambientLight: THREE.AmbientLight;
@@ -17,6 +26,10 @@
     let pointLight2: THREE.PointLight;
     let camera: THREE.PerspectiveCamera;
     let orbitControls: OrbitControls;
+
+    let meshGeometry: any;
+    let meshObjectBackSide: any;
+    let meshObjectFrontSide: any;
 
     // THREE.js behaviour variables
     let size: number = 20;
@@ -76,33 +89,74 @@
 
         scene.add(outline);
 
-        // Add the mesh for the Cellullar Automaton
-        let meshGeometry = new THREE.BufferGeometry();
-        meshGeometry.setAttribute("position", new THREE.Float32BufferAttribute($controller.exportMCMeshPositions(), 3));
-        meshGeometry.computeVertexNormals();
-        meshGeometry.translate(-size/2, -size/2, -size/2);
+        function initGltf() {
+            // Add the mesh for the Cellullar Automaton
+            gltfLoader.load(
+                controller.getGltfUrl(),
 
-        const meshObjectBackSide = new THREE.Mesh(meshGeometry, new THREE.MeshPhongMaterial({color: "#c2532b", side: THREE.BackSide}));
-        const meshObjectFrontSide = new THREE.Mesh(meshGeometry, new THREE.MeshPhongMaterial({color: "#e3a474", side: THREE.FrontSide}));
+                function (gltf: GLTF) {
+                    console.log("This is the gltf:");
+                    console.log(gltf);
 
-        // Set the shadow casting properties
-        meshObjectBackSide.castShadow = true;
-        meshObjectBackSide.receiveShadow = false;
+                    meshGeometry = gltf.scene.children[0].geometry;
+                    meshGeometry.computeVertexNormals();
+                    meshGeometry.translate(-size/2, -size/2, -size/2);
 
-        meshObjectFrontSide.castShadow = true;
-        meshObjectFrontSide.receiveShadow = false;
+                    meshObjectBackSide = new THREE.Mesh(meshGeometry, new THREE.MeshPhongMaterial({color: "#c2532b", side: THREE.BackSide}));
+                    meshObjectFrontSide = new THREE.Mesh(meshGeometry, new THREE.MeshPhongMaterial({color: "#e3a474", side: THREE.FrontSide}));
 
-        scene.add(meshObjectBackSide);
-        scene.add(meshObjectFrontSide);
+                    // Set the shadow casting properties
+                    meshObjectBackSide.castShadow = true;
+                    meshObjectBackSide.receiveShadow = false;
 
+                    meshObjectFrontSide.castShadow = true;
+                    meshObjectFrontSide.receiveShadow = false;
+
+                    scene.add(meshObjectBackSide);
+                    scene.add(meshObjectFrontSide);
+                },
+                
+                undefined,
+
+                function(event: ErrorEvent) {
+                    console.error(event);
+                }
+            );
+        }
+
+        // Attempt to initialise the gltf immediately
+        initGltf();
 
         function updateMeshObject() {
-            meshGeometry.setAttribute("position", new THREE.Float32BufferAttribute($controller.exportMCMeshPositions(), 3));
-            meshGeometry.computeVertexNormals();
-            meshGeometry.translate(-size/2, -size/2, -size/2);
 
-            console.log("meshGeometry: ");
-            console.log(meshGeometry);
+            if (!meshGeometry) {
+                // If this is the first time loading the gltf, initialise all the variables
+                initGltf();
+
+            } else {
+                // Else, just update the geometry
+                gltfLoader.load(
+                    controller.getGltfUrl(),
+
+                    function (gltf: GLTF) {
+                        console.log("This is the gltf:");
+                        console.log(gltf);
+
+                        meshGeometry = gltf.scene.children[0].geometry;
+                        meshGeometry.computeVertexNormals();
+                        meshGeometry.translate(-size/2, -size/2, -size/2);
+
+                        meshObjectBackSide.geometry = meshGeometry;
+                        meshObjectFrontSide.geometry = meshGeometry;
+                    },
+                
+                    undefined,
+
+                    function(event: ErrorEvent) {
+                        console.error(event);
+                    }
+                );
+            }
         }
 
 

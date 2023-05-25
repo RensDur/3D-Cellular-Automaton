@@ -24,11 +24,9 @@ async fn gpu_get_current_state_triangles(state: web::Data<Mutex<CAAppData>>) -> 
     // Create a list of triangles according to the marching cubes algorithm
     let triangles = state_mod.gpu_ca.get_marching_cubes_mesh();
 
-    let response = web::Json(triangles);
-
     drop(state_mod);
 
-    Ok(response)
+    Ok(triangles)
 }
 
 #[get("/gpu/get-iterations")]
