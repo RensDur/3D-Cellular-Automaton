@@ -62,6 +62,8 @@ pub trait CellularAutomaton3D {
         // that's part of this contract.
         self.mc_extract(&mut vertices, &mut indices);
 
+        println!("Vertices and indices extracted:\n\tVertices: {}\n\tIndices: {}", vertices.len(), indices.len());
+
         // 'vertices' contains (x, y, z) values in sequential manner
         // 'indices' creates triangles by indexing three vertices sequentially
         
