@@ -1,9 +1,16 @@
 use std::sync::Mutex;
 
 use actix_web::{get, web, Responder, Result};
+use serde::Deserialize;
 use crate::{CAAppData, appdata::dim3d::automata::automaton::CellularAutomaton3D};
 
-
+#[derive(Deserialize)]
+pub struct InfoGetChunk {
+    split: usize,
+    chunkx: usize,
+    chunky: usize,
+    chunkz: usize
+}
 
 
 #[get("/cpu/get-current-state")]
@@ -26,6 +33,22 @@ async fn cpu_get_current_state_triangles(state: web::Data<Mutex<CAAppData>>) -> 
 
     Ok(triangles)
 }
+
+#[get("/cpu/get-current-state-triangles-chunk")]
+async fn cpu_get_current_state_triangles_chunk(state: web::Data<Mutex<CAAppData>>, info: web::Json<InfoGetChunk>) -> Result<impl Responder> {
+
+    let state_mod = state.lock().unwrap();
+
+    let ca_chunk = state_mod.cpu_ca.get_chunk(info.split, (info.chunkx, info.chunky, info.chunkz));
+
+    // Create a gltf for this chunk and return it to the client
+    let triangles = ca_chunk.get_marching_cubes_mesh();
+
+    drop(state_mod);
+
+    Ok(triangles)
+}
+
 
 #[get("/cpu/get-iterations")]
 async fn cpu_get_iterations(state: web::Data<Mutex<CAAppData>>) -> Result<impl Responder> {

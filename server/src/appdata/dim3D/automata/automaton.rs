@@ -1,6 +1,6 @@
 use crate::gltfgeneration::gltf_conversion::generate_gltf;
 
-use super::automaton_cpu::MeshTriangle;
+use super::{automaton_cpu::MeshTriangle, automaton_chunk::CellularAutomaton3DChunk};
 
 pub trait CellularAutomaton3D {
     fn clear_all_voxels(&mut self);
@@ -50,6 +50,26 @@ pub trait CellularAutomaton3D {
 
     // Methods concerned with Marching Cubes
     fn mc_extract(&self, vertices: &mut Vec<f32>, indices: &mut Vec<u32>);
+    fn get_chunk(&self, split: usize, chunk: (usize, usize, usize)) -> CellularAutomaton3DChunk {
+
+        let chunksize = self.size() / split;
+
+        let xoffset = chunk.0 * chunksize;
+        let yoffset = chunk.1 * chunksize;
+        let zoffset = chunk.2 * chunksize;
+
+        let mut ca_chunk = CellularAutomaton3DChunk::new(chunksize);
+
+        for x in 0..chunksize {
+            for y in 0..chunksize {
+                for z in 0..chunksize {
+                    ca_chunk.set(x, y, z, self.get(x + xoffset, y + yoffset, z + zoffset));
+                }
+            }
+        }
+
+        ca_chunk
+    }
     fn get_marching_cubes_mesh(&self) -> String {
         // Create a vector that stores all the triangles that form the surface between the two chemicals.
         let mut all_triangles: Vec<([f32; 3], [f32; 3])> = vec![];
