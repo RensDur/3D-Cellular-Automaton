@@ -1,16 +1,8 @@
 use std::sync::Mutex;
 
-use actix_web::{get, web, Responder, Result};
+use actix_web::{get, web, Responder, Result, HttpRequest};
 use serde::Deserialize;
 use crate::{CAAppData, appdata::dim3d::automata::automaton::CellularAutomaton3D};
-
-#[derive(Deserialize)]
-pub struct InfoGetChunk {
-    split: usize,
-    chunkx: usize,
-    chunky: usize,
-    chunkz: usize
-}
 
 
 #[get("/cpu/get-current-state")]
@@ -34,12 +26,17 @@ async fn cpu_get_current_state_triangles(state: web::Data<Mutex<CAAppData>>) -> 
     Ok(triangles)
 }
 
-#[get("/cpu/get-current-state-triangles-chunk")]
-async fn cpu_get_current_state_triangles_chunk(state: web::Data<Mutex<CAAppData>>, info: web::Json<InfoGetChunk>) -> Result<impl Responder> {
+#[get("/cpu/get-current-state-triangles-chunk/{split}/{chunkx}/{chunky}/{chunkz}")]
+async fn cpu_get_current_state_triangles_chunk(state: web::Data<Mutex<CAAppData>>, req: HttpRequest) -> Result<impl Responder> {
+
+    let split = req.match_info().query("split").parse().unwrap();
+    let chunkx = req.match_info().query("chunkx").parse().unwrap();
+    let chunky = req.match_info().query("chunky").parse().unwrap();
+    let chunkz = req.match_info().query("chunkz").parse().unwrap();
 
     let state_mod = state.lock().unwrap();
 
-    let ca_chunk = state_mod.cpu_ca.get_chunk(info.split, (info.chunkx, info.chunky, info.chunkz));
+    let ca_chunk = state_mod.cpu_ca.get_chunk(split, (chunkx, chunky, chunkz));
 
     // Create a gltf for this chunk and return it to the client
     let triangles = ca_chunk.get_marching_cubes_mesh();

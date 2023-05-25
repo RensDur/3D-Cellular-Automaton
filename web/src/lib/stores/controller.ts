@@ -103,6 +103,10 @@ function createControllerStore() {
             return serverAddress + "/" + workingAddress + "/get-current-state-triangles"
         },
 
+        getGltfChunkUrl: (split: number, chunk: [number, number, number]) => {
+            return serverAddress + "/" + workingAddress + "/get-current-state-triangles-chunk/" + split.toString() + "/" + chunk[0].toString() + "/" + chunk[1].toString() + "/" + chunk[2].toString();
+        },
+
         /**
          * Method: initialise wasm
          */

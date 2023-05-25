@@ -7,6 +7,24 @@
     import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
     import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
     import { controller } from "$lib/stores/controller";
+	import { ChunkGeometry } from "$lib/classes/ChunkGeometry";
+
+    // CONSTANTS
+    const chunkSplit = 2;
+
+    // GLTF Chunks
+    let gltfChunks: ChunkGeometry[][][] = [];
+
+    // Initialise the gltf chunks
+    for (let x = 0; x < chunkSplit; x++) {
+        gltfChunks.push([]);
+        for (let y = 0; y < chunkSplit; y++) {
+            gltfChunks[x].push([]);
+            for (let z = 0; z < chunkSplit; z++) {
+                gltfChunks[x][y].push(new ChunkGeometry());
+            }
+        }
+    }
 
     // DOM bindings
     let containerDiv: HTMLDivElement;
@@ -89,75 +107,29 @@
 
         scene.add(outline);
 
-        function initGltf() {
-            // Add the mesh for the Cellullar Automaton
-            gltfLoader.load(
-                controller.getGltfUrl(),
-
-                function (gltf: GLTF) {
-                    console.log("This is the gltf:");
-                    console.log(gltf);
-
-                    meshGeometry = gltf.scene.children[0].geometry;
-                    meshGeometry.computeVertexNormals();
-                    meshGeometry.translate(-size/2, -size/2, -size/2);
-
-                    meshObjectBackSide = new THREE.Mesh(meshGeometry, new THREE.MeshPhongMaterial({color: "#c2532b", side: THREE.BackSide}));
-                    meshObjectFrontSide = new THREE.Mesh(meshGeometry, new THREE.MeshPhongMaterial({color: "#e3a474", side: THREE.FrontSide}));
-
-                    // Set the shadow casting properties
-                    meshObjectBackSide.castShadow = true;
-                    meshObjectBackSide.receiveShadow = false;
-
-                    meshObjectFrontSide.castShadow = true;
-                    meshObjectFrontSide.receiveShadow = false;
-
-                    scene.add(meshObjectBackSide);
-                    scene.add(meshObjectFrontSide);
-                },
-                
-                undefined,
-
-                function(event: ErrorEvent) {
-                    console.error(event);
-                }
-            );
-        }
-
-        // Attempt to initialise the gltf immediately
-        initGltf();
-
         function updateMeshObject() {
 
-            if (!meshGeometry) {
-                // If this is the first time loading the gltf, initialise all the variables
-                initGltf();
+            const translateStep = size / chunkSplit;
 
-            } else {
-                // Else, just update the geometry
-                gltfLoader.load(
-                    controller.getGltfUrl(),
-
-                    function (gltf: GLTF) {
-                        console.log("This is the gltf:");
-                        console.log(gltf);
-
-                        meshGeometry = gltf.scene.children[0].geometry;
-                        meshGeometry.computeVertexNormals();
-                        meshGeometry.translate(-size/2, -size/2, -size/2);
-
-                        meshObjectBackSide.geometry = meshGeometry;
-                        meshObjectFrontSide.geometry = meshGeometry;
-                    },
-                
-                    undefined,
-
-                    function(event: ErrorEvent) {
-                        console.error(event);
+            for (let x = 0; x < chunkSplit; x++) {
+                for (let y = 0; y < chunkSplit; y++) {
+                    for (let z = 0; z < chunkSplit; z++) {
+                        // Use the gltf-loader to get gltf data from the server
+                        gltfLoader.load(
+                            controller.getGltfChunkUrl(chunkSplit, [x, y, z]),
+                            function (gltf) {
+                                gltfChunks[x][y][z].update(gltf, scene);
+                                gltfChunks[x][y][z].translateNeg(x * translateStep, y * translateStep, z * translateStep);
+                            }
+                        )
                     }
-                );
+                }
             }
+            
         }
+
+        // Attempt to update the mesh immediately
+        updateMeshObject();
 
 
         function animate() {
