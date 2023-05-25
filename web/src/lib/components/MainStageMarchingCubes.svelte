@@ -89,41 +89,8 @@
 
         scene.add(outline);
 
-        // Add the mesh for the Cellullar Automaton
-        gltfLoader.load(
-            controller.getGltfUrl(),
-
-            function (gltf: GLTF) {
-                console.log("This is the gltf:");
-                console.log(gltf);
-
-                meshGeometry = gltf.scene.children[0].geometry;
-                meshGeometry.computeVertexNormals();
-                meshGeometry.translate(-size/2, -size/2, -size/2);
-
-                meshObjectBackSide = new THREE.Mesh(meshGeometry, new THREE.MeshPhongMaterial({color: "#c2532b", side: THREE.BackSide}));
-                meshObjectFrontSide = new THREE.Mesh(meshGeometry, new THREE.MeshPhongMaterial({color: "#e3a474", side: THREE.FrontSide}));
-
-                // Set the shadow casting properties
-                meshObjectBackSide.castShadow = true;
-                meshObjectBackSide.receiveShadow = false;
-
-                meshObjectFrontSide.castShadow = true;
-                meshObjectFrontSide.receiveShadow = false;
-
-                scene.add(meshObjectBackSide);
-                scene.add(meshObjectFrontSide);
-            },
-            
-            undefined,
-
-            function(event: ErrorEvent) {
-                
-            }
-        );
-
-
-        function updateMeshObject() {
+        function initGltf() {
+            // Add the mesh for the Cellullar Automaton
             gltfLoader.load(
                 controller.getGltfUrl(),
 
@@ -135,16 +102,61 @@
                     meshGeometry.computeVertexNormals();
                     meshGeometry.translate(-size/2, -size/2, -size/2);
 
-                    meshObjectBackSide.geometry = meshGeometry;
-                    meshObjectFrontSide.geometry = meshGeometry;
+                    meshObjectBackSide = new THREE.Mesh(meshGeometry, new THREE.MeshPhongMaterial({color: "#c2532b", side: THREE.BackSide}));
+                    meshObjectFrontSide = new THREE.Mesh(meshGeometry, new THREE.MeshPhongMaterial({color: "#e3a474", side: THREE.FrontSide}));
+
+                    // Set the shadow casting properties
+                    meshObjectBackSide.castShadow = true;
+                    meshObjectBackSide.receiveShadow = false;
+
+                    meshObjectFrontSide.castShadow = true;
+                    meshObjectFrontSide.receiveShadow = false;
+
+                    scene.add(meshObjectBackSide);
+                    scene.add(meshObjectFrontSide);
                 },
-            
+                
                 undefined,
 
                 function(event: ErrorEvent) {
-                    
+                    console.error(event);
                 }
             );
+        }
+
+        // Attempt to initialise the gltf immediately
+        initGltf();
+
+        function updateMeshObject() {
+
+            if (!meshGeometry) {
+                // If this is the first time loading the gltf, initialise all the variables
+                initGltf();
+
+            } else {
+                // Else, just update the geometry
+                gltfLoader.load(
+                    controller.getGltfUrl(),
+
+                    function (gltf: GLTF) {
+                        console.log("This is the gltf:");
+                        console.log(gltf);
+
+                        meshGeometry = gltf.scene.children[0].geometry;
+                        meshGeometry.computeVertexNormals();
+                        meshGeometry.translate(-size/2, -size/2, -size/2);
+
+                        meshObjectBackSide.geometry = meshGeometry;
+                        meshObjectFrontSide.geometry = meshGeometry;
+                    },
+                
+                    undefined,
+
+                    function(event: ErrorEvent) {
+                        console.error(event);
+                    }
+                );
+            }
         }
 
 

@@ -107,6 +107,6 @@ pub trait CellularAutomaton3D {
             return generate_gltf(&all_triangles.as_slice()).unwrap();
         }
 
-        String::from("")
+        String::from("{}")
     }
 }
