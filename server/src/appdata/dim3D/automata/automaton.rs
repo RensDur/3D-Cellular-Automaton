@@ -33,6 +33,11 @@ pub trait CellularAutomaton3D {
             return false;
         }
 
+        // If the automata are at a different iteration-count, they can't be equal
+        if self.get_iteration_count() != other.get_iteration_count() {
+            return false;
+        }
+
         // Otherwise, continue and check the values of every cell
         for x in 0..self.size() {
             for y in 0..self.size() {
