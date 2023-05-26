@@ -8,7 +8,7 @@ use crate::appdata::dim3d::automata::automaton_gpu::GPUCellularAutomaton3D;
 use crate::CAAppData;
 
 #[derive(Deserialize)]
-pub struct InfoGetChunk {
+pub struct ChunkInfo {
     split: usize,
     chunkx: usize,
     chunky: usize,
@@ -36,13 +36,13 @@ async fn gpu_get_current_state_triangles(state: web::Data<Mutex<CAAppData>>) -> 
     Ok(triangles)
 }
 
-#[get("/gpu/get-current-state-triangles-chunk{split}/{chunkx}/{chunky}/{chunkz}")]
-async fn gpu_get_current_state_triangles_chunk(state: web::Data<Mutex<CAAppData>>, req: HttpRequest) -> Result<impl Responder> {
+#[get("/gpu/get-current-state-triangles-chunk/{split}/{chunkx}/{chunky}/{chunkz}")]
+async fn gpu_get_current_state_triangles_chunk(state: web::Data<Mutex<CAAppData>>, info: web::Path<ChunkInfo>) -> Result<impl Responder> {
 
-    let split = req.match_info().query("split").parse().unwrap();
-    let chunkx = req.match_info().query("chunkx").parse().unwrap();
-    let chunky = req.match_info().query("chunky").parse().unwrap();
-    let chunkz = req.match_info().query("chunkz").parse().unwrap();
+    let split = info.split;
+    let chunkx = info.chunkx;
+    let chunky = info.chunky;
+    let chunkz = info.chunkz;
 
     let state_mod = state.lock().unwrap();
 
