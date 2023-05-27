@@ -316,21 +316,22 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
 
             
             
-            let width = 50*50;
+            let width = pipeline_state.thread_execution_width();
+            let height = pipeline_state.max_total_threads_per_threadgroup() / width;
 
-            let thread_group_count = MTLSize {
+            let threads_per_grid = MTLSize {
+                width: (data.len() as u64),
+                height: 1,
+                depth: 1,
+            };
+
+            let threads_per_thread_group = MTLSize {
                 width,
-                height: 1,
+                height,
                 depth: 1,
             };
 
-            let thread_group_size = MTLSize {
-                width: (data.len() as u64 + width) / width,
-                height: 1,
-                depth: 1,
-            };
-
-            encoder.dispatch_thread_groups(thread_group_count, thread_group_size);
+            encoder.dispatch_threads(threads_per_grid, threads_per_thread_group);
             encoder.end_encoding();
             command_buffer.commit();
             command_buffer.wait_until_completed();

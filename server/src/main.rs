@@ -7,12 +7,12 @@ use std::sync::Mutex;
 use actix_cors::Cors;
 use actix_web::{App, HttpServer, web};
 use routes::{debug_routes::*, cpu_get::*, cpu_post::*, gpu_get::*, gpu_post::*, general_post::*, benchmarks::{compare_cpu_gpu::{benchmarks_compare_cpu_gpu, benchmarks_compare_cpu_gpu_catch_up}, gpu_shader_increment::benchmarks_gpu_shader_increment}};
-use appdata::dim3d::automata::automaton_cpu::CPUCellularAutomaton3D;
+use appdata::dim3d::automata::{automaton_cpu::CPUCellularAutomaton3D, automaton::CellularAutomaton3D};
 use appdata::dim3d::automata::automaton_gpu::GPUCellularAutomaton3D;
 
 use serde::{Serialize, Deserialize};
 
-pub const AUTOMATON_SIZE: usize = 20;
+pub const AUTOMATON_SIZE: usize = 50;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct CAAppData {
@@ -32,7 +32,14 @@ impl CAAppData {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
 
-    let app_state = web::Data::new(Mutex::new(CAAppData::new(3.2, 1.0, 6.0, -0.18)));
+    let mut ca_app_data = CAAppData::new(3.2, 1.0, 6.0, -0.18);
+
+    ca_app_data.gpu_ca.spread_chemicals_randomly(2);
+    for _ in 0..50 {
+        ca_app_data.gpu_ca.run_iteration();
+    }
+
+    let app_state = web::Data::new(Mutex::new(ca_app_data));
 
     HttpServer::new(move || {
         App::new()

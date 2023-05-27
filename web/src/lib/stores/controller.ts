@@ -9,7 +9,7 @@ function createControllerStore() {
     const { subscribe, set, update } = writable<Grid3D>();
 
     const serverAddress = "http://localhost:7878";
-    let workingAddress = "cpu";
+    let workingAddress = "gpu";
 
     async function getCurrentGridFromServer() {
         const response = await fetch(serverAddress + "/" + workingAddress + "/get-current-state", {
@@ -146,6 +146,16 @@ function createControllerStore() {
             await updateStore();
 
             console.log("Calculated 5 iterations in " + String(duration.duration) + " seconds")
+        },
+
+        /**
+         * Method: run twenty iterations of the algorithm
+         */
+        run20Iterations: async () => {
+            const duration = await sendDevicePostWithJson("/run-iteration", {num_iterations: 20});
+            await updateStore();
+
+            console.log("Calculated 20 iterations in " + String(duration.duration) + " seconds")
         },
 
         /**
