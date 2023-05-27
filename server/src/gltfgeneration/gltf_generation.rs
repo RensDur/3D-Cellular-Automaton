@@ -56,7 +56,7 @@ fn to_padded_byte_vector<T>(vec: Vec<T>) -> Vec<u8> {
 	new_vec
 }
 
-pub fn generage_large_gltf(input_vertices: &[[f32;3]]) -> Result<String> {
+pub fn generate_large_gltf(input_vertices: &[[f32;3]]) -> Result<String> {
 
     let vertices_per_buffer: usize = 60000;
 
