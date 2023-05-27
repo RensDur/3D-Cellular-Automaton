@@ -27,9 +27,9 @@
     let camera: THREE.PerspectiveCamera;
     let orbitControls: OrbitControls;
 
-    let meshGeometry: any;
-    let meshObjectBackSide: any;
-    let meshObjectFrontSide: any;
+    let meshGeometries: any[] = [];
+    let meshObjectsBackSide: any[] = [];
+    let meshObjectsFrontSide: any[] = [];
 
     // THREE.js behaviour variables
     let size: number = 20;
@@ -98,22 +98,44 @@
                     console.log("This is the gltf:");
                     console.log(gltf);
 
-                    meshGeometry = gltf.scene.children[0].geometry;
-                    meshGeometry.computeVertexNormals();
-                    meshGeometry.translate(-size/2, -size/2, -size/2);
+                    // Remove existing geometries from the scene, if there are any
+                    for (let i = 0; i < meshGeometries.length; i++) {
+                        scene.remove(meshObjectsFrontSide[i]);
+                        scene.remove(meshObjectsBackSide[i]);
+                    }
 
-                    meshObjectBackSide = new THREE.Mesh(meshGeometry, new THREE.MeshPhongMaterial({color: "#c2532b", side: THREE.BackSide}));
-                    meshObjectFrontSide = new THREE.Mesh(meshGeometry, new THREE.MeshPhongMaterial({color: "#e3a474", side: THREE.FrontSide}));
+                    meshGeometries = [];
+                    meshObjectsFrontSide = [];
+                    meshObjectsBackSide = [];
 
-                    // Set the shadow casting properties
-                    meshObjectBackSide.castShadow = true;
-                    meshObjectBackSide.receiveShadow = false;
+                    let geometriesToCover = [];
 
-                    meshObjectFrontSide.castShadow = true;
-                    meshObjectFrontSide.receiveShadow = false;
+                    if (gltf.scene.children[0].geometry) {
+                        geometriesToCover.push(gltf.scene.children[0].geometry);
+                    } else {
+                        for (let i = 0; i < gltf.scene.children[0].children.length; i++) {
+                            geometriesToCover.push(gltf.scene.children[0].children[i].geometry);
+                        }
+                    }
 
-                    scene.add(meshObjectBackSide);
-                    scene.add(meshObjectFrontSide);
+                    for (let i = 0; i < geometriesToCover.length; i++) {
+                        meshGeometries.push(geometriesToCover[i]);
+                        meshGeometries[i].computeVertexNormals();
+                        meshGeometries[i].translate(-size/2, -size/2, -size/2);
+
+                        meshObjectsFrontSide.push(new THREE.Mesh(meshGeometries[i], new THREE.MeshPhongMaterial({color: "#e3a474", side: THREE.FrontSide})));
+                        meshObjectsBackSide.push(new THREE.Mesh(meshGeometries[i], new THREE.MeshPhongMaterial({color: "#c2532b", side: THREE.BackSide})));
+
+                        // Set the shadow casting properties
+                        meshObjectsFrontSide[i].castShadow = true;
+                        meshObjectsFrontSide[i].receiveShadow = false;
+
+                        meshObjectsBackSide[i].castShadow = true;
+                        meshObjectsBackSide[i].receiveShadow = false;
+
+                        scene.add(meshObjectsFrontSide[i]);
+                        scene.add(meshObjectsBackSide[i]);
+                    }
                 },
                 
                 undefined,
@@ -126,38 +148,6 @@
 
         // Attempt to initialise the gltf immediately
         initGltf();
-
-        function updateMeshObject() {
-
-            if (!meshGeometry) {
-                // If this is the first time loading the gltf, initialise all the variables
-                initGltf();
-
-            } else {
-                // Else, just update the geometry
-                gltfLoader.load(
-                    controller.getGltfUrl(),
-
-                    function (gltf: GLTF) {
-                        console.log("This is the gltf:");
-                        console.log(gltf);
-
-                        meshGeometry = gltf.scene.children[0].geometry;
-                        meshGeometry.computeVertexNormals();
-                        meshGeometry.translate(-size/2, -size/2, -size/2);
-
-                        meshObjectBackSide.geometry = meshGeometry;
-                        meshObjectFrontSide.geometry = meshGeometry;
-                    },
-                
-                    undefined,
-
-                    function(event: ErrorEvent) {
-                        console.error(event);
-                    }
-                );
-            }
-        }
 
 
         function animate() {
@@ -172,7 +162,7 @@
             if ($controller != previouslyRenderedGrid) {
 
                 // Update the displayed mesh
-                updateMeshObject();
+                initGltf();
 
                 // Register the current controller state
                 previouslyRenderedGrid = $controller;
