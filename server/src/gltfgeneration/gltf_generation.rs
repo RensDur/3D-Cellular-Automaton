@@ -128,12 +128,48 @@ pub fn generage_large_gltf(input_vertices: &[[f32;3]]) -> Result<String> {
 
     let mut buffer_views: Vec<json::buffer::View> = vec![];
 
+    // For each buffer
+    for buf in 0..buffers.len() {
+        // Add a view that references this buffer and push it to the array
+        buffer_views.push(json::buffer::View {
+            buffer: json::Index::new(buf as u32),
+            byte_length: buffers[buf].byte_length,
+            byte_offset: None,
+            byte_stride: Some(mem::size_of::<Vertex>() as u32),
+            extensions: Default::default(),
+            extras: Default::default(),
+            target: Some(Valid(json::buffer::Target::ArrayBuffer))
+        });
+    }
+
 
     //
     // CREATE AN ACCESSOR FOR EACH BUFFER THAT CONTAINS 60.000 POINTS
     //
 
-    let accessors: Vec<json::Accessor> = vec![];
+    let mut accessors: Vec<json::Accessor> = vec![];
+
+    // For each buffer-view, create an accessor
+    // includes:
+    // - The number of triangles in that buffer (count)
+    // - The min and max bounding coordinates
+
+    for bufview in 0..buffer_views.len() {
+        // Add an accessor
+        accessors.push(json::Accessor {
+            buffer_view: Some(json::Index::new(bufview as u32)),
+            byte_offset: 0,
+            count: vertices[bufview].len() as u32,
+            component_type: Valid(json::accessor::GenericComponentType(json::accessor::ComponentType::F32)),
+            extensions: Default::default(),
+            extras: Default::default(),
+            type_: Valid(json::accessor::Type::Vec3),
+            min: Some(json::Value::from(Vec::from(bounding_coords[bufview].min))),
+            max: Some(json::Value::from(Vec::from(bounding_coords[bufview].max))),
+            normalized: false,
+            sparse: None
+        });
+    }
 
 
     //
@@ -148,7 +184,25 @@ pub fn generage_large_gltf(input_vertices: &[[f32;3]]) -> Result<String> {
     // CREATE PRIMITIVES FOR EACH ACCESSOR
     //
 
-    let primitives: Vec<json::mesh::Primitive> = vec![];
+    let mut primitives: Vec<json::mesh::Primitive> = vec![];
+
+    // For each accessor, create a primitive that references the
+    // right positions
+    for acc in 0..accessors.len() {
+        primitives.push(json::mesh::Primitive {
+            attributes: {
+                let mut map = std::collections::HashMap::new();
+                map.insert(Valid(json::mesh::Semantic::Positions), json::Index::new(acc as u32));
+                map
+            },
+            extensions: Default::default(),
+            extras: Default::default(),
+            indices: None,
+            material: Some(json::Index::new(0)),
+            mode: Valid(json::mesh::Mode::Triangles),
+            targets: None
+        });
+    }
 
 
     // Create a mesh from all the generated primitives
