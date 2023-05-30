@@ -11,7 +11,7 @@
     let simdev: string;
 
     // Toggle attachers
-    let deviceToggleAttach = 0;
+    let deviceToggleAttach = 1;
 
     // Feedback message binders
     let benchmarkCorrectnessFeedback = "Start benchmark to receive feedback";

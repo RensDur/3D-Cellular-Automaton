@@ -1,4 +1,5 @@
 use crate::gltfgeneration::gltf_conversion::generate_gltf;
+use crate::gltfgeneration::gltf_generation::generate_large_gltf;
 
 use super::automaton_cpu::MeshTriangle;
 
@@ -57,7 +58,7 @@ pub trait CellularAutomaton3D {
     fn mc_extract(&self, vertices: &mut Vec<f32>, indices: &mut Vec<u32>);
     fn get_marching_cubes_mesh(&self) -> String {
         // Create a vector that stores all the triangles that form the surface between the two chemicals.
-        let mut all_triangles: Vec<([f32; 3], [f32; 3])> = vec![];
+        let mut all_triangles: Vec<[f32; 3]> = vec![];
 
         // Loop over all voxels in the cellular automaton
         let mut vertices: Vec<f32> = vec![];
@@ -95,9 +96,9 @@ pub trait CellularAutomaton3D {
             // i:   vertex 1
             // i+1: vertex 2
             // i+2: vertex 3
-            all_triangles.push((vertices_coords[indices[i] as usize], [0.0, 0.0, 0.0]));
-            all_triangles.push((vertices_coords[indices[i+1] as usize], [0.0, 0.0, 0.0]));
-            all_triangles.push((vertices_coords[indices[i+2] as usize], [0.0, 0.0, 0.0]));
+            all_triangles.push(vertices_coords[indices[i] as usize]);
+            all_triangles.push(vertices_coords[indices[i+1] as usize]);
+            all_triangles.push(vertices_coords[indices[i+2] as usize]);
             //     MeshTriangle {
             //         vertices: [
             //             vertices_coords[indices[i] as usize],
@@ -109,7 +110,7 @@ pub trait CellularAutomaton3D {
         }
 
         if all_triangles.len() > 0 {
-            return generate_gltf(&all_triangles.as_slice()).unwrap();
+            return generate_large_gltf(&all_triangles.as_slice()).unwrap();
         }
 
         String::from("{}")
