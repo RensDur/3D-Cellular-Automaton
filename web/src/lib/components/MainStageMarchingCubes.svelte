@@ -123,8 +123,14 @@
                         meshGeometries[i].computeVertexNormals();
                         meshGeometries[i].translate(-size/2, -size/2, -size/2);
 
+                        // Show both sides of the mesh with a different color
                         meshObjectsFrontSide.push(new THREE.Mesh(meshGeometries[i], new THREE.MeshPhongMaterial({color: "#e3a474", side: THREE.FrontSide})));
                         meshObjectsBackSide.push(new THREE.Mesh(meshGeometries[i], new THREE.MeshPhongMaterial({color: "#c2532b", side: THREE.BackSide})));
+
+                        // Show the edges of the mesh
+                        // const edges = new THREE.EdgesGeometry(meshGeometries[i]);
+                        // meshObjectsFrontSide.push(new THREE.LineSegments(edges, new THREE.LineBasicMaterial({color: 0x333333})));
+                        // meshObjectsBackSide.push(new THREE.LineSegments(edges, new THREE.LineBasicMaterial({color: 0x333333})));
 
                         // Set the shadow casting properties
                         meshObjectsFrontSide[i].castShadow = true;
