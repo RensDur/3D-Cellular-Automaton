@@ -1,5 +1,6 @@
-use super::automaton::CellularAutomaton3D;
+use super::{automaton::CellularAutomaton3D, automaton_cpu::MeshTriangle};
 
+use isosurface::{source::Source, marching_cubes::MarchingCubes};
 use serde::{Serialize, Deserialize};
 
 use rand::prelude::*;
@@ -8,7 +9,7 @@ use metal::*;
 use objc::rc::autoreleasepool;
 use std::mem;
 
-use crate::AUTOMATON_SIZE;
+use crate::{AUTOMATON_SIZE, routes::gpu_get};
 
 const AUTOMATON_SHADER_SRC: &str = include_str!("automaton_shader.metal");
 
@@ -315,21 +316,22 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
 
             
             
-            let width = 50*50;
+            let width = pipeline_state.thread_execution_width();
+            let height = pipeline_state.max_total_threads_per_threadgroup() / width;
 
-            let thread_group_count = MTLSize {
+            let threads_per_grid = MTLSize {
+                width: (data.len() as u64),
+                height: 1,
+                depth: 1,
+            };
+
+            let threads_per_thread_group = MTLSize {
                 width,
-                height: 1,
+                height,
                 depth: 1,
             };
 
-            let thread_group_size = MTLSize {
-                width: (data.len() as u64 + width) / width,
-                height: 1,
-                depth: 1,
-            };
-
-            encoder.dispatch_thread_groups(thread_group_count, thread_group_size);
+            encoder.dispatch_threads(threads_per_grid, threads_per_thread_group);
             encoder.end_encoding();
             command_buffer.commit();
             command_buffer.wait_until_completed();
@@ -353,4 +355,30 @@ impl CellularAutomaton3D for GPUCellularAutomaton3D {
         self.iteration_count
     }
 
+    fn mc_extract(&self, vertices: &mut Vec<f32>, indices: &mut Vec<u32>) {
+        let mut mc = MarchingCubes::new(self.size());
+        mc.extract(self, vertices, indices);
+    }
+
+}
+
+impl Source for GPUCellularAutomaton3D {
+    fn sample(&self, x: f32, y: f32, z: f32) -> f32 {
+        // Assignment: return negative values for 'inside' and positive for 'outside'.
+        // We'll return -1 for chemical 1 and +1 for chemical 0.
+
+        // Caution: the source will be sampled between (0, 0, 0) and (1, 1, 1)
+
+        let xindex = usize::min((x * (self.size() - 1) as f32).round() as usize, self.size() - 1);
+        let yindex = usize::min((y * (self.size() - 1) as f32).round() as usize, self.size() - 1);
+        let zindex = usize::min((z * (self.size() - 1) as f32).round() as usize, self.size() - 1);
+
+        let chemical = self.get(xindex as usize, yindex as usize, zindex as usize);
+
+        if chemical == 0 {
+            return 1.0;
+        } else {
+            return -1.0;
+        }
+    }
 }

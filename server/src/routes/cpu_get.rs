@@ -15,6 +15,18 @@ async fn cpu_get_current_state(state: web::Data<Mutex<CAAppData>>) -> Result<imp
     Ok(response)
 }
 
+#[get("/cpu/get-current-state-triangles")]
+async fn cpu_get_current_state_triangles(state: web::Data<Mutex<CAAppData>>) -> Result<impl Responder> {
+    let state_mod = state.lock().unwrap();
+
+    // Create a list of triangles according to the marching cubes algorithm
+    let triangles = state_mod.cpu_ca.get_marching_cubes_mesh();
+
+    drop(state_mod);
+
+    Ok(triangles)
+}
+
 #[get("/cpu/get-iterations")]
 async fn cpu_get_iterations(state: web::Data<Mutex<CAAppData>>) -> Result<impl Responder> {
     let state_mod = state.lock().unwrap();

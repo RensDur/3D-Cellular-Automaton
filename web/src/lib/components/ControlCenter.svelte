@@ -11,7 +11,7 @@
     let simdev: string;
 
     // Toggle attachers
-    let deviceToggleAttach = 0;
+    let deviceToggleAttach = 1;
 
     // Feedback message binders
     let benchmarkCorrectnessFeedback = "Start benchmark to receive feedback";
@@ -51,6 +51,7 @@
         <ControlCenterButton text="Spread chemicals randomly" on:click={() => {controller.randomlySpreadChemicals(2);}}/>
         <ControlCenterButton text="Run iteration" on:click={() => {controller.runIteration();}}/>
         <ControlCenterButton text="Run 5 iterations" on:click={() => {controller.run5Iterations();}}/>
+        <ControlCenterButton text="Place a patch" on:click={() => {controller.generatePatch();}}/>
     </ControlCenterGroup>
 
     <ControlCenterGroup title="Benchmarks: CPU vs. GPU output" columns={4}>

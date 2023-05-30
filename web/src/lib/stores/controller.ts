@@ -9,7 +9,7 @@ function createControllerStore() {
     const { subscribe, set, update } = writable<Grid3D>();
 
     const serverAddress = "http://localhost:7878";
-    let workingAddress = "cpu";
+    let workingAddress = "gpu";
 
     async function getCurrentGridFromServer() {
         const response = await fetch(serverAddress + "/" + workingAddress + "/get-current-state", {
@@ -25,9 +25,23 @@ function createControllerStore() {
         }
     }
 
+    async function getCurrentMCMeshFromServer() {
+        const response = await fetch(serverAddress + "/" + workingAddress + "/get-current-state-triangles", {
+            method: "GET"
+        });
+
+        const res = await response.json();
+        
+        return res;
+    }
+
     async function updateStore() {
         const state = await getCurrentGridFromServer();
         const grid = Grid3D.from(state.length, state);
+
+        // Get the MC Mesh from the server
+        const mcGltf = await getCurrentMCMeshFromServer();
+        grid.setMarchingCubesGltf(mcGltf);
 
         // Update both the cpu and gpu number of iterations
         grid.cpuIterations = await sendGet("/cpu/get-iterations");
@@ -85,6 +99,10 @@ function createControllerStore() {
             return workingAddress;
         },
 
+        getGltfUrl: () => {
+            return serverAddress + "/" + workingAddress + "/get-current-state-triangles"
+        },
+
         /**
          * Method: initialise wasm
          */
@@ -131,6 +149,16 @@ function createControllerStore() {
         },
 
         /**
+         * Method: run twenty iterations of the algorithm
+         */
+        run20Iterations: async () => {
+            const duration = await sendDevicePostWithJson("/run-iteration", {num_iterations: 20});
+            await updateStore();
+
+            console.log("Calculated 20 iterations in " + String(duration.duration) + " seconds")
+        },
+
+        /**
          * Method: perform comparison benchmarks on the server
          */
         compareCPUvsGPUNow: async () => {
@@ -145,6 +173,12 @@ function createControllerStore() {
 
         benchmarkGPUShaderIncrement: async () => {
             const result = await sendPost("/benchmarks/gpu-shader-increment");
+            await updateStore();
+            return result;
+        },
+
+        generatePatch: async () => {
+            const result = await sendPost("/general/create-activator-patch");
             await updateStore();
             return result;
         }

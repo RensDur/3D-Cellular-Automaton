@@ -2,9 +2,22 @@ use std::thread;
 use std::sync::{Arc, Mutex};
 
 use rand::prelude::*;
+
 use super::super::grid::CAGrid3D;
 use super::automaton::CellularAutomaton3D;
 use serde::{Serialize, Deserialize};
+
+use isosurface::marching_cubes::MarchingCubes;
+use isosurface::source::Source;
+
+
+/**
+ * Struct: a serialisable version of the triangle that's provided by the Marching Cubes library
+ */
+#[derive(Serialize)]
+pub struct MeshTriangle {
+    pub vertices: [[f32; 3]; 3]
+}
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct CPUCellularAutomaton3D {
@@ -278,4 +291,31 @@ impl CellularAutomaton3D for CPUCellularAutomaton3D {
         self.iteration_count
     }
 
+    fn mc_extract(&self, vertices: &mut Vec<f32>, indices: &mut Vec<u32>) {
+        let mut mc = MarchingCubes::new(self.size());
+        mc.extract(self, vertices, indices);
+    }
+
+}
+
+
+impl Source for CPUCellularAutomaton3D {
+    fn sample(&self, x: f32, y: f32, z: f32) -> f32 {
+        // Assignment: return negative values for 'inside' and positive for 'outside'.
+        // We'll return -1 for chemical 1 and +1 for chemical 0.
+
+        // Caution: the source will be sampled between (0, 0, 0) and (1, 1, 1)
+
+        let xindex = usize::min((x * (self.size() - 1) as f32).round() as usize, self.size() - 1);
+        let yindex = usize::min((y * (self.size() - 1) as f32).round() as usize, self.size() - 1);
+        let zindex = usize::min((z * (self.size() - 1) as f32).round() as usize, self.size() - 1);
+
+        let chemical = self.get(xindex as usize, yindex as usize, zindex as usize);
+
+        if chemical == 0 {
+            return 1.0;
+        } else {
+            return -1.0;
+        }
+    }
 }

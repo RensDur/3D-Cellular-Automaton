@@ -1,7 +1,12 @@
 export class Grid3D {
 
+    // Raw data
     size: number;
     data: number[][][];
+
+    // Marching Cubes mesh data
+    // This representation matches that of THREE.js, where three subsequent triangles form one face.
+    marchingCubesGltf: ArrayBuffer;
 
     cpuIterations: string;
     gpuIterations: string;
@@ -24,6 +29,8 @@ export class Grid3D {
             }
             this.data.push(xarr);
         }
+
+        this.marchingCubesGltf = new ArrayBuffer(0);
 
         this.cpuIterations = "0";
         this.gpuIterations = "0";
@@ -50,6 +57,20 @@ export class Grid3D {
 
     setData(data: number[][][]) {
         this.data = data;
+    }
+
+    // Getters and setters for the Marching Cubes mesh
+    setMarchingCubesGltf(gltf: number[]) {
+        const buffer = new ArrayBuffer(gltf.length * 4);
+        const array = new Uint32Array(buffer);
+        for (let i = 0; i < gltf.length; i++) {
+            array[i] = gltf[i];
+        }
+        this.marchingCubesGltf = buffer;
+    }
+
+    getMarchingCubesGltf() {
+        return this.marchingCubesGltf;
     }
 
 }
