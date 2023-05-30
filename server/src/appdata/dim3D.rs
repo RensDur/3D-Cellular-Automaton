@@ -1,2 +1,2 @@
-pub mod automaton;
+pub mod automata;
 pub mod grid;

@@ -8,32 +8,58 @@ import { writable } from "svelte/store";
 function createControllerStore() {
     const { subscribe, set, update } = writable<Grid3D>();
 
+    const serverAddress = "http://localhost:7878";
+    let workingAddress = "gpu";
+
     async function getCurrentGridFromServer() {
-        const response = await fetch("http://localhost:7878/get-current-state", {
+        const response = await fetch(serverAddress + "/" + workingAddress + "/get-current-state", {
             method: "GET"
         });
     
         const result = await response.json();
-        return result.curr_generation;
+        
+        if (workingAddress == "cpu") {
+            return result.curr_generation.data;
+        } else {
+            return result.grid;
+        }
+    }
+
+    async function getCurrentMCMeshFromServer() {
+        const response = await fetch(serverAddress + "/" + workingAddress + "/get-current-state-triangles", {
+            method: "GET"
+        });
+
+        const res = await response.json();
+        
+        return res;
     }
 
     async function updateStore() {
         const state = await getCurrentGridFromServer();
-        const grid = Grid3D.from(state.size, state.data);
+        const grid = Grid3D.from(state.length, state);
 
-        // console.log("The current grid state was requested from the server. Response:");
-        // console.log(grid);
+        // Get the MC Mesh from the server
+        const mcGltf = await getCurrentMCMeshFromServer();
+        grid.setMarchingCubesGltf(mcGltf);
+
+        // Update both the cpu and gpu number of iterations
+        grid.cpuIterations = await sendGet("/cpu/get-iterations");
+        grid.gpuIterations = await sendGet("/gpu/get-iterations");
+
+        console.log("The current grid state was requested from the server. Response:");
+        console.log(grid);
 
         update(_ => grid);
     }
 
-    async function sendPost(path: string) {
-        const response = await fetch("http://localhost:7878" + path, {method: "POST"});
-        await response.text();
+    async function sendDevicePost(path: string) {
+        const response = await fetch(serverAddress + "/" + workingAddress + path, {method: "POST"});
+        return await response.text();
     }
 
-    async function sendPostWithJson(path: string, data: object) {
-        const response = await fetch("http://localhost:7878" + path, {
+    async function sendDevicePostWithJson(path: string, data: object) {
+        const response = await fetch(serverAddress + "/" + workingAddress + path, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -43,20 +69,54 @@ function createControllerStore() {
         return await response.json();
     }
 
+    async function sendPost(path: string, data?: object) {
+        let fields: object = {method: "POST"};
+
+        if (data) {
+            fields = {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            }
+        }
+
+        const response = await fetch(serverAddress + path, fields);
+        return await response.text();
+    }
+
+    async function sendGet(path: string) {
+        const response = await fetch(serverAddress + path, {method: "GET"});
+        return await response.text();
+    }
+
     // Return the store and all functions to go along with it
     return {
         subscribe,
 
+        getWorkingDevice: () => {
+            return workingAddress;
+        },
+
+        getGltfUrl: () => {
+            return serverAddress + "/" + workingAddress + "/get-current-state-triangles"
+        },
+
         /**
          * Method: initialise wasm
          */
-        initialise: async (size: number, dc_range: number, dc_influence: number, uc_range: number, uc_influence: number) => {
-            await sendPostWithJson("/initialise", {size, dc_range, dc_influence, uc_range, uc_influence});
+        initialise: async () => {
+            await updateStore();
+        },
+
+        selectSimulationDevice: async (device: string) => {
+            workingAddress = device;
             await updateStore();
         },
 
         clearGrid: async () => {
-            await sendPost("/clear-all-voxels")
+            await sendDevicePost("/clear-all-voxels")
             await updateStore();
         },
 
@@ -64,7 +124,7 @@ function createControllerStore() {
          * Method: randomly spread the specified number of chemicals over the grid
          */
         randomlySpreadChemicals: async (chemicals: number) => {
-            await sendPostWithJson("/spread-chemicals-randomly", {chemicals});
+            await sendPost("/general/spread-chemicals-randomly", {chemicals});
             await updateStore();
         },
 
@@ -72,7 +132,7 @@ function createControllerStore() {
          * Method: run one iteration of the algorithm
          */
         runIteration: async () => {
-            const duration = await sendPostWithJson("/run-iteration", {num_iterations: 1});
+            const duration = await sendDevicePostWithJson("/run-iteration", {num_iterations: 1});
             await updateStore();
 
             console.log("Calculated 1 iteration in " + String(duration.duration) + " seconds")
@@ -82,26 +142,45 @@ function createControllerStore() {
          * Method: run twenty iterations of the algorithm
          */
         run5Iterations: async () => {
-            const duration = await sendPostWithJson("/run-iteration", {num_iterations: 5});
+            const duration = await sendDevicePostWithJson("/run-iteration", {num_iterations: 5});
             await updateStore();
 
             console.log("Calculated 5 iterations in " + String(duration.duration) + " seconds")
         },
 
         /**
-         * Method: update dc and uc parameters
+         * Method: run twenty iterations of the algorithm
          */
-        updateDCRange: (dc_range: number) => {
-            update(ca => ca.set_dc_range(dc_range));
+        run20Iterations: async () => {
+            const duration = await sendDevicePostWithJson("/run-iteration", {num_iterations: 20});
+            await updateStore();
+
+            console.log("Calculated 20 iterations in " + String(duration.duration) + " seconds")
         },
-        updateDCInfluence: (dc_influence: number) => {
-            update(ca => ca.set_dc_influence(dc_influence));
+
+        /**
+         * Method: perform comparison benchmarks on the server
+         */
+        compareCPUvsGPUNow: async () => {
+            return await sendPost("/benchmarks/compare-cpu-gpu");
         },
-        updateUCRange: (uc_range: number) => {
-            update(ca => ca.set_uc_range(uc_range));
+
+        compareCPUvsGPUAfterCatchUp: async () => {
+            const result = await sendPost("/benchmarks/compare-cpu-gpu-catch-up");
+            await updateStore();
+            return result;
         },
-        updateUCInfluence: (uc_influence: number) => {
-            update(ca => ca.set_uc_influence(uc_influence));
+
+        benchmarkGPUShaderIncrement: async () => {
+            const result = await sendPost("/benchmarks/gpu-shader-increment");
+            await updateStore();
+            return result;
+        },
+
+        generatePatch: async () => {
+            const result = await sendPost("/general/create-activator-patch");
+            await updateStore();
+            return result;
         }
     }
 }

@@ -31,7 +31,7 @@
 
         // Setup the three.js scene
         scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xf5f5f5);
+        scene.background = new THREE.Color(0xf5f5f3);
 
         // Setup the WebGL renderer
         renderer = new THREE.WebGLRenderer({antialias: true});
@@ -163,7 +163,7 @@
 
     // Svelte page-mount
     onMount(async () => {
-        await controller.initialise(50, 2, 1, 4, -0.25);
+        await controller.initialise();
         setupScene();
     })
 

@@ -8,5 +8,11 @@ edition = "2021"
 [dependencies]
 actix-cors = "0.6.4"
 actix-web = "4.3.1"
+base64 = "0.21.1"
+gltf-json = "1.1.0"
+isosurface = "0.0.4"
+metal = "0.24.0"
+miette = "5.9.0"
+objc = "0.2.7"
 rand = "0.8.5"
 serde = { version = "1.0.160", features = ["derive"] }

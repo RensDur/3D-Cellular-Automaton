@@ -2,6 +2,7 @@
 
     import ControlCenterOverlay from "$lib/components/ControlCenterOverlay.svelte";
     import MainStage from "$lib/components/MainStage.svelte";
+	import MainStageMarchingCubes from "$lib/components/MainStageMarchingCubes.svelte";
 
 </script>
 
@@ -9,7 +10,7 @@
 <div id="container">
     <!-- Background that contains three.js instance -->
     <div id="background">
-        <MainStage/>
+        <MainStageMarchingCubes/>
     </div>
 
     <!-- Foreground that contains controls and other overlays -->
