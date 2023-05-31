@@ -86,14 +86,14 @@ impl<'a> PartialEq for QuadricVertex<'a> {
 
 
 pub struct QuadricTriangle<'a> {
-    pub p1: &'a QuadricVertex<'a>,
-    pub p2: &'a QuadricVertex<'a>,
-    pub p3: &'a QuadricVertex<'a>
+    pub p1: QuadricVertex<'a>,
+    pub p2: QuadricVertex<'a>,
+    pub p3: QuadricVertex<'a>
 }
 
 impl<'a> QuadricTriangle<'a> {
 
-    pub fn new(p1: &'a QuadricVertex, p2: &'a QuadricVertex, p3: &'a QuadricVertex) -> Self {
+    pub fn new(p1: QuadricVertex<'a>, p2: QuadricVertex<'a>, p3: QuadricVertex<'a>) -> Self {
         Self {
             p1,
             p2,
@@ -101,8 +101,18 @@ impl<'a> QuadricTriangle<'a> {
         }
     }
 
-    pub fn contains(&self, other: &'a QuadricVertex) -> bool {
-        self.p1 == other || self.p2 == other || self.p3 == other
+    pub fn contains(&self, other: &QuadricVertex) -> bool {
+        self.p1 == *other || self.p2 == *other || self.p3 == *other
+    }
+
+    pub fn create_pairs_with_vertex(&self, other: &QuadricVertex) -> [QuadricVertexPair; 2] {
+        if self.p1 == *other {
+            return [QuadricVertexPair::new(self.p1, self.p2), QuadricVertexPair::new(self.p1, self.p3)];
+        } else if self.p2 == *other {
+            return [QuadricVertexPair::new(self.p2, self.p1), QuadricVertexPair::new(self.p2, self.p3)];
+        } else {
+            return [QuadricVertexPair::new(self.p3, self.p1), QuadricVertexPair::new(self.p3, self.p2)];
+        }
     }
 
     pub fn construct_plane(&self) -> Vector4<f32> {
@@ -142,11 +152,18 @@ impl<'a> QuadricTriangle<'a> {
 
 // A QuadricVertexPair describes a pair of vertices that may be contractex:uture
 pub struct QuadricVertexPair<'a> {
-    pub left: &'a QuadricVertex<'a>,
-    pub right: &'a QuadricVertex<'a>
+    pub left: QuadricVertex<'a>,
+    pub right: QuadricVertex<'a>
 }
 
 impl<'a> QuadricVertexPair<'a> {
+
+    pub fn new(left: QuadricVertex<'a>, right: QuadricVertex<'a>) -> Self {
+        Self {
+            left,
+            right
+        }
+    }
 
     fn compute_optimal_midpoint(&self) -> Vector4<f32> {
         (self.left.pos + self.right.pos) / 2.0
@@ -181,5 +198,17 @@ impl<'a> QuadricVertexPair<'a> {
         result
 
     }
+
+}
+
+
+
+impl<'a> PartialEq for QuadricVertexPair<'a> {
+    fn eq(&self, other: &Self) -> bool {
+        self.left == other.left && self.right == other.right || self.left == other.right && self.right == other.left
+    }
+}
+
+impl<'a> Eq for QuadricVertexPair<'a> {
 
 }

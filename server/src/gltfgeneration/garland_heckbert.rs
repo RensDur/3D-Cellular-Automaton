@@ -1,4 +1,4 @@
-use super::quadric_vertex::{QuadricVertex, QuadricTriangle};
+use super::quadric_vertex::{QuadricVertex, QuadricTriangle, QuadricVertexPair};
 
 
 
@@ -37,15 +37,19 @@ impl GarlandHeckbert {
             // i+1  index@v2
             // i+2  index@v3
             quadric_triangles.push(QuadricTriangle::new(
-                &quadric_vertices[i],
-                &quadric_vertices[i+1],
-                &quadric_vertices[i+2]
+                quadric_vertices[i],
+                quadric_vertices[i+1],
+                quadric_vertices[i+2]
             ));
         }
 
         //
         // Step 2: Compute Q-matrices for every vertex
+        // &
+        // Step 3: Compile a list of valid pairs
         //
+
+        let mut valid_pairs: Vec<QuadricVertexPair> = vec![];
 
         // Loop over all vertices
         for i in 0..quadric_vertices.len() {
@@ -65,7 +69,29 @@ impl GarlandHeckbert {
 
             // Use these triangles to compute and store the qmatrix for this vertex
             quadric_vertices[i].compute_and_store_qmatrix(shared_triangles.as_slice());
+
+            // Also use this list of triangles that share this vertex to determine valid pairs
+            // with this vertex because they form an edge
+            for t in shared_triangles {
+                for pair in t.create_pairs_with_vertex(&quadric_vertices[i]) {
+                    if !valid_pairs.contains(&pair) {
+                        valid_pairs.push(pair);
+                    }
+                }
+            }
         }
+
+
+        //
+        // Step 3: Compile a list of all valid pairs (continuation)
+        // All vertices on edges are already part of the valid_pairs array.
+        // Add the remaining ones using the threshold distance
+        //
+
+
+
+        
+
 
 
 
