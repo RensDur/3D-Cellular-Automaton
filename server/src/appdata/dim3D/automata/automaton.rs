@@ -1,4 +1,3 @@
-use crate::gltfgeneration::gltf_conversion::generate_gltf;
 use crate::gltfgeneration::gltf_generation::generate_large_gltf;
 
 use super::automaton_cpu::MeshTriangle;
