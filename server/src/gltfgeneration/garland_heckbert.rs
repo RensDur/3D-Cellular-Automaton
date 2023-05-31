@@ -19,6 +19,8 @@ impl GarlandHeckbert {
      */
     pub fn simplify(vertices: &[f32], indices: &[u32], threshold: f32) {
 
+        let threshold_sqr = threshold * threshold;
+
         //
         // Step 1: Create an array of all vertices, using the QuadricVertex datastructure
         //
@@ -88,7 +90,32 @@ impl GarlandHeckbert {
         // Add the remaining ones using the threshold distance
         //
 
+        for v1 in 0..quadric_vertices.len() {
+            for v2 in 0..quadric_vertices.len() {
+                // If the distance squared between these two vertices is smaller than the threshold squared
+                // AND v1 != v2
+                // AND they're not an edge (aka already in the list)
+                // Add this pair to the list as well
 
+                if v1 != v2
+                   && quadric_vertices[v1].distSqr(&quadric_vertices[v2]) < threshold_sqr {
+
+                    let pair = QuadricVertexPair::new(quadric_vertices[v1], quadric_vertices[v2]);
+
+                    if !valid_pairs.contains(&pair) {
+                        valid_pairs.push(pair);
+                    }
+                    
+                }
+            }
+        }
+
+
+        //
+        // Step 4: Sort the valid pairs on lowest cost first
+        //
+
+        valid_pairs.sort_by_cached_key(|a| a.cost() as i32);
 
         
 

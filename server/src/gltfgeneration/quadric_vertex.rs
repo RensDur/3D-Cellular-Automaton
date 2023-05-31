@@ -1,4 +1,4 @@
-use cgmath::{Vector4, Vector3, Matrix4, Zero, InnerSpace};
+use cgmath::{Vector4, Vector3, Matrix4, Zero, InnerSpace, MetricSpace};
 
 
 
@@ -64,6 +64,10 @@ impl<'a> QuadricVertex<'a> {
         // The error at vertex v is defined as vT (Q v)
         let rhv = self.qmatrix * self.pos;
         self.pos.dot(rhv)
+    }
+
+    pub fn distSqr(&self, other: &QuadricVertex) -> f32 {
+        self.pos.distance2(other.pos)
     }
 
     pub fn is_valid_against(&self, other: &QuadricVertex) {
