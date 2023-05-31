@@ -34,10 +34,10 @@ async fn main() -> std::io::Result<()> {
 
     let mut ca_app_data = CAAppData::new(3.2, 1.0, 6.0, -0.18);
 
-    ca_app_data.gpu_ca.spread_chemicals_randomly(2);
-    for _ in 0..200 {
-        ca_app_data.gpu_ca.run_iteration();
-    }
+    // ca_app_data.gpu_ca.spread_chemicals_randomly(2);
+    // for _ in 0..200 {
+    //     ca_app_data.gpu_ca.run_iteration();
+    // }
 
     let app_state = web::Data::new(Mutex::new(ca_app_data));
 
