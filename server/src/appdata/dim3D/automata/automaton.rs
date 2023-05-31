@@ -1,5 +1,5 @@
 use crate::gltfgeneration::gltf_generation::generate_large_gltf;
-
+use crate::gltfgeneration::garland_heckbert::GarlandHeckbert;
 use super::automaton_cpu::MeshTriangle;
 
 pub trait CellularAutomaton3D {
@@ -66,6 +66,8 @@ pub trait CellularAutomaton3D {
         // This is done by utilising the mc_extract method
         // that's part of this contract.
         self.mc_extract(&mut vertices, &mut indices);
+
+        GarlandHeckbert::simplify(&vertices, &indices, 0.1);
 
         println!("Vertices and indices extracted:\n\tVertices: {}\n\tIndices: {}", vertices.len(), indices.len());
 

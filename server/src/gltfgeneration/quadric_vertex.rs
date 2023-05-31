@@ -1,8 +1,8 @@
-use cgmath::{Vector4, Matrix4, Zero, InnerSpace};
+use cgmath::{Vector4, Vector3, Matrix4, Zero, InnerSpace};
 
 
 
-
+#[derive(Clone, Copy)]
 pub struct QuadricVertex<'a> {
     pub pos: Vector4<f32>,
     pub qmatrix: Matrix4<f32>,
@@ -31,12 +31,16 @@ impl<'a> QuadricVertex<'a> {
         self.link = Some(other);
     }
 
-    pub fn compute_qmatrix(&mut self, planes: &[Vector4<f32>]) {
+    pub fn compute_and_store_qmatrix(&mut self, shared_triangles: &[&QuadricTriangle]) {
 
         let mut matrix_sum: Matrix4<f32> = Matrix4::zero();
 
         // Loop over all planes in the list
-        for p in planes {
+        for st in shared_triangles {
+
+            // Extract the plane this triangle lies in
+            let p = st.construct_plane();
+
             // Calculate ppT
             let a = p.x;
             let b = p.y;
@@ -73,9 +77,70 @@ impl<'a> QuadricVertex<'a> {
 }
 
 
+impl<'a> PartialEq for QuadricVertex<'a> {
+    fn eq(&self, other: &Self) -> bool {
+        self.pos == other.pos && self.qmatrix == other.qmatrix && self.link == other.link
+    }
+}
 
 
-// A QuadricVertexPair describes a pair of vertices that may be contracted in the future
+
+pub struct QuadricTriangle<'a> {
+    pub p1: &'a QuadricVertex<'a>,
+    pub p2: &'a QuadricVertex<'a>,
+    pub p3: &'a QuadricVertex<'a>
+}
+
+impl<'a> QuadricTriangle<'a> {
+
+    pub fn new(p1: &'a QuadricVertex, p2: &'a QuadricVertex, p3: &'a QuadricVertex) -> Self {
+        Self {
+            p1,
+            p2,
+            p3
+        }
+    }
+
+    pub fn contains(&self, other: &'a QuadricVertex) -> bool {
+        self.p1 == other || self.p2 == other || self.p3 == other
+    }
+
+    pub fn construct_plane(&self) -> Vector4<f32> {
+
+        // Take two linearly independent vectors from the triangle (1-2) and (1-3)
+        let v1 = self.p2.pos - self.p1.pos;
+        let v2 = self.p3.pos - self.p1.pos;
+
+        // The plane normal is the cross product between v1 and v2
+        let normal = Vector4 {
+            x: v2.y * v1.z - v2.z * v1.y,
+            y: v2.z * v1.x - v2.x * v1.z,
+            z: v2.x * v1.y - v2.y * v1.x,
+            w: 0.0
+        };
+
+        // Since a normal is always of unit-length, normalise the normal
+        normal.normalize();
+
+        // Calculate the distance from the origin, along the normal, to the plane
+        // This is done through the dot product of the normal and one of the vectors in the triangle
+        let dist_origin = normal.dot(self.p1.pos);
+
+        // The plane can now be constructed from this normal and the distance to the origin
+        Vector4 {
+            x: normal.x,
+            y: normal.y,
+            z: normal.z,
+            w: dist_origin
+        }
+
+    }
+
+}
+
+
+
+// A QuadricVertexPair describes a pair of vertices that may be contractex:uture
 pub struct QuadricVertexPair<'a> {
     pub left: &'a QuadricVertex<'a>,
     pub right: &'a QuadricVertex<'a>

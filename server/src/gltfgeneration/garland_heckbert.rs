@@ -1,0 +1,75 @@
+use super::quadric_vertex::{QuadricVertex, QuadricTriangle};
+
+
+
+
+pub struct GarlandHeckbert {
+
+}
+
+
+
+
+impl GarlandHeckbert {
+
+    /**
+     * Main method to perform this algorithm.
+     * Execution of this algorithm heavily relies on the datastructures
+     * specified in quadric_vertex.rs
+     */
+    pub fn simplify(vertices: &[f32], indices: &[u32], threshold: f32) {
+
+        //
+        // Step 1: Create an array of all vertices, using the QuadricVertex datastructure
+        //
+        let mut quadric_vertices: Vec<QuadricVertex> = vec![];
+        let mut quadric_triangles: Vec<QuadricTriangle> = vec![];
+
+        for v in (0..vertices.len()).step_by(3) {
+            // v    vertex.x
+            // v+1  vertex.y
+            // v+2  vertex.z
+            quadric_vertices.push(QuadricVertex::new(vertices[v], vertices[v+1], vertices[v+2]));
+        }
+
+        for i in (0..indices.len()).step_by(3) {
+            // i    index@v1
+            // i+1  index@v2
+            // i+2  index@v3
+            quadric_triangles.push(QuadricTriangle::new(
+                &quadric_vertices[i],
+                &quadric_vertices[i+1],
+                &quadric_vertices[i+2]
+            ));
+        }
+
+        //
+        // Step 2: Compute Q-matrices for every vertex
+        //
+
+        // Loop over all vertices
+        for i in 0..quadric_vertices.len() {
+
+            // Compile a list of all triangles share this vertex
+            let mut shared_triangles: Vec<&QuadricTriangle> = vec![];
+
+            // Loop over all triangles
+            for t in &quadric_triangles {
+
+                // If this triangle contains this vertex
+                if t.contains(&quadric_vertices[i]) {
+                    // Add this triangle to the list
+                    shared_triangles.push(t);
+                }
+            }
+
+            // Use these triangles to compute and store the qmatrix for this vertex
+            quadric_vertices[i].compute_and_store_qmatrix(shared_triangles.as_slice());
+        }
+
+
+
+
+    }
+
+}
