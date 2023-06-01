@@ -6,7 +6,8 @@ use cgmath::{Vector4, Vector3, Matrix4, Zero, InnerSpace, MetricSpace};
 pub struct QuadricVertex<'a> {
     pub pos: Vector4<f32>,
     pub qmatrix: Matrix4<f32>,
-    pub link: Option<&'a QuadricVertex<'a>>
+    pub link: Option<&'a QuadricVertex<'a>>,
+    pub index: Option<usize>
 }
 
 impl<'a> QuadricVertex<'a> {
@@ -15,16 +16,36 @@ impl<'a> QuadricVertex<'a> {
         Self {
             pos: Vector4 { x, y, z, w: 1.0 },
             qmatrix: Matrix4::zero(),
-            link: None
+            link: None,
+            index: None
         }
+    }
+
+    pub fn copy_data_from(&mut self, other: &QuadricVertex) {
+        self.pos = other.pos;
+        self.qmatrix = other.qmatrix;
+        // Copy data, not the index!
     }
 
     pub fn from_contraction(pos: Vector4<f32>, qmatrix: Matrix4<f32>) -> Self {
         Self {
             pos,
             qmatrix,
-            link: None
+            link: None,
+            index: None
         }
+    }
+
+    pub fn associate_with_index(&mut self, index: usize) {
+        self.index = Some(index);
+    }
+
+    pub fn remove_index(&mut self) {
+        self.index = None;
+    }
+
+    pub fn get_index(&self) -> usize {
+        self.index.unwrap()
     }
 
     pub fn establish_link(&mut self, other: &'a QuadricVertex<'a>) {
@@ -184,6 +205,23 @@ impl<'a> QuadricVertexPair<'a> {
         // Compute vT rhv
         v.dot(rhv)
 
+    }
+
+    pub fn set_left(&mut self, other: QuadricVertex<'a>) {
+        self.left = other;
+    }
+
+    pub fn set_right(&mut self, other: QuadricVertex<'a>) {
+        self.right = other;
+    }
+
+    pub fn copy_data_match(&mut self, original: usize, with: &'a QuadricVertex<'a>) {
+        if self.left.get_index() == original {
+            // These are now considered the same, copy the data into left from the match
+            self.left.copy_data_from(&with);
+        } else if self.right.get_index() == original {
+            self.right.copy_data_from(&with);
+        }
     }
 
     pub fn contract(&self) -> QuadricVertex {
