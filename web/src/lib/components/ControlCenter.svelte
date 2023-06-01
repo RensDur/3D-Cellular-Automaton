@@ -28,18 +28,24 @@
 <div id="container" bind:this={containerDiv}>
 
     <ControlCenterGroup title="Device selection" columns={2}>
-        <ControlCenterButton text="CPU"
+        <!-- <ControlCenterButton text="CPU"
                             type="toggle"
                             bind:toggleAttach={deviceToggleAttach}
                             toggleAttachId={0}
                             columnSpan={2}
-                            on:toggleOn={() => {controller.selectSimulationDevice("cpu");}}/>
+                            on:toggleOn={() => {controller.selectSimulationDevice("cpu");}}/> -->
         <ControlCenterButton text="GPU"
                             type="toggle"
                             bind:toggleAttach={deviceToggleAttach}
                             toggleAttachId={1}
                             columnSpan={2}
                             on:toggleOn={() => {controller.selectSimulationDevice("gpu");}}/>
+        <ControlCenterButton text="NCHEM"
+                            type="toggle"
+                            bind:toggleAttach={deviceToggleAttach}
+                            toggleAttachId={0}
+                            columnSpan={2}
+                            on:toggleOn={() => {controller.selectSimulationDevice("nchem");}}/>
         {#if $controller}
             <ControlCenterTextbox bind:text={$controller.cpuIterations} columnSpan={4} />
             <ControlCenterTextbox bind:text={$controller.gpuIterations} columnSpan={4} />

@@ -44,7 +44,7 @@ kernel void compute_iteration(device SumInput& input [[ buffer(0) ]],
 
     // Calculate the influence of neighbours on this voxel.
     // There will be as many influences as there are chemical groups
-    float influences[num_chemicals] = { 0.0 };
+    float influences[10] = { 0.0 };
 
     
 

@@ -19,6 +19,7 @@ async fn general_spread_chemicals_randomly(state: web::Data<Mutex<CAAppData>>, i
     // Then copy this randomly spread state over to the GPU model
     let cpu_clone = state_mod.cpu_ca.clone();
     state_mod.gpu_ca.import_data_from_automaton(&cpu_clone);
+    state_mod.nchem_ca.import_data_from_automaton(&cpu_clone);
 
     drop(state_mod);
 

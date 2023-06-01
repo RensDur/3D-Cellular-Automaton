@@ -90,6 +90,8 @@
 
                     if (chemical == 1) {
                         color = new THREE.Color(0xe3a474);
+                    } else if (chemical == 2) {
+                        color = new THREE.Color(0xff0000);
                     }
                 }
                 
