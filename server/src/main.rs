@@ -43,7 +43,17 @@ async fn main() -> std::io::Result<()> {
             },
             demote: CAChemical {
                 range: 6.0,
-                influence: -0.18
+                influence: -0.2
+            }
+        },
+        CAChemicalGroup {
+            promote: CAChemical {
+                range: 3.2,
+                influence: 1.0
+            },
+            demote: CAChemical {
+                range: 6.0,
+                influence: -0.2
             }
         }
     ];

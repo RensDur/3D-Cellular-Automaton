@@ -54,7 +54,7 @@
 
     <ControlCenterGroup title="Debugging controls">
         <ControlCenterButton text="Clear grid" on:click={() => {controller.clearGrid();}}/>
-        <ControlCenterButton text="Spread chemicals randomly" on:click={() => {controller.randomlySpreadChemicals(2);}}/>
+        <ControlCenterButton text="Spread chemicals randomly" on:click={() => {controller.randomlySpreadChemicals(3);}}/>
         <ControlCenterButton text="Run iteration" on:click={() => {controller.runIteration();}}/>
         <ControlCenterButton text="Run 5 iterations" on:click={() => {controller.run5Iterations();}}/>
         <ControlCenterButton text="Place a patch" on:click={() => {controller.generatePatch();}}/>
