@@ -46,6 +46,7 @@ function createControllerStore() {
         // Update both the cpu and gpu number of iterations
         grid.cpuIterations = await sendGet("/cpu/get-iterations");
         grid.gpuIterations = await sendGet("/gpu/get-iterations");
+        grid.gpuNChemIterations = await sendGet("/nchem/get-iterations");
 
         console.log("The current grid state was requested from the server. Response:");
         console.log(grid);

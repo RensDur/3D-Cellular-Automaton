@@ -24,6 +24,9 @@
     let renderedBoxes: Array<ColoredBox> = [];
     let previouslyRenderedGrid: any;
 
+    // Colors!
+    let chemical_colors = [0xc2532b, 0xe3a474, 0x7c1e79, 0x9862a5, 0xb8d161, 0x5db98d, 0xcc4a4a]
+
     // THREE.js setup
     function setupScene() {
 
@@ -86,13 +89,7 @@
 
                 if ($controller) {
                     let chemical = $controller.get(box.getX(), box.getY(), z);
-                    color = new THREE.Color(0xc2532b);
-
-                    if (chemical == 1) {
-                        color = new THREE.Color(0xe3a474);
-                    } else if (chemical == 2) {
-                        color = new THREE.Color(0xff0000);
-                    }
+                    color = new THREE.Color(chemical_colors[chemical]);
                 }
                 
                 if (sliceMovement == SliceMovement.MoveSlice) {

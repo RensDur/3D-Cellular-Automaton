@@ -47,8 +47,8 @@
                             columnSpan={2}
                             on:toggleOn={() => {controller.selectSimulationDevice("nchem");}}/>
         {#if $controller}
-            <ControlCenterTextbox bind:text={$controller.cpuIterations} columnSpan={4} />
             <ControlCenterTextbox bind:text={$controller.gpuIterations} columnSpan={4} />
+            <ControlCenterTextbox bind:text={$controller.gpuNChemIterations} columnSpan={4} />
         {/if}
     </ControlCenterGroup>
 
