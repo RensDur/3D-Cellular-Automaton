@@ -180,9 +180,7 @@ impl CellularAutomaton3D for GPUNChemicalsCellularAutomaton3D {
             // Load all the chemicals in this vector in the following order:
             // first range, then influence
             for c in &self.chemicals {
-                chemicals.push(c.promote.range);
                 chemicals.push(c.promote.influence);
-                chemicals.push(c.demote.range);
                 chemicals.push(c.demote.influence);
             }
 
