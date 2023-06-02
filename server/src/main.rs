@@ -13,7 +13,7 @@ use appdata::dim3d::automata::automaton_gpu_n_chemicals::{GPUNChemicalsCellularA
 
 use serde::{Serialize, Deserialize};
 
-pub const AUTOMATON_SIZE: usize = 100;
+pub const AUTOMATON_SIZE: usize = 50;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct CAAppData {
@@ -81,7 +81,7 @@ async fn main() -> std::io::Result<()> {
     let mut ca_app_data = CAAppData::new(3.2, 1.0, 6.0, -0.18, chemicals);
 
     ca_app_data.nchem_ca.spread_chemicals_randomly(5);
-    for _ in 0..25 {
+    for _ in 0..1000 {
         ca_app_data.nchem_ca.run_iteration();
     }
 
