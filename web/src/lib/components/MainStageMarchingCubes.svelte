@@ -124,8 +124,8 @@
                         meshGeometries[i].translate(-size/2, -size/2, -size/2);
 
                         // Show both sides of the mesh with a different color
-                        meshObjectsFrontSide.push(new THREE.Mesh(meshGeometries[i], new THREE.MeshPhongMaterial({color: "#e3a474", side: THREE.FrontSide})));
-                        meshObjectsBackSide.push(new THREE.Mesh(meshGeometries[i], new THREE.MeshPhongMaterial({color: "#c2532b", side: THREE.BackSide})));
+                        meshObjectsFrontSide.push(new THREE.Mesh(meshGeometries[i], new THREE.MeshPhongMaterial({color: "#e3a474", side: THREE.DoubleSide})));
+                        meshObjectsBackSide.push(new THREE.Mesh(meshGeometries[i], new THREE.MeshPhongMaterial({color: "#555555", side: THREE.BackSide})));
 
                         // Show the edges of the mesh
                         // const edges = new THREE.EdgesGeometry(meshGeometries[i]);

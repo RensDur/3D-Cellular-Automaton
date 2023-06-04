@@ -116,6 +116,11 @@ function createControllerStore() {
             await updateStore();
         },
 
+        setChemicalCapture: async (chemical: number) => {
+            await sendDevicePostWithJson("/set-chemical-capture", {chemical_capture: chemical});
+            await updateStore();
+        },
+
         clearGrid: async () => {
             await sendDevicePost("/clear-all-voxels")
             await updateStore();

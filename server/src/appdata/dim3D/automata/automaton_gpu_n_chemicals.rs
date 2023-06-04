@@ -45,7 +45,8 @@ pub struct CAChemicalGroup {
 pub struct GPUNChemicalsCellularAutomaton3D {
     pub grid: Vec<Vec<Vec<u8>>>,
     pub chemicals: Vec<CAChemicalGroup>,
-    iteration_count: u32
+    iteration_count: u32,
+    marching_cubes_chemical_capture: usize
 }
 
 
@@ -60,8 +61,18 @@ impl GPUNChemicalsCellularAutomaton3D {
         GPUNChemicalsCellularAutomaton3D {
             grid: vec![vec![vec![0u8; AUTOMATON_SIZE]; AUTOMATON_SIZE]; AUTOMATON_SIZE],
             chemicals,
-            iteration_count: 0
+            iteration_count: 0,
+            marching_cubes_chemical_capture: 0
         }
+    }
+
+    //
+    // The capture functions can be used to alter which chemical should be captured by
+    // the marching cubes algorithm.
+    //
+
+    pub fn capture_chemical(&mut self, chemical: usize) {
+        self.marching_cubes_chemical_capture = chemical;
     }
 
     //
@@ -448,9 +459,30 @@ impl CellularAutomaton3D for GPUNChemicalsCellularAutomaton3D {
     // Extracting Marching-cubes mesh is done in exactly the same way as the original gpu implementation
     fn mc_extract(&self, vertices: &mut Vec<f32>, indices: &mut Vec<u32>) {
         let mut mc = MarchingCubes::new(self.size());
-        //mc.extract(self, vertices, indices);
+        mc.extract(self, vertices, indices);
     }
 
 
 
+}
+
+impl Source for GPUNChemicalsCellularAutomaton3D {
+    fn sample(&self, x: f32, y: f32, z: f32) -> f32 {
+        // Assignment: return negative values for 'inside' and positive for 'outside'.
+        // We'll return -1 for chemical 1 and +1 for chemical 0.
+
+        // Caution: the source will be sampled between (0, 0, 0) and (1, 1, 1)
+
+        let xindex = usize::min((x * (self.size() - 1) as f32).round() as usize, self.size() - 1);
+        let yindex = usize::min((y * (self.size() - 1) as f32).round() as usize, self.size() - 1);
+        let zindex = usize::min((z * (self.size() - 1) as f32).round() as usize, self.size() - 1);
+
+        let chemical = self.get(xindex as usize, yindex as usize, zindex as usize);
+
+        if chemical as usize == self.marching_cubes_chemical_capture {
+            return 1.0;
+        } else {
+            return -1.0;
+        }
+    }
 }

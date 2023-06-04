@@ -12,6 +12,7 @@
 
     // Toggle attachers
     let deviceToggleAttach = 1;
+    let chemicalCaptureAttach = 0;
 
     // Feedback message binders
     let benchmarkCorrectnessFeedback = "Start benchmark to receive feedback";
@@ -51,6 +52,51 @@
             <ControlCenterTextbox bind:text={$controller.gpuNChemIterations} columnSpan={4} />
         {/if}
     </ControlCenterGroup>
+
+    {#if deviceToggleAttach == 0}
+    <ControlCenterGroup title="Visualistion: Chemical selection">
+        <ControlCenterButton text="0"
+                            type="toggle"
+                            bind:toggleAttach={chemicalCaptureAttach}
+                            toggleAttachId={0}
+                            on:toggleOn={() => {controller.setChemicalCapture(0);}} />
+        <ControlCenterButton text="1"
+                            type="toggle"
+                            bind:toggleAttach={chemicalCaptureAttach}
+                            toggleAttachId={1}
+                            on:toggleOn={() => {controller.setChemicalCapture(1);}} />
+        <ControlCenterButton text="2"
+                            type="toggle"
+                            bind:toggleAttach={chemicalCaptureAttach}
+                            toggleAttachId={2}
+                            on:toggleOn={() => {controller.setChemicalCapture(2);}} />
+        <ControlCenterButton text="3"
+                            type="toggle"
+                            bind:toggleAttach={chemicalCaptureAttach}
+                            toggleAttachId={3}
+                            on:toggleOn={() => {controller.setChemicalCapture(3);}} />
+        <ControlCenterButton text="4"
+                            type="toggle"
+                            bind:toggleAttach={chemicalCaptureAttach}
+                            toggleAttachId={4}
+                            on:toggleOn={() => {controller.setChemicalCapture(4);}} />
+        <ControlCenterButton text="5"
+                            type="toggle"
+                            bind:toggleAttach={chemicalCaptureAttach}
+                            toggleAttachId={5}
+                            on:toggleOn={() => {controller.setChemicalCapture(5);}} />
+        <ControlCenterButton text="6"
+                            type="toggle"
+                            bind:toggleAttach={chemicalCaptureAttach}
+                            toggleAttachId={6}
+                            on:toggleOn={() => {controller.setChemicalCapture(6);}} />
+        <ControlCenterButton text="7"
+                            type="toggle"
+                            bind:toggleAttach={chemicalCaptureAttach}
+                            toggleAttachId={7}
+                            on:toggleOn={() => {controller.setChemicalCapture(7);}} />
+    </ControlCenterGroup>
+    {/if}
 
     <ControlCenterGroup title="Debugging controls">
         <ControlCenterButton text="Clear grid" on:click={() => {controller.clearGrid();}}/>

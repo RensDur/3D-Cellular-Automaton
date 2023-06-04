@@ -10,7 +10,7 @@
 <div id="container">
     <!-- Background that contains three.js instance -->
     <div id="background">
-        <MainStage/>
+        <MainStageMarchingCubes/>
     </div>
 
     <!-- Foreground that contains controls and other overlays -->

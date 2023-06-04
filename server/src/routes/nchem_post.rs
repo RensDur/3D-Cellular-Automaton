@@ -24,6 +24,11 @@ pub struct InfoPostRunIteration {
     num_iterations: u32
 }
 
+#[derive(Deserialize)]
+pub struct InfoPostSetChemicalCapture {
+    chemical_capture: usize
+}
+
 #[derive(Serialize)]
 pub struct ResponsePostGeneral {
     status: u32
@@ -82,4 +87,20 @@ pub async fn nchem_post_run_iteration(state: web::Data<Mutex<CAAppData>>, info: 
     drop(state_mod);
 
     Ok(web::Json(ResponsePostRunIteration{duration: duration.as_secs_f32()}))
+}
+
+
+#[post("/nchem/set-chemical-capture")]
+pub async fn nchem_post_set_chemical_capture(state: web::Data<Mutex<CAAppData>>, info: web::Json<InfoPostSetChemicalCapture>) -> Result<impl Responder> {
+
+    let mut state_mod = state.lock().unwrap();
+
+    state_mod.nchem_ca.capture_chemical(info.chemical_capture);
+
+    println!("Captured chemical!");
+
+    drop(state_mod);
+
+    Ok(web::Json(ResponsePostGeneral{status: 0}))
+    
 }
