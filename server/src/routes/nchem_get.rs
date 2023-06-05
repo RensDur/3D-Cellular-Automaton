@@ -35,3 +35,15 @@ async fn nchem_get_iterations(state: web::Data<Mutex<CAAppData>>) -> Result<impl
 
     Ok(u32::to_string(&iterations))
 }
+
+
+#[get("/nchem/get-chemical-capture")]
+async fn nchem_get_chemical_capture(state: web::Data<Mutex<CAAppData>>) -> Result<impl Responder> {
+
+    let state_mod = state.lock().unwrap();
+    let chemical_capture = state_mod.nchem_ca.get_captured_chemical();
+    drop(state_mod);
+
+    Ok(usize::to_string(&chemical_capture))
+
+}

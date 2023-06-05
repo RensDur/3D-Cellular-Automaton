@@ -52,6 +52,8 @@ async fn general_create_activator_patch(state: web::Data<Mutex<CAAppData>>) -> R
     let cpu_clone = state_mod.cpu_ca.clone();
     state_mod.gpu_ca.import_data_from_automaton(&cpu_clone);
 
+    state_mod.nchem_ca.import_data_from_automaton(&cpu_clone);
+
     drop(state_mod);
 
     Ok(web::Json(ResponsePostGeneral{status: 0}))

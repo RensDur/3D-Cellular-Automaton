@@ -12,6 +12,8 @@ export class Grid3D {
     gpuIterations: string;
     gpuNChemIterations: string;
 
+    nChemChemicalCapture: number;
+
     // Constructor
     constructor(size: number) {
         this.size = size;
@@ -36,6 +38,8 @@ export class Grid3D {
         this.cpuIterations = "0";
         this.gpuIterations = "0";
         this.gpuNChemIterations = "0";
+
+        this.nChemChemicalCapture = 0;
     }
 
     static from(size: number, data: number[][][]): Grid3D {

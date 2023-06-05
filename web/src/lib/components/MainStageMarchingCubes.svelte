@@ -31,6 +31,9 @@
     let meshObjectsBackSide: any[] = [];
     let meshObjectsFrontSide: any[] = [];
 
+    // Colors!
+    let chemical_colors = [0xc2532b, 0xe3a474, 0x7c1e79, 0x9862a5, 0xb8d161, 0x5db98d, 0xcc4a4a]
+
     // THREE.js behaviour variables
     let size: number = 20;
     let previouslyRenderedGrid: any;
@@ -123,9 +126,29 @@
                         meshGeometries[i].computeVertexNormals();
                         meshGeometries[i].translate(-size/2, -size/2, -size/2);
 
+                        // Decide which colour should appear where
+                        // The back-side of the mesh is always the chemical that was selected
+                        let colorA = chemical_colors[0];
+                        let colorB = chemical_colors[1];
+
+                        // If the controller indicates that the current-working-device is the nchem-device
+                        if (controller.getWorkingDevice() == "nchem") {
+                            // The colors need to be changed.
+                            // The selected cell-type is:
+                            let selectedChemicalCapture = $controller.nChemChemicalCapture;
+
+                            console.log("The selected cell-type is: " + String(selectedChemicalCapture));
+
+                            // colorA will become the color that corresponds to this cell-type
+                            colorA = 0xfccf03;
+
+                            // colorB will become grey
+                            colorB = chemical_colors[selectedChemicalCapture];
+                        }
+
                         // Show both sides of the mesh with a different color
-                        meshObjectsFrontSide.push(new THREE.Mesh(meshGeometries[i], new THREE.MeshPhongMaterial({color: "#e3a474", side: THREE.DoubleSide})));
-                        meshObjectsBackSide.push(new THREE.Mesh(meshGeometries[i], new THREE.MeshPhongMaterial({color: "#555555", side: THREE.BackSide})));
+                        meshObjectsFrontSide.push(new THREE.Mesh(meshGeometries[i], new THREE.MeshPhongMaterial({color: colorB, side: THREE.FrontSide})));
+                        meshObjectsBackSide.push(new THREE.Mesh(meshGeometries[i], new THREE.MeshPhongMaterial({color: colorA, side: THREE.BackSide})));
 
                         // Show the edges of the mesh
                         // const edges = new THREE.EdgesGeometry(meshGeometries[i]);

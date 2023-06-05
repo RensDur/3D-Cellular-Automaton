@@ -54,7 +54,7 @@
     </ControlCenterGroup>
 
     {#if deviceToggleAttach == 0}
-    <ControlCenterGroup title="Visualistion: Chemical selection">
+    <ControlCenterGroup title="Visualistion: Species selection">
         <ControlCenterButton text="0"
                             type="toggle"
                             bind:toggleAttach={chemicalCaptureAttach}
@@ -100,7 +100,7 @@
 
     <ControlCenterGroup title="Debugging controls">
         <ControlCenterButton text="Clear grid" on:click={() => {controller.clearGrid();}}/>
-        <ControlCenterButton text="Spread chemicals randomly" on:click={() => {controller.randomlySpreadChemicals(3);}}/>
+        <ControlCenterButton text="Spread chemicals randomly" on:click={() => {controller.randomlySpreadChemicals(4);}}/>
         <ControlCenterButton text="Run iteration" on:click={() => {controller.runIteration();}}/>
         <ControlCenterButton text="Run 5 iterations" on:click={() => {controller.run5Iterations();}}/>
         <ControlCenterButton text="Place a patch" on:click={() => {controller.generatePatch();}}/>

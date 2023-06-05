@@ -48,6 +48,8 @@ function createControllerStore() {
         grid.gpuIterations = await sendGet("/gpu/get-iterations");
         grid.gpuNChemIterations = await sendGet("/nchem/get-iterations");
 
+        grid.nChemChemicalCapture = parseInt(await sendGet("/nchem/get-chemical-capture"));
+
         console.log("The current grid state was requested from the server. Response:");
         console.log(grid);
 

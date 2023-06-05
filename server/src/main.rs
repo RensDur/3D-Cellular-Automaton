@@ -80,12 +80,12 @@ async fn main() -> std::io::Result<()> {
 
     let mut ca_app_data = CAAppData::new(3.2, 1.0, 6.0, -0.18, chemicals);
 
-    // ca_app_data.nchem_ca.spread_chemicals_randomly(5);
-    // for _ in 0..1000 {
-    //     ca_app_data.nchem_ca.run_iteration();
-    // }
+    ca_app_data.nchem_ca.spread_chemicals_randomly(5);
+    for _ in 0..50 {
+        ca_app_data.nchem_ca.run_iteration();
+    }
 
-    // println!("Done!");
+    println!("Done!");
 
     let app_state = web::Data::new(Mutex::new(ca_app_data));
 
@@ -112,6 +112,7 @@ async fn main() -> std::io::Result<()> {
             .service(nchem_get_current_state)
             .service(nchem_get_current_state_triangles)
             .service(nchem_get_iterations)
+            .service(nchem_get_chemical_capture)
             .service(nchem_post_initialise)
             .service(nchem_post_clear_all_voxels)
             .service(nchem_post_spread_chemicals_randomly)

@@ -75,6 +75,10 @@ impl GPUNChemicalsCellularAutomaton3D {
         self.marching_cubes_chemical_capture = chemical;
     }
 
+    pub fn get_captured_chemical(&self) -> usize {
+        self.marching_cubes_chemical_capture
+    }
+
     //
     // The import and export functions are exactly the same as the original gpu implementation
     //
