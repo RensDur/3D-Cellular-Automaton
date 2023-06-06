@@ -101,7 +101,8 @@
         border-top-right-radius: 25px;
         border-bottom-right-radius: 25px;
 
-        overflow: hidden;
+        overflow-x: hidden;
+        overflow-y: scroll;
     }
 
     button#toggleButton {

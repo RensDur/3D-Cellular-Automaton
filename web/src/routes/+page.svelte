@@ -4,13 +4,19 @@
     import MainStage from "$lib/components/MainStage.svelte";
 	import MainStageMarchingCubes from "$lib/components/MainStageMarchingCubes.svelte";
 
+    let view_mode = 1;
+
 </script>
 
 <!-- Container that's allows no overlay of content or scrolling -->
 <div id="container">
     <!-- Background that contains three.js instance -->
     <div id="background">
-        <MainStageMarchingCubes/>
+        {#if (view_mode == 0)}
+        <MainStage />
+        {:else}
+        <MainStageMarchingCubes />
+        {/if}
     </div>
 
     <!-- Foreground that contains controls and other overlays -->

@@ -46,6 +46,9 @@ function createControllerStore() {
         // Update both the cpu and gpu number of iterations
         grid.cpuIterations = await sendGet("/cpu/get-iterations");
         grid.gpuIterations = await sendGet("/gpu/get-iterations");
+        grid.gpuNChemIterations = await sendGet("/nchem/get-iterations");
+
+        grid.nChemChemicalCapture = parseInt(await sendGet("/nchem/get-chemical-capture"));
 
         console.log("The current grid state was requested from the server. Response:");
         console.log(grid);
@@ -112,6 +115,11 @@ function createControllerStore() {
 
         selectSimulationDevice: async (device: string) => {
             workingAddress = device;
+            await updateStore();
+        },
+
+        setChemicalCapture: async (chemical: number) => {
+            await sendDevicePostWithJson("/set-chemical-capture", {chemical_capture: chemical});
             await updateStore();
         },
 

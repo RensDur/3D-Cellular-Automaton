@@ -3,5 +3,7 @@ pub mod gpu_get;
 pub mod gpu_post;
 pub mod cpu_get;
 pub mod cpu_post;
+pub mod nchem_get;
+pub mod nchem_post;
 pub mod benchmarks;
 pub mod general_post;
