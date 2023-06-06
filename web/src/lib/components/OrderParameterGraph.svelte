@@ -14,7 +14,7 @@
     // Data
     //
 
-    let graphRange = [-1, 5];
+    let graphRange = [-1, 2];
     let graphWidth = 0;
     let graphHeight = 0;
 
@@ -51,7 +51,7 @@
             }
 
             // Vertical lines
-            let numberOfLines = numberOfIterations % 50;
+            let numberOfLines = Math.max(numberOfIterations % 50, 10);
             let lineSpacing = graphWidth / numberOfLines;
 
             p5.fill(0);
@@ -68,11 +68,11 @@
                 }
                 p5.line((p5.width - graphWidth - graphSpacing) + i*lineSpacing, graphSpacing, (p5.width - graphWidth - graphSpacing) + i*lineSpacing, graphHeight + graphSpacing);
 
-                p5.text(String(p5.map(i, 0, numberOfLines, 0, numberOfIterations)), (p5.width - graphWidth - graphSpacing) + i*lineSpacing, graphHeight + graphSpacing + 20);
+                p5.text(String(p5.map(i, 0, numberOfLines, 0, numberOfIterations).toFixed(2)), (p5.width - graphWidth - graphSpacing) + i*lineSpacing, graphHeight + graphSpacing + 20);
             }
 
             // Horizontal lines
-            numberOfLines = (graphRange[1] - graphRange[0]) % 50;
+            numberOfLines = Math.max((graphRange[1] - graphRange[0]) % 50, 0);
             lineSpacing = graphHeight / numberOfLines;
 
             let yZeroStart = 0;
@@ -89,7 +89,7 @@
 
                 p5.line(p5.width - graphWidth - graphSpacing, graphHeight + graphSpacing - i*lineSpacing, p5.width - graphSpacing, graphHeight + graphSpacing - i*lineSpacing);
 
-                p5.text(String(graphRange[0] + i), p5.width - graphWidth - graphSpacing - 20, graphHeight + graphSpacing - i*lineSpacing + 3);
+                p5.text(String(p5.map(i, 0, numberOfLines, graphRange[0], graphRange[1]).toFixed(2)), p5.width - graphWidth - graphSpacing - 20, graphHeight + graphSpacing - i*lineSpacing + 3);
             }
 
             // Display the graph

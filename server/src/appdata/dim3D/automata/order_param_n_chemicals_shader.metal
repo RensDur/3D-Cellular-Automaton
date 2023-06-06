@@ -4,8 +4,9 @@ using namespace metal;
 
 struct SumInput {
     device uint8_t *data;
-    volatile device float *sum;
+    volatile device int8_t *sum;
     device uint* arg_size_container;
+    device int* arg_neighbours;
 };
 
 kernel void compute_iteration(device SumInput& input [[ buffer(0) ]],
@@ -31,22 +32,11 @@ kernel void compute_iteration(device SumInput& input [[ buffer(0) ]],
     int y = (gid % (size_i*size_i)) / size_i;
     int x = (gid % (size_i*size_i)) % size_i;
 
-    // Define the normalisation factor
-    float normalisation = 6 * array_size_i * (num_species - 1);
 
-    
-    // Define the neighbours that should be considered for this computation
-    int neighbours[] = {-1, 0, 0,
-                        0, -1, 0,
-                        0, 0, -1,
-                        1, 0, 0,
-                        0, 1, 0,
-                        0, 0, 1};
-
-    for (int a = 0; a < neighbours.length; a += 3) {
-        int dx = neighbours[a];
-        int dy = neighbours[a+1];
-        int dz = neighbours[a+2];
+    for (int a = 0; a < 18; a += 3) {
+        int dx = input.arg_neighbours[a];
+        int dy = input.arg_neighbours[a+1];
+        int dz = input.arg_neighbours[a+2];
 
         int x_wrapped = x + dx;
         int y_wrapped = y + dy;
@@ -96,11 +86,11 @@ kernel void compute_iteration(device SumInput& input [[ buffer(0) ]],
         int index = x_wrapped + y_wrapped * size_i + z_wrapped * size_i * size_i;
 
 
-        for (int j = 0; j < num_species; j++) {
-            for (int i = j+1; i < num_species; i++) {
+        for (uint8_t j = 0; j < num_species; j++) {
+            for (uint8_t i = j+1; i < num_species; i++) {
 
-                float sigma1 = 0;
-                float sigma2 = 0;
+                int8_t sigma1 = 0;
+                int8_t sigma2 = 0;
 
                 // Compute sigma1
                 // The value of the cell that we're currently computing for is input.data[gid];
@@ -112,26 +102,18 @@ kernel void compute_iteration(device SumInput& input [[ buffer(0) ]],
 
                 // Compute sigma2
                 // The value of the neighbour we're currently considering is found at input.data[index];
-                if (index.data[index] == i) {
+                if (input.data[index] == i) {
                     sigma2 = 1;
-                } else if (index.data[index] == j) {
+                } else if (input.data[index] == j) {
                     sigma2 = -1;
                 }
 
                 // Add the absolute value of the multiplication of these numbers to the sum
-                if (sigma1 * sigma2 < 0) {
-                    input.sum[gid] += -1 * sigma1 * sigma2 * normalisation;
-                } else {
-                    input.sum[gid] += sigma1 * sigma2 * normalisation;
-                }
+                input.sum[gid] += sigma1 * sigma2;
                 
             }
         }
 
     }
-
-
-
-
 
 }

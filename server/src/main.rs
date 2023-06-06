@@ -45,95 +45,15 @@ async fn main() -> std::io::Result<()> {
                 range: 6.0,
                 influence: -0.23
             }
-        },
-        CAChemicalGroup {
-            promote: CAChemical {
-                range: 3.2,
-                influence: 1.0
-            },
-            demote: CAChemical {
-                range: 6.0,
-                influence: -0.25
-            }
-        },
-        CAChemicalGroup {
-            promote: CAChemical {
-                range: 3.2,
-                influence: 1.0
-            },
-            demote: CAChemical {
-                range: 6.0,
-                influence: -0.25
-            }
-        },
-        CAChemicalGroup {
-            promote: CAChemical {
-                range: 3.2,
-                influence: 1.0
-            },
-            demote: CAChemical {
-                range: 7.0,
-                influence: -0.25
-            }
-        },
-        CAChemicalGroup {
-            promote: CAChemical {
-                range: 3.2,
-                influence: 1.0
-            },
-            demote: CAChemical {
-                range: 6.0,
-                influence: -0.25
-            }
-        },
-        CAChemicalGroup {
-            promote: CAChemical {
-                range: 3.2,
-                influence: 1.0
-            },
-            demote: CAChemical {
-                range: 6.0,
-                influence: -0.25
-            }
-        },
-        CAChemicalGroup {
-            promote: CAChemical {
-                range: 3.2,
-                influence: 1.0
-            },
-            demote: CAChemical {
-                range: 6.0,
-                influence: -0.25
-            }
-        },
-        CAChemicalGroup {
-            promote: CAChemical {
-                range: 3.2,
-                influence: 1.0
-            },
-            demote: CAChemical {
-                range: 6.0,
-                influence: -0.25
-            }
-        },
-        CAChemicalGroup {
-            promote: CAChemical {
-                range: 3.2,
-                influence: 1.0
-            },
-            demote: CAChemical {
-                range: 6.0,
-                influence: -0.25
-            }
         }
     ];
 
     let mut ca_app_data = CAAppData::new(3.2, 1.0, 6.0, -0.18, chemicals);
 
-    ca_app_data.nchem_ca.spread_chemicals_randomly(5);
-    for _ in 0..50 {
-        ca_app_data.nchem_ca.run_iteration();
-    }
+    ca_app_data.nchem_ca.spread_chemicals_randomly(2);
+    // for _ in 0..40 {
+    //     ca_app_data.nchem_ca.run_iteration();
+    // }
 
     println!("Done!");
 
