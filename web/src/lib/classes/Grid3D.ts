@@ -14,6 +14,8 @@ export class Grid3D {
 
     nChemChemicalCapture: number;
 
+    orderParameter: number[];
+
     // Constructor
     constructor(size: number) {
         this.size = size;
@@ -40,6 +42,8 @@ export class Grid3D {
         this.gpuNChemIterations = "0";
 
         this.nChemChemicalCapture = 0;
+
+        this.orderParameter = [1,2,3,4,5];
     }
 
     static from(size: number, data: number[][][]): Grid3D {

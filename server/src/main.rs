@@ -130,7 +130,7 @@ async fn main() -> std::io::Result<()> {
 
     let mut ca_app_data = CAAppData::new(3.2, 1.0, 6.0, -0.18, chemicals);
 
-    ca_app_data.nchem_ca.spread_chemicals_randomly(10);
+    ca_app_data.nchem_ca.spread_chemicals_randomly(5);
     for _ in 0..50 {
         ca_app_data.nchem_ca.run_iteration();
     }
