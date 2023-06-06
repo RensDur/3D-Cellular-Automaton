@@ -47,3 +47,15 @@ async fn nchem_get_chemical_capture(state: web::Data<Mutex<CAAppData>>) -> Resul
     Ok(usize::to_string(&chemical_capture))
 
 }
+
+#[get("/nchem/get-order-parameter")]
+async fn nchem_get_order_parameter(state: web::Data<Mutex<CAAppData>>) -> Result<impl Responder> {
+
+    let state_mod = state.lock().unwrap();
+
+    let result = state_mod.nchem_ca.get_order_parameters();
+
+    drop(state_mod);
+
+    Ok(web::Json(result))
+}

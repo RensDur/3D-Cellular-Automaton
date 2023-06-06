@@ -35,6 +35,14 @@ function createControllerStore() {
         return res;
     }
 
+    async function getOrderParameterFromServer() {
+        const response = await fetch(serverAddress + "/nchem/get-order-parameter", {
+            method: "GET"
+        });
+
+        return await response.json();
+    }
+
     async function updateStore() {
         const state = await getCurrentGridFromServer();
         const grid = Grid3D.from(state.length, state);
@@ -42,6 +50,10 @@ function createControllerStore() {
         // Get the MC Mesh from the server
         const mcGltf = await getCurrentMCMeshFromServer();
         grid.setMarchingCubesGltf(mcGltf);
+
+        // Get the nchem order parameter from the server
+        const orderParameters = await getOrderParameterFromServer();
+        grid.orderParameter = orderParameters;
 
         // Update both the cpu and gpu number of iterations
         grid.cpuIterations = await sendGet("/cpu/get-iterations");

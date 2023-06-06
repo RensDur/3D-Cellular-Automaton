@@ -46,7 +46,8 @@ pub struct GPUNChemicalsCellularAutomaton3D {
     pub grid: Vec<Vec<Vec<u8>>>,
     pub chemicals: Vec<CAChemicalGroup>,
     iteration_count: u32,
-    marching_cubes_chemical_capture: usize
+    marching_cubes_chemical_capture: usize,
+    order_parameter: Vec<f32>
 }
 
 
@@ -62,7 +63,8 @@ impl GPUNChemicalsCellularAutomaton3D {
             grid: vec![vec![vec![0u8; AUTOMATON_SIZE]; AUTOMATON_SIZE]; AUTOMATON_SIZE],
             chemicals,
             iteration_count: 0,
-            marching_cubes_chemical_capture: 0
+            marching_cubes_chemical_capture: 0,
+            order_parameter: vec![]
         }
     }
 
@@ -79,11 +81,19 @@ impl GPUNChemicalsCellularAutomaton3D {
         self.marching_cubes_chemical_capture
     }
 
+    pub fn insert_order_parameter_value(&mut self, val: f32) {
+        self.order_parameter.push(val);
+    }
+
+    pub fn get_order_parameters(&self) -> Vec<f32> {
+        self.order_parameter.clone()
+    }
+
     //
     // The import and export functions are exactly the same as the original gpu implementation
     //
 
-    fn export(&self) -> Vec<u8> {
+    pub fn export(&self) -> Vec<u8> {
 
         let mut res = vec![0u8; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE];
 
@@ -111,6 +121,125 @@ impl GPUNChemicalsCellularAutomaton3D {
 
     }
 
+
+
+    //
+    // COMPUTING THE ORDER-PARAMETERS
+    //
+
+    fn compute_order_parameter(&mut self) {
+
+        let mut result: f32 = 0.0;
+        let mut result_cell_sums: Vec<f32> = vec![0.0; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE];
+
+        autoreleasepool(|| {
+
+            let device = Device::system_default().expect("no device found");
+            println!("Computing order-parameter on GPU: {}", device.name());
+            let command_queue = device.new_command_queue();
+
+            let data = self.export();
+
+            let buffer = device.new_buffer_with_data(
+                unsafe { mem::transmute(data.as_ptr()) },
+                (data.len() * mem::size_of::<u8>()) as u64,
+                MTLResourceOptions::CPUCacheModeDefaultCache,
+            );
+
+            let sum = {
+                let data: [f32; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE] = [0.0; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE];
+                device.new_buffer_with_data(
+                    unsafe { mem::transmute(data.as_ptr()) },
+                    (data.len() * mem::size_of::<f32>()) as u64,
+                    MTLResourceOptions::CPUCacheModeDefaultCache,
+                )
+            };
+
+            // There's a couple of size parameters we need to pass over to the gpu
+            let size_container: Vec<u32> = vec![AUTOMATON_SIZE as u32, self.chemicals.len() as u32];
+
+            let arg_size_container = {
+                let data = size_container.as_slice();
+                device.new_buffer_with_data(
+                    unsafe { mem::transmute(data.as_ptr()) },
+                    (data.len() * mem::size_of::<u32>()) as u64,
+                    MTLResourceOptions::CPUCacheModeDefaultCache
+                )
+            };
+
+            let command_buffer = command_queue.new_command_buffer();
+            let encoder = command_buffer.new_compute_command_encoder();
+
+            let library = device
+                .new_library_with_source(AUTOMATON_SHADER_SRC, &CompileOptions::new())
+                .unwrap();
+            let kernel = library.get_function("compute_iteration", None).unwrap();
+
+            let argument_encoder = kernel.new_argument_encoder(0);
+            let arg_buffer = device.new_buffer(
+                argument_encoder.encoded_length(),
+                MTLResourceOptions::empty(),
+            );
+            argument_encoder.set_argument_buffer(&arg_buffer, 0);
+            argument_encoder.set_buffer(0, &buffer, 0);
+            argument_encoder.set_buffer(1, &sum, 0);
+            argument_encoder.set_buffer(2, &arg_size_container, 0);
+
+            let pipeline_state_descriptor = ComputePipelineDescriptor::new();
+            pipeline_state_descriptor.set_compute_function(Some(&kernel));
+
+            let pipeline_state = device
+                .new_compute_pipeline_state_with_function(
+                    pipeline_state_descriptor.compute_function().unwrap(),
+                )
+                .unwrap();
+
+            encoder.set_compute_pipeline_state(&pipeline_state);
+            encoder.set_buffer(0, Some(&arg_buffer), 0);
+
+            encoder.use_resource(&buffer, MTLResourceUsage::Read);
+            encoder.use_resource(&sum, MTLResourceUsage::Write);
+            encoder.use_resource(&arg_size_container, MTLResourceUsage::Read);
+
+            
+            
+            let width = pipeline_state.thread_execution_width();
+            let height = pipeline_state.max_total_threads_per_threadgroup() / width;
+
+            let threads_per_grid = MTLSize {
+                width: (data.len() as u64),
+                height: 1,
+                depth: 1,
+            };
+
+            let threads_per_thread_group = MTLSize {
+                width,
+                height,
+                depth: 1,
+            };
+
+            encoder.dispatch_threads(threads_per_grid, threads_per_thread_group);
+            encoder.end_encoding();
+            command_buffer.commit();
+            command_buffer.wait_until_completed();
+
+            let ptr = sum.contents() as *mut [f32; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE];
+            unsafe {
+                result_cell_sums = (*ptr).to_vec();
+            }
+
+        });
+
+        for cell_sum in result_cell_sums {
+            result += cell_sum;
+        }
+
+        self.insert_order_parameter_value(result);
+
+    }
+
+
+
 }
 
 
@@ -132,6 +261,9 @@ impl CellularAutomaton3D for GPUNChemicalsCellularAutomaton3D {
 
         // Reset the iteration count
         self.iteration_count = 0;
+
+        // Reset the order parameter
+        self.order_parameter = vec![];
     }
 
 
@@ -171,6 +303,9 @@ impl CellularAutomaton3D for GPUNChemicalsCellularAutomaton3D {
 
         // Reset the iteration count
         self.iteration_count = 0;
+
+        // Reset the order parameter
+        self.order_parameter = vec![];
     }
 
 
@@ -444,6 +579,9 @@ impl CellularAutomaton3D for GPUNChemicalsCellularAutomaton3D {
         });
 
         self.iteration_count += 1;
+
+        // Compute the new order parameter and insert it into the array
+        self.compute_order_parameter();
 
     }
 
