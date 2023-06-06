@@ -26,8 +26,6 @@
 
             p5.createCanvas(windowWidth, windowHeight);
 
-            p5.textAlign(p5.CENTER);
-
         }
 
         p5.draw = () => {
@@ -49,7 +47,7 @@
             let numberOfIterations = 10;
 
             if ($controller) {
-                numberOfIterations = $controller.orderParameter.length;
+                numberOfIterations = Math.max($controller.orderParameter.length, 10);
             }
 
             // Vertical lines
@@ -57,6 +55,10 @@
             let lineSpacing = graphWidth / numberOfLines;
 
             p5.fill(0);
+            p5.strokeWeight(1);
+
+            p5.textAlign(p5.CENTER);
+            p5.textSize(12);
 
             for (let i = 0; i <= numberOfLines; i++) {
                 if (i == 0) {
@@ -73,9 +75,14 @@
             numberOfLines = (graphRange[1] - graphRange[0]) % 50;
             lineSpacing = graphHeight / numberOfLines;
 
+            let yZeroStart = 0;
+
             for (let i = 0; i <= numberOfLines; i++) {
                 if (graphRange[0] + i == 0) {
                     p5.stroke(0);
+
+                    // Store this offset for later use
+                    yZeroStart = i;
                 } else {
                     p5.stroke(150);
                 }
@@ -85,7 +92,62 @@
                 p5.text(String(graphRange[0] + i), p5.width - graphWidth - graphSpacing - 20, graphHeight + graphSpacing - i*lineSpacing + 3);
             }
 
+            // Display the graph
+            p5.stroke(56, 182, 255);
+            p5.strokeWeight(5);
+            p5.noFill();
 
+            p5.beginShape();
+
+            if ($controller) {
+
+                let dxPerPoint = graphWidth / $controller.orderParameter.length;
+                let dyPerPoint = graphHeight / (graphRange[1] - graphRange[0]);
+
+                for (let i = 0; i < $controller.orderParameter.length; i++) {
+
+                    let yVal = $controller.orderParameter[i];
+
+                    // If this yvalue falls out of the bounds, end the shape and start a new one
+                    if (yVal < graphRange[0] || yVal > graphRange[1]) {
+                        p5.endShape();
+                        p5.beginShape();
+                    } else {
+
+                        // Else, add this point to the graph
+                        p5.vertex(p5.width - graphWidth - graphSpacing + i*dxPerPoint, graphHeight + graphSpacing - yZeroStart*dyPerPoint - yVal*dyPerPoint);
+
+                    }
+
+                }
+            }
+
+            p5.endShape();
+
+
+
+
+            // Print the necessary graph properties
+            p5.stroke(0);
+            p5.strokeWeight(1);
+            p5.fill(0);
+
+            p5.textAlign(p5.RIGHT);
+            p5.textSize(15);
+            p5.text("Number of iterations", p5.width - graphSpacing - 20, graphSpacing + graphHeight + 60);
+
+            p5.translate(p5.width - graphSpacing - graphWidth - 60, graphSpacing + 20);
+            p5.rotate(- p5.PI / 2);
+
+            p5.text("Order Parameter", 0, 0);
+
+            p5.rotate(p5.PI / 2);
+            p5.translate(- (p5.width - graphSpacing - graphWidth - 60), - (graphSpacing + 20));
+
+            p5.textAlign(p5.CENTER);
+            p5.textSize(22);
+
+            p5.text("Order Parameter per iteration", p5.width - graphSpacing - graphWidth/2, graphSpacing / 2);
         }
     }
 

@@ -43,7 +43,7 @@ export class Grid3D {
 
         this.nChemChemicalCapture = 0;
 
-        this.orderParameter = [1,2,3,4,5];
+        this.orderParameter = [];
     }
 
     static from(size: number, data: number[][][]): Grid3D {
