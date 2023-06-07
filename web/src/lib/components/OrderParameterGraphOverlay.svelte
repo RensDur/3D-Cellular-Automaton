@@ -36,7 +36,7 @@
     }
 
     function openControlCenter() {
-        csWidth.set(windowWidth - 450);
+        csWidth.set(600);
         csShown = true;
     }
 
@@ -94,11 +94,11 @@
     }
 
     div#container {
-        height: calc(100vh - 60px);
+        height: 400px;
 
         position: absolute;
         right: 0;
-        top: 30px;
+        top: calc(100vh - 430px);
 
         backdrop-filter: blur(20px);
 

@@ -11,7 +11,7 @@
     let simdev: string;
 
     // Toggle attachers
-    let deviceToggleAttach = 1;
+    let deviceToggleAttach = 0;
     let chemicalCaptureAttach = 0;
 
     // Feedback message binders

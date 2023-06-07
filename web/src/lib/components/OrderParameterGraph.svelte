@@ -14,11 +14,11 @@
     // Data
     //
 
-    let graphRange = [-1, 2];
+    let graphRange = [-1, 1];
     let graphWidth = 0;
     let graphHeight = 0;
 
-    let graphSpacing = 50;
+    let graphSpacing = 35;
 
 
     const sketch = (p5: any) => {
@@ -40,8 +40,8 @@
             // Continue drawing
             p5.clear();
 
-            graphWidth = p5.width - 100 - graphSpacing;
-            graphHeight = p5.height - 100 - graphSpacing;
+            graphWidth = p5.width - 80 - graphSpacing;
+            graphHeight = p5.height - 70 - graphSpacing;
 
             // Draw the grid of the graph
             let numberOfIterations = 10;
@@ -51,7 +51,7 @@
             }
 
             // Vertical lines
-            let numberOfLines = Math.max(numberOfIterations % 50, 10);
+            let numberOfLines = Math.max(numberOfIterations % 20, 6);
             let lineSpacing = graphWidth / numberOfLines;
 
             p5.fill(0);
@@ -72,7 +72,7 @@
             }
 
             // Horizontal lines
-            numberOfLines = Math.max((graphRange[1] - graphRange[0]) % 50, 0);
+            numberOfLines = graphRange[1] - graphRange[0];
             lineSpacing = graphHeight / numberOfLines;
 
             let yZeroStart = 0;
@@ -89,7 +89,22 @@
 
                 p5.line(p5.width - graphWidth - graphSpacing, graphHeight + graphSpacing - i*lineSpacing, p5.width - graphSpacing, graphHeight + graphSpacing - i*lineSpacing);
 
-                p5.text(String(p5.map(i, 0, numberOfLines, graphRange[0], graphRange[1]).toFixed(2)), p5.width - graphWidth - graphSpacing - 20, graphHeight + graphSpacing - i*lineSpacing + 3);
+                p5.text(String(p5.map(i, 0, numberOfLines, graphRange[0], graphRange[1])), p5.width - graphWidth - graphSpacing - 20, graphHeight + graphSpacing - i*lineSpacing + 3);
+
+                // Also draw some lines between the whole numbers
+                if (i < numberOfLines) {
+                    let numOfSeparationLines = 10;
+                    let separation = lineSpacing / numOfSeparationLines;
+                    p5.stroke(220);
+                    for (let j = 1; j < numOfSeparationLines; j++) {
+                        p5.line(p5.width - graphWidth - graphSpacing, graphHeight + graphSpacing - i*lineSpacing - j*separation, p5.width - graphSpacing, graphHeight + graphSpacing - i*lineSpacing - j*separation);
+
+                        if (j % 2 == 0) {
+                            p5.text(String(p5.map(i + j/numOfSeparationLines, 0, numberOfLines, graphRange[0], graphRange[1]).toFixed(2)), p5.width - graphWidth - graphSpacing - 20, graphHeight + graphSpacing - i*lineSpacing - j*separation + 3);
+                        }
+                    }
+                }
+
             }
 
             // Display the graph
@@ -101,7 +116,7 @@
 
             if ($controller) {
 
-                let dxPerPoint = graphWidth / $controller.orderParameter.length;
+                let dxPerPoint = graphWidth / Math.max($controller.orderParameter.length, 10);
                 let dyPerPoint = graphHeight / (graphRange[1] - graphRange[0]);
 
                 for (let i = 0; i < $controller.orderParameter.length; i++) {

@@ -254,6 +254,7 @@ impl GPUNChemicalsCellularAutomaton3D {
             }
 
             for i in 0..result_cell_sums.len() {
+                //println!("{}", result_cell_sums[i]);
                 result += result_cell_sums[i] as f32 / normalisation;
             }
 
@@ -309,6 +310,28 @@ impl CellularAutomaton3D for GPUNChemicalsCellularAutomaton3D {
 
     fn size(&self) -> usize {
         self.grid.len()
+    }
+
+
+    fn import_data_from_automaton(&mut self, other: &dyn CellularAutomaton3D) {
+
+        // Loop over all (x,y,z) positions and copy the data
+        for x in 0..self.size() {
+            for y in 0..self.size() {
+                for z in 0..self.size() {
+                    self.set(x, y, z, other.get(x, y, z));
+                }
+            }
+        }
+
+        // Set the number of iterations identical to 'other'
+        self.set_iteration_count(other.get_iteration_count());
+
+        // Reset and recompute the order parameter
+        self.order_parameter = vec![];
+
+        self.compute_order_parameter();
+
     }
 
 

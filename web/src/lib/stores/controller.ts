@@ -9,7 +9,7 @@ function createControllerStore() {
     const { subscribe, set, update } = writable<Grid3D>();
 
     const serverAddress = "http://localhost:7878";
-    let workingAddress = "gpu";
+    let workingAddress = "nchem";
 
     async function getCurrentGridFromServer() {
         const response = await fetch(serverAddress + "/" + workingAddress + "/get-current-state", {
