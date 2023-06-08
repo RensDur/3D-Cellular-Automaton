@@ -80,7 +80,11 @@
         containerDiv.appendChild(renderer.domElement);
 
         // Specify the camera properties
-        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        if (sceneWidth == undefined || sceneHeight == undefined) {
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        } else {
+            camera = new THREE.PerspectiveCamera(75, sceneWidth / sceneHeight, 0.1, 1000);
+        }
         camera.position.set(size, size, size);
         
         // Specify the orbit-controls
@@ -217,7 +221,12 @@
 
     function handleWindowResize(e: Event) {
         // Update the camera aspect-ratio
-        camera.aspect = window.innerWidth / window.innerHeight;
+        if (sceneWidth == undefined || sceneHeight == undefined) {
+            camera.aspect = window.innerWidth / window.innerHeight;
+        } else {
+            camera.aspect = sceneWidth / sceneHeight;
+        }
+        
         camera.updateProjectionMatrix();
 
         // Update the size of the renderer to match the new window-size

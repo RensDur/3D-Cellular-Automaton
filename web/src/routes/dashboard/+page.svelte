@@ -1,10 +1,12 @@
 <script lang="ts">
+	import { BatchEntry } from "$lib/classes/BatchEntry";
 	import { Chemical } from "$lib/classes/Chemical";
     import { Species } from "$lib/classes/Species";
 
 
     import MainStageMarchingCubes from "$lib/components/MainStageMarchingCubes.svelte";
     import OrderParameterGraph from "$lib/components/OrderParameterGraph.svelte";
+	import BatchEntryRow from "$lib/components/dashboard/BatchEntryRow.svelte";
     import { dashboardController } from "$lib/stores/dashboardController";
 	import { onMount } from "svelte";
 
@@ -25,11 +27,18 @@
     let demotorRangeInput: HTMLInputElement;
     let demotorInfluenceInput: HTMLInputElement;
 
+    let batchProgrammingTable: HTMLTableElement;
+
 
 
     // State keeping
     let selectedSpecies: Species | undefined = undefined;
     let numberOfIterations: number = 10;
+
+    let batchEntries: BatchEntry[] = [];
+
+    // METHODS RELATED TO BATCH PROGRAMMING
+    
 
 
 
@@ -76,6 +85,12 @@
         // Based on the currently selected species, update the marching cubes mesh
         dashboardController?.requestMeshForSpecies(parseInt(speciesSelector.value));
 
+        // Update the possibile species that can be selected in the batch programming section
+        let oldBe = batchEntries;
+
+        batchEntries = [];
+
+        batchEntries = oldBe;
         
     }
 
@@ -161,6 +176,49 @@
 
         </div>
 
+
+
+
+        <div id="batch-dashboard">
+
+            <div id="batch-left">
+                <p>Batch programming</p>
+
+                <table bind:this={batchProgrammingTable} border={1}>
+                    {#if ($dashboardController != undefined)}
+                        {#each batchEntries as be, i}
+                        <tr>
+                            <td>
+                                <BatchEntryRow bind:batchEntry={be} />
+                            </td>
+                            <td>
+                                <button on:click={() => {
+                                    batchEntries.splice(i, 1);
+                                    batchEntries = batchEntries;
+                                }}>x</button>
+                            </td>
+                        </tr>
+                        {/each}
+                    {/if}
+
+                    <tr>
+                        <td>
+                            <button on:click={() => {batchEntries.push(new BatchEntry()); batchEntries = batchEntries;}}>Add entry</button>
+                        </td>
+                    </tr>
+                </table>
+
+            </div>
+
+            <div id="batch-right">
+                <p>Batch export</p>
+
+                
+
+            </div>
+
+        </div>
+
     </div>
 </div>
 
@@ -191,7 +249,7 @@
 
     div#stage-container {
         width: 50vw;
-        height: 50vh;
+        height: 60vh;
 
         position: absolute;
         left: 0;
@@ -200,7 +258,7 @@
 
     div#order-parameter-container {
         width: 50vw;
-        height: 50vh;
+        height: 60vh;
 
         position: absolute;
         right: 0;
@@ -209,7 +267,7 @@
 
     div#controls-container {
         width: 100vw;
-        height: 50vh;
+        height: 40vh;
 
         position: absolute;
         left: 0;
@@ -248,8 +306,8 @@
         left: 50%;
         top: 0;
 
-        transform: translate(-50%, -50%);
-        -webkit-transform: translate(-50%, -50%);
+        transform: translateX(-50%);
+        -webkit-transform: translateX(-50%);
     }
 
     p#selected-species {
@@ -259,8 +317,8 @@
         left: 50%;
         top: 0;
 
-        transform: translate(-50%, -50%);
-        -webkit-transform: translate(-50%, -50%);
+        transform: translateX(-50%);
+        -webkit-transform: translateX(-50%);
     }
 
     div#single-run-dashboard table {
@@ -272,6 +330,47 @@
 
         transform: translate(-50%, -50%);
         -webkit-transform: translate(-50%, -50%);
+    }
+
+
+
+
+
+
+    div#batch-dashboard {
+        width: calc(50vw - 20px);
+        height: 90%;
+
+        position: absolute;
+        left: calc(50vw + 20px);
+        top: 0;
+
+        border-left: solid 2px #bbb;
+    }
+
+    div#batch-dashboard table {
+        margin-top: 20px;
+
+        border: 1px solid #888;
+        border-collapse: collapse;
+    }
+
+    div#batch-left {
+        width: 50%;
+        height: 100%;
+
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+
+    div#batch-right {
+        width: 50%;
+        height: 100%;
+
+        position: absolute;
+        right: 0;
+        top: 0;
     }
 
 </style>
