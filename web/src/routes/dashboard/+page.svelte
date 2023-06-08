@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { BatchEntry } from "$lib/classes/BatchEntry";
+	import { BatchExportEntry } from "$lib/classes/BatchExportEntry";
 	import { Chemical } from "$lib/classes/Chemical";
     import { Species } from "$lib/classes/Species";
 
@@ -28,6 +29,7 @@
     let demotorInfluenceInput: HTMLInputElement;
 
     let batchProgrammingTable: HTMLTableElement;
+    let batchExportTable: HTMLTableElement;
 
 
 
@@ -36,6 +38,7 @@
     let numberOfIterations: number = 10;
 
     let batchEntries: BatchEntry[] = [];
+    let batchExportEntries: BatchExportEntry[] = [];
 
     // METHODS RELATED TO BATCH PROGRAMMING
     
@@ -213,7 +216,35 @@
             <div id="batch-right">
                 <p>Batch export</p>
 
-                
+                <table bind:this={batchExportTable} border={1}>
+                    {#if ($dashboardController != undefined)}
+                        {#each batchExportEntries as be, i}
+                        <tr>
+                            <td>
+                                <select bind:value={be.attribute}>
+                                    <option value="number-of-species">Number of species</option>
+                                    <option value="chem-values">Chemical values</option>
+                                    <option value="order-parameter">Order parameter</option>
+                                    <option value="iterations">Number of iterations</option>
+                                    <option value="simulation-time">Simulation time</option>
+                                </select>
+                            </td>
+                            <td>
+                                <button on:click={() => {
+                                    batchExportEntries.splice(i, 1);
+                                    batchExportEntries = batchExportEntries;
+                                }}>x</button>
+                            </td>
+                        </tr>
+                        {/each}
+                    {/if}
+
+                    <tr>
+                        <td>
+                            <button on:click={() => {batchExportEntries.push(new BatchExportEntry()); batchExportEntries = batchExportEntries;}}>Add entry</button>
+                        </td>
+                    </tr>
+                </table>
 
             </div>
 
@@ -277,7 +308,7 @@
     }
 
     div#species {
-        width: 20vw;
+        width: 246px;
         height: 90%;
 
         position: absolute;
@@ -294,7 +325,7 @@
         height: 90%;
 
         position: absolute;
-        left: calc(20vw + 20px);
+        left: calc(246px + 20px);
         top: 0;
     }
 
@@ -338,11 +369,11 @@
 
 
     div#batch-dashboard {
-        width: calc(50vw - 20px);
+        width: calc(100vw - 246px - 30vw - 20px);
         height: 90%;
 
         position: absolute;
-        left: calc(50vw + 20px);
+        left: calc(246px + 30vw + 20px);
         top: 0;
 
         border-left: solid 2px #bbb;
@@ -356,7 +387,7 @@
     }
 
     div#batch-left {
-        width: 50%;
+        width: calc(78% - 10px);
         height: 100%;
 
         position: absolute;
@@ -365,7 +396,7 @@
     }
 
     div#batch-right {
-        width: 50%;
+        width: calc(100% - 78% - 10px);
         height: 100%;
 
         position: absolute;
