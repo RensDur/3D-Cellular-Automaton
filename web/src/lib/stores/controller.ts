@@ -110,7 +110,7 @@ function createControllerStore() {
     return {
         subscribe,
 
-        pushDashboardUpdate: async (size: number, iterations: string, orderParameter: number[], marchingCubesGltf: number[]) => {
+        pushDashboardUpdate: async (size: number, iterations: string, orderParameter: number[], marchingCubesGltf: number[], selectedSpecies: number) => {
 
             const grid = new Grid3D(size);
 
@@ -122,6 +122,8 @@ function createControllerStore() {
 
             // Update both the cpu and gpu number of iterations
             grid.gpuNChemIterations = iterations;
+
+            grid.nChemChemicalCapture = selectedSpecies;
 
             update(_ => grid);
         },

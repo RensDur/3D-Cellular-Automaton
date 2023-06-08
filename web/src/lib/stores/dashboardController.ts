@@ -100,7 +100,7 @@ function createDashboardControllerStore() {
             update(_ => store);
         },
 
-        runIterations: async (iter: number, species: Species[]) => {
+        runIterations: async (iter: number, species: Species[], selectedSpecies: number) => {
 
             // Get the automaton size from the server
             const size: number = await sendGetJson("/general/get-automaton-size");
@@ -121,10 +121,31 @@ function createDashboardControllerStore() {
             const orderParameter = await getOrderParameterFromServer();
 
             // 6. Update the 3D graph
+            await sendDevicePostWithJson("/set-chemical-capture", {chemical_capture: selectedSpecies});
             const marchingCubesGltf = await getCurrentMCMeshFromServer();
 
             // Update the general controller to make other components work with this new data
-            controller.pushDashboardUpdate(size, iterations, orderParameter, marchingCubesGltf);
+            controller.pushDashboardUpdate(size, iterations, orderParameter, marchingCubesGltf, selectedSpecies);
+        },
+
+        requestMeshForSpecies: async (selectedSpecies: number) => {
+
+            // Get the automaton size from the server
+            const size: number = await sendGetJson("/general/get-automaton-size");
+
+            // 4. Update the number of iterations run
+            const iterations = await sendGet("/nchem/get-iterations");
+
+            // 5. Update the order parameter
+            const orderParameter = await getOrderParameterFromServer();
+
+            // 6. Update the 3D graph
+            await sendDevicePostWithJson("/set-chemical-capture", {chemical_capture: selectedSpecies});
+            const marchingCubesGltf = await getCurrentMCMeshFromServer();
+
+            // Update the general controller to make other components work with this new data
+            controller.pushDashboardUpdate(size, iterations, orderParameter, marchingCubesGltf, selectedSpecies);
+
         }
         
     };

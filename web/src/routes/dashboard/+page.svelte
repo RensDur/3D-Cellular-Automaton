@@ -50,6 +50,12 @@
             speciesSelector.appendChild(opt);
         }
 
+        let opt = document.createElement("option");
+        opt.setAttribute("value", String($dashboardController?.species.length));
+        opt.innerHTML = "Undif";
+
+        speciesSelector.appendChild(opt);
+
         speciesSelector.value = oldValue;
 
         // Show the 'remove species' button at appropriate time
@@ -65,6 +71,10 @@
         } else {
             selectedSpecies = $dashboardController?.species[parseInt(speciesSelector.value)];
         }
+
+
+        // Based on the currently selected species, update the marching cubes mesh
+        dashboardController?.requestMeshForSpecies(parseInt(speciesSelector.value));
 
         
     }
@@ -144,7 +154,7 @@
                     <tr>
                         <td>Number of iterations</td>
                         <td><input type="number" style="width: 100px;" bind:value={numberOfIterations}></td>
-                        <td><button on:click={() => {dashboardController.runIterations(numberOfIterations, $dashboardController?.species);}}>Run</button></td>
+                        <td><button on:click={() => {dashboardController.runIterations(numberOfIterations, $dashboardController?.species, parseInt(speciesSelector.value));}}>Run</button></td>
                     </tr>
                 </table>
             {/if}
