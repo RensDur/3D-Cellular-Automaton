@@ -18,7 +18,7 @@
     let graphWidth = 0;
     let graphHeight = 0;
 
-    let graphSpacing = 35;
+    let graphSpacing = 50;
 
 
     const sketch = (p5: any) => {
@@ -162,7 +162,7 @@
             p5.textAlign(p5.CENTER);
             p5.textSize(22);
 
-            p5.text("Order Parameter per iteration", p5.width - graphSpacing - graphWidth/2, graphSpacing / 2);
+            p5.text("Order Parameter per iteration", p5.width - graphSpacing - graphWidth/2, graphSpacing * (3/5));
         }
     }
 

@@ -8,6 +8,10 @@
     import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
     import { controller } from "$lib/stores/controller";
 
+    // Exposures
+    export let sceneWidth: number | undefined = undefined;
+    export let sceneHeight: number | undefined = undefined;
+
     // DOM bindings
     let containerDiv: HTMLDivElement;
 
@@ -49,7 +53,13 @@
 
         // Setup the WebGL renderer
         renderer = new THREE.WebGLRenderer({antialias: true});
-        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        if (sceneWidth == undefined || sceneHeight == undefined) {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        } else {
+            renderer.setSize(sceneWidth, sceneHeight);
+        }
+
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.BasicShadowMap;
 
@@ -211,7 +221,11 @@
         camera.updateProjectionMatrix();
 
         // Update the size of the renderer to match the new window-size
-        renderer.setSize(window.innerWidth, window.innerHeight);
+        if (sceneWidth == undefined || sceneHeight == undefined) {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        } else {
+            renderer.setSize(sceneWidth, sceneHeight);
+        }
     }
 
 
