@@ -29,6 +29,7 @@
 
     // State keeping
     let selectedSpecies: Species | undefined = undefined;
+    let numberOfIterations: number = 10;
 
 
 
@@ -82,8 +83,11 @@
 
 
 
-    onMount(() => {
-        dashboardController.initialise();
+    onMount(async () => {
+        await dashboardController.initialise();
+
+        // Immediately update the selector with the server's configuration of species and chemicals
+        updateSelector();
     })
 
 </script>
@@ -133,6 +137,16 @@
                         <td><input bind:this={demotorInfluenceInput} type="number" bind:value={selectedSpecies.chemicalB.influence}></td>
                     </tr>
                 </table>
+
+                <span class="space"></span>
+
+                <table>
+                    <tr>
+                        <td>Number of iterations</td>
+                        <td><input type="number" style="width: 100px;" bind:value={numberOfIterations}></td>
+                        <td><button on:click={() => {dashboardController.runIterations(numberOfIterations, $dashboardController?.species);}}>Run</button></td>
+                    </tr>
+                </table>
             {/if}
 
         </div>
@@ -147,6 +161,11 @@
     h1, h2, h3, h4, h5, h6, p, span, a {
         margin: 0;
         padding: 0;
+    }
+
+    span.space {
+        width: 100%;
+        height: 50px;
     }
 
     div#wrapper {
@@ -217,7 +236,7 @@
 
         position: relative;
         left: 50%;
-        top: 50%;
+        top: 0;
 
         transform: translate(-50%, -50%);
         -webkit-transform: translate(-50%, -50%);
@@ -237,7 +256,7 @@
     div#single-run-dashboard table {
         width: 80%;
 
-        position: absolute;
+        position: relative;
         left: 50%;
         top: 100px;
 

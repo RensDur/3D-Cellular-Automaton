@@ -59,3 +59,16 @@ async fn nchem_get_order_parameter(state: web::Data<Mutex<CAAppData>>) -> Result
 
     Ok(web::Json(result))
 }
+
+#[get("/nchem/get-species-configuration")]
+async fn nchem_get_species_configuration(state: web::Data<Mutex<CAAppData>>) -> Result<impl Responder> {
+
+    let state_mod = state.lock().unwrap();
+
+    let result = state_mod.nchem_ca.chemicals.clone();
+
+    drop(state_mod);
+
+    Ok(web::Json(result))
+
+}

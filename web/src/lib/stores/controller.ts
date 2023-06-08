@@ -110,6 +110,22 @@ function createControllerStore() {
     return {
         subscribe,
 
+        pushDashboardUpdate: async (size: number, iterations: string, orderParameter: number[], marchingCubesGltf: number[]) => {
+
+            const grid = new Grid3D(size);
+
+            // Get the MC Mesh from the server
+            grid.setMarchingCubesGltf(marchingCubesGltf);
+
+            // Get the nchem order parameter from the server
+            grid.orderParameter = orderParameter;
+
+            // Update both the cpu and gpu number of iterations
+            grid.gpuNChemIterations = iterations;
+
+            update(_ => grid);
+        },
+
         getWorkingDevice: () => {
             return workingAddress;
         },

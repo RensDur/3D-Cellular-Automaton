@@ -1,7 +1,16 @@
 use std::sync::Mutex;
 
 use actix_web::{post, web, Responder, Result};
-use crate::{CAAppData, appdata::dim3d::automata::automaton::CellularAutomaton3D, routes::cpu_post::{InfoPostSpreadChemicals, ResponsePostGeneral}};
+use serde::{Serialize, Deserialize};
+use crate::{CAAppData, CAChemical, CAChemicalGroup, appdata::dim3d::automata::automaton::CellularAutomaton3D, routes::cpu_post::{InfoPostSpreadChemicals, ResponsePostGeneral}};
+
+
+
+
+
+
+
+
 
 
 

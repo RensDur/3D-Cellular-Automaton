@@ -6,7 +6,7 @@ use std::sync::Mutex;
 
 use actix_cors::Cors;
 use actix_web::{App, HttpServer, web};
-use routes::{debug_routes::*, cpu_get::*, cpu_post::*, gpu_get::*, gpu_post::*, nchem_get::*, nchem_post::*, general_post::*, benchmarks::{compare_cpu_gpu::{benchmarks_compare_cpu_gpu, benchmarks_compare_cpu_gpu_catch_up}, gpu_shader_increment::benchmarks_gpu_shader_increment}};
+use routes::{debug_routes::*, cpu_get::*, cpu_post::*, gpu_get::*, gpu_post::*, nchem_get::*, nchem_post::*, general_get::*, general_post::*, benchmarks::{compare_cpu_gpu::{benchmarks_compare_cpu_gpu, benchmarks_compare_cpu_gpu_catch_up}, gpu_shader_increment::benchmarks_gpu_shader_increment}};
 use appdata::dim3d::automata::{automaton_cpu::CPUCellularAutomaton3D, automaton::CellularAutomaton3D};
 use appdata::dim3d::automata::automaton_gpu::GPUCellularAutomaton3D;
 use appdata::dim3d::automata::automaton_gpu_n_chemicals::{GPUNChemicalsCellularAutomaton3D, CAChemicalGroup, CAChemical};
@@ -43,17 +43,17 @@ async fn main() -> std::io::Result<()> {
             },
             demote: CAChemical {
                 range: 6.0,
-                influence: -0.15
+                influence: -0.2
             }
         }
     ];
 
     let mut ca_app_data = CAAppData::new(3.2, 1.0, 6.0, -0.18, chemicals);
 
-    ca_app_data.nchem_ca.spread_chemicals_randomly(2);
-    for _ in 0..100 {
-        ca_app_data.nchem_ca.run_iteration();
-    }
+    // ca_app_data.nchem_ca.spread_chemicals_randomly(2);
+    // for _ in 0..100 {
+    //     ca_app_data.nchem_ca.run_iteration();
+    // }
 
     println!("Done!");
 
@@ -84,11 +84,14 @@ async fn main() -> std::io::Result<()> {
             .service(nchem_get_iterations)
             .service(nchem_get_chemical_capture)
             .service(nchem_get_order_parameter)
+            .service(nchem_get_species_configuration)
             .service(nchem_post_initialise)
             .service(nchem_post_clear_all_voxels)
             .service(nchem_post_spread_chemicals_randomly)
             .service(nchem_post_run_iteration)
             .service(nchem_post_set_chemical_capture)
+            .service(nchem_set_species_configuration)
+            .service(general_get_automaton_size)
             .service(general_spread_chemicals_randomly)
             .service(general_create_activator_patch)
             .service(benchmarks_compare_cpu_gpu)
