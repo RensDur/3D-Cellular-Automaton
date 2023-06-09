@@ -376,7 +376,7 @@
         left: calc(246px + 30vw + 20px);
         top: 0;
 
-        border-left: solid 2px #bbb;
+        /* border-left: solid 2px #bbb; */
     }
 
     div#batch-dashboard table {
@@ -387,7 +387,7 @@
     }
 
     div#batch-left {
-        width: calc(78% - 10px);
+        width: calc(70% - 10px);
         height: 100%;
 
         position: absolute;
@@ -396,7 +396,7 @@
     }
 
     div#batch-right {
-        width: calc(100% - 78% - 10px);
+        width: calc(100% - 70% - 10px);
         height: 100%;
 
         position: absolute;
