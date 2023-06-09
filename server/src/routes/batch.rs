@@ -5,6 +5,7 @@ use std::{sync::Mutex, time::Instant, fs::File};
 use crate::{CAAppData, appdata::dim3d::automata::{automaton_gpu_n_chemicals::GPUNChemicalsCellularAutomaton3D, automaton::CellularAutomaton3D}};
 
 use std::io::prelude::*;
+use std::path::Path;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct BatchEntry {
@@ -191,7 +192,7 @@ fn write_results(automaton: &GPUNChemicalsCellularAutomaton3D, experiment: &Batc
     // Write the line to the file
     match file.write_all(line.as_bytes()) {
         Err(e) => panic!("Error when writing to file {}: {}", experiment.file_name, e),
-        _ => return
+        _ => {}
     }
 
 }
@@ -211,14 +212,20 @@ async fn batch_run_experiment(state: web::Data<Mutex<CAAppData>>, experiment: we
     let mut state_mod = state.lock().unwrap();
 
 
-    
+    // Create the specified file
+    let path = Path::new(&experiment.file_name);
 
+    let mut file = match File::create(&path) {
+        Err(e) => panic!("Error when creating file {}: {}", experiment.file_name, e),
+        Ok(file) => file
+    };
+
+    // Run the batch
+    run_experiment(&mut state_mod.nchem_ca, &experiment, &mut file);
 
 
     // Drop the lock on the state
     drop(state_mod);
-
-
 
     Ok("")
 
