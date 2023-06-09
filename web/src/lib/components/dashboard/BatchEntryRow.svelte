@@ -13,7 +13,7 @@
 
 Vary <select bind:value={batchEntry.species}>
 {#each $dashboardController?.species as s, i}
-    <option value={String(i)}>Species {i}</option>
+    <option value={i}>Species {i}</option>
 {/each}
 </select> - <select bind:value={batchEntry.chemical}>
     <option value="promotor">Promotor</option>

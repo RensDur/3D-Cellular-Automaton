@@ -2,7 +2,7 @@ use actix_web::{post, web, Responder, Result};
 use serde::{Serialize, Deserialize};
 use std::{sync::Mutex, time::Instant, fs::File};
 
-use crate::{CAAppData, appdata::dim3d::automata::{automaton_gpu_n_chemicals::GPUNChemicalsCellularAutomaton3D, automaton::CellularAutomaton3D}};
+use crate::{CAAppData, appdata::dim3d::automata::{automaton_gpu_n_chemicals::GPUNChemicalsCellularAutomaton3D, automaton::{CellularAutomaton3D, self}}};
 
 use std::io::prelude::*;
 use std::path::Path;
@@ -78,6 +78,8 @@ fn run_experiment(automaton: &mut GPUNChemicalsCellularAutomaton3D, experiment: 
         // Start by registering the start-value from the 'varying' entry
         let mut val = varying.min;
 
+        println!("Varying between {} and {} with steps {}", varying.min, varying.max, varying.step);
+
         // Continue iterating while 'val' is smaller than or equal to 'max'
         while val <= varying.max {
 
@@ -137,7 +139,7 @@ fn write_results(automaton: &GPUNChemicalsCellularAutomaton3D, experiment: &Batc
         if export_entry.attribute == "number-of-species" {
 
             // Insert the number of species + 1 for the undifferentiated cell-type
-            line.push_str((automaton.chemicals.len() + 1).to_string().as_str());
+            line.push_str((automaton.chemicals.len()).to_string().as_str());
             line.push(';');
 
         } else if export_entry.attribute == "chem-values" {
@@ -200,11 +202,96 @@ fn write_results(automaton: &GPUNChemicalsCellularAutomaton3D, experiment: &Batc
 
 
 
+fn write_types(automaton: &GPUNChemicalsCellularAutomaton3D, experiment: &BatchExperiment, file: &mut File) {
+
+    let mut line: String = String::from("");
+
+    // Loop over the export entries one by one
+    for export_entry in &experiment.export_entries {
+
+        if export_entry.attribute == "number-of-species" {
+
+            // Insert the number of species + 1 for the undifferentiated cell-type
+            line.push_str("Number or species");
+            line.push(';');
+
+        } else if export_entry.attribute == "chem-values" {
+
+            // For each chemical in the simulation
+            for i in 0..automaton.chemicals.len() {
+
+                let group = &automaton.chemicals[i];
+
+                // First promotor, then demotor
+                // First range, then influence
+                line.push_str("S");
+                line.push_str(i.to_string().as_str());
+                
+                line.push_str(" Promotor Range");
+                line.push(';');
+
+                line.push_str("S");
+                line.push_str(i.to_string().as_str());
+                
+                line.push_str(" Promotor Influence");
+                line.push(';');
+
+
+                line.push_str("S");
+                line.push_str(i.to_string().as_str());
+                
+                line.push_str(" Demotor Range");
+                line.push(';');
+
+                line.push_str("S");
+                line.push_str(i.to_string().as_str());
+                
+                line.push_str(" Demotor Influence");
+                line.push(';');
+
+            }
+
+        } else if export_entry.attribute == "order-parameter" {
+
+            // Insert only the last value of the order parameter
+            line.push_str("Order parameter");
+            line.push(';');
+
+        } else if export_entry.attribute == "iterations" {
+
+            // Insert the number of iterations that the automaton has performed
+            line.push_str("Number of iterations");
+            line.push(';');
+
+        } else if export_entry.attribute == "simulation-time" {
+
+            // The simulation time is given as a parameter to this function
+            line.push_str("Simulation time");
+            line.push(';');
+
+        }
+
+    }
+
+    // End the csv-line
+    line.push_str("\r\n");
+
+    // Write the line to the file
+    match file.write_all(line.as_bytes()) {
+        Err(e) => panic!("Error when writing to file {}: {}", experiment.file_name, e),
+        _ => {}
+    }
+
+}
+
+
 
 
 
 #[post("/batch/run-experiment")]
 async fn batch_run_experiment(state: web::Data<Mutex<CAAppData>>, experiment: web::Json<BatchExperiment>) -> Result<impl Responder> {
+
+    println!("Running batch experiment");
 
     // During the entire time-span of this experiment, the server state will be locked.
     // This is done to prevent any other interaction with the server interfere with this experiment.
@@ -213,12 +300,18 @@ async fn batch_run_experiment(state: web::Data<Mutex<CAAppData>>, experiment: we
 
 
     // Create the specified file
-    let path = Path::new(&experiment.file_name);
+    let mut file_name = String::from(&experiment.file_name);
+    file_name.push_str(".csv");
+
+    let path = Path::new(&file_name);
 
     let mut file = match File::create(&path) {
-        Err(e) => panic!("Error when creating file {}: {}", experiment.file_name, e),
+        Err(e) => panic!("Error when creating file {}: {}", file_name, e),
         Ok(file) => file
     };
+
+    // The first row of the file will indicate the type of values in the column
+    write_types(&state_mod.nchem_ca, &experiment, &mut file);
 
     // Run the batch
     run_experiment(&mut state_mod.nchem_ca, &experiment, &mut file);

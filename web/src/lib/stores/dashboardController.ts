@@ -153,13 +153,17 @@ function createDashboardControllerStore() {
 
         runBatchExperiment: async (entries: BatchEntry[], exportEntries: BatchExportEntry[], iterations: number, file_name: string) => {
 
-            // Signal the server to run this batch 
-            await sendPost("/batch/run-experiment", {
+            const data = {
                 "entries": entries,
                 "export_entries": exportEntries,
                 "iterations": iterations,
                 "file_name": file_name
-            });
+            };
+
+            console.log(data);
+
+            // Signal the server to run this batch 
+            await sendPost("/batch/run-experiment", data);
 
         }
         
