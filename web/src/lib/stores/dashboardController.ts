@@ -151,8 +151,9 @@ function createDashboardControllerStore() {
         },
 
 
-        runBatchExperiment: async (entries: BatchEntry[], exportEntries: BatchExportEntry[], iterations: number, file_name: string) => {
+        runBatchExperiment: async (species: Species[], entries: BatchEntry[], exportEntries: BatchExportEntry[], iterations: number, file_name: string) => {
 
+            // Setup the experiment in the correct format
             const data = {
                 "entries": entries,
                 "export_entries": exportEntries,
@@ -160,9 +161,10 @@ function createDashboardControllerStore() {
                 "file_name": file_name
             };
 
-            console.log(data);
+            // 1. Update the species-specification on the server
+            await sendPost("/general/set-species-configuration", {species});
 
-            // Signal the server to run this batch 
+            // 2. Signal the server to run this batch 
             await sendPost("/batch/run-experiment", data);
 
         }

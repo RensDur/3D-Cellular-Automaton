@@ -41,14 +41,14 @@
     let batchExportEntries: BatchExportEntry[] = [
         BatchExportEntry.withAttribute("number-of-species"),
         BatchExportEntry.withAttribute("chem-values"),
-        BatchExportEntry.withAttribute("order-parameter"),
         BatchExportEntry.withAttribute("iterations"),
-        BatchExportEntry.withAttribute("simulation-time")
+        BatchExportEntry.withAttribute("simulation-time"),
+        BatchExportEntry.withAttribute("order-parameter-evolution")
     ];
 
     // METHODS RELATED TO BATCH PROGRAMMING
     let batchNumOfIterations: number = 10;
-    let batchExperimentIdentifier: string = "test_experiment";
+    let batchExperimentIdentifier: string = "experiment";
     let batchFeedback: string = "";
 
 
@@ -132,7 +132,7 @@
 
 <div id="wrapper">
     <div class="container" id="stage-container" bind:clientWidth={mainStageContainerWidth} bind:clientHeight={mainStageContaienrHeight}>
-        <MainStageMarchingCubes bind:sceneWidth={mainStageContainerWidth} bind:sceneHeight={mainStageContaienrHeight} />
+        <!-- <MainStageMarchingCubes bind:sceneWidth={mainStageContainerWidth} bind:sceneHeight={mainStageContaienrHeight} /> -->
     </div>
     <div class="container" id="order-parameter-container" bind:clientWidth={orderParameterContainerWidth} bind:clientHeight={orderParameterContainerHeight}>
         <OrderParameterGraph bind:windowWidth={orderParameterContainerWidth} bind:windowHeight={orderParameterContainerHeight}/>
@@ -233,6 +233,7 @@
                                     <option value="number-of-species">Number of species</option>
                                     <option value="chem-values">Chemical values</option>
                                     <option value="order-parameter">Order parameter</option>
+                                    <option value="order-parameter-evolution">Order parameter (+evolution)</option>
                                     <option value="iterations">Number of iterations</option>
                                     <option value="simulation-time">Simulation time</option>
                                 </select>
