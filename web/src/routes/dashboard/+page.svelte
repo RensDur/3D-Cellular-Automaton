@@ -38,10 +38,18 @@
     let numberOfIterations: number = 10;
 
     let batchEntries: BatchEntry[] = [];
-    let batchExportEntries: BatchExportEntry[] = [];
+    let batchExportEntries: BatchExportEntry[] = [
+        BatchExportEntry.withAttribute("number-of-species"),
+        BatchExportEntry.withAttribute("chem-values"),
+        BatchExportEntry.withAttribute("order-parameter"),
+        BatchExportEntry.withAttribute("iterations"),
+        BatchExportEntry.withAttribute("simulation-time")
+    ];
 
     // METHODS RELATED TO BATCH PROGRAMMING
-    
+    let batchNumOfIterations: number = 10;
+    let batchExperimentIdentifier: string = "test_experiment";
+    let batchFeedback: string = "";
 
 
 
@@ -187,7 +195,7 @@
             <div id="batch-left">
                 <p>Batch programming</p>
 
-                <table bind:this={batchProgrammingTable} border={1}>
+                <table class="outline-table" bind:this={batchProgrammingTable} border={1}>
                     {#if ($dashboardController != undefined)}
                         {#each batchEntries as be, i}
                         <tr>
@@ -216,7 +224,7 @@
             <div id="batch-right">
                 <p>Batch export</p>
 
-                <table bind:this={batchExportTable} border={1}>
+                <table class="outline-table" bind:this={batchExportTable} border={1}>
                     {#if ($dashboardController != undefined)}
                         {#each batchExportEntries as be, i}
                         <tr>
@@ -243,6 +251,29 @@
                         <td>
                             <button on:click={() => {batchExportEntries.push(new BatchExportEntry()); batchExportEntries = batchExportEntries;}}>Add entry</button>
                         </td>
+                    </tr>
+                </table>
+
+                <span class="space"></span>
+
+                <table id="batch-export-run-container">
+                    <tr>
+                        <td>Number of iterations</td>
+                        <td><input type="number" style="width: 100px;" bind:value={batchNumOfIterations}></td>
+                    </tr>
+                    <tr>
+                        <td>Experiment identifier</td>
+                        <td><input type="text" bind:value={batchExperimentIdentifier}></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td><button on:click={() => {
+                            dashboardController.runBatchExperiment(batchEntries, batchExportEntries, batchNumOfIterations, batchExperimentIdentifier);
+                        }}>Run</button></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td class="faded">{batchFeedback}</td>
                     </tr>
                 </table>
 
@@ -379,7 +410,7 @@
         /* border-left: solid 2px #bbb; */
     }
 
-    div#batch-dashboard table {
+    table.outline-table {
         margin-top: 20px;
 
         border: 1px solid #888;
@@ -387,7 +418,7 @@
     }
 
     div#batch-left {
-        width: calc(70% - 10px);
+        width: calc(50% - 10px);
         height: 100%;
 
         position: absolute;
@@ -396,12 +427,22 @@
     }
 
     div#batch-right {
-        width: calc(100% - 70% - 10px);
+        width: calc(100% - 50% - 10px);
         height: 100%;
 
         position: absolute;
         right: 0;
         top: 0;
+    }
+
+    div#batch-right table#batch-export-run-container {
+        position: absolute;
+        bottom: 20px;
+    }
+
+    td.faded {
+        color: #999;
+        font-size: 10pt;
     }
 
 </style>

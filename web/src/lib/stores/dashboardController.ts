@@ -8,6 +8,8 @@ import { writable } from "svelte/store";
 
 import { controller } from "$lib/stores/controller";
 import { Chemical } from "$lib/classes/Chemical";
+import type { BatchEntry } from "$lib/classes/BatchEntry";
+import type { BatchExportEntry } from "$lib/classes/BatchExportEntry";
 
 function createDashboardControllerStore() {
     const { subscribe, set, update } = writable<DashboardStore>();
@@ -145,6 +147,19 @@ function createDashboardControllerStore() {
 
             // Update the general controller to make other components work with this new data
             controller.pushDashboardUpdate(size, iterations, orderParameter, marchingCubesGltf, selectedSpecies);
+
+        },
+
+
+        runBatchExperiment: async (entries: BatchEntry[], exportEntries: BatchExportEntry[], iterations: number, file_name: string) => {
+
+            // Signal the server to run this batch 
+            await sendPost("/batch/run-experiment", {
+                "entries": entries,
+                "export_entries": exportEntries,
+                "iterations": iterations,
+                "file_name": file_name
+            });
 
         }
         

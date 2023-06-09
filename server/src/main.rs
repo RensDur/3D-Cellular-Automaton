@@ -6,7 +6,7 @@ use std::sync::Mutex;
 
 use actix_cors::Cors;
 use actix_web::{App, HttpServer, web};
-use routes::{debug_routes::*, cpu_get::*, cpu_post::*, gpu_get::*, gpu_post::*, nchem_get::*, nchem_post::*, general_get::*, general_post::*, benchmarks::{compare_cpu_gpu::{benchmarks_compare_cpu_gpu, benchmarks_compare_cpu_gpu_catch_up}, gpu_shader_increment::benchmarks_gpu_shader_increment}};
+use routes::{debug_routes::*, cpu_get::*, cpu_post::*, gpu_get::*, gpu_post::*, nchem_get::*, nchem_post::*, general_get::*, general_post::*, batch::*, benchmarks::{compare_cpu_gpu::{benchmarks_compare_cpu_gpu, benchmarks_compare_cpu_gpu_catch_up}, gpu_shader_increment::benchmarks_gpu_shader_increment}};
 use appdata::dim3d::automata::{automaton_cpu::CPUCellularAutomaton3D, automaton::CellularAutomaton3D};
 use appdata::dim3d::automata::automaton_gpu::GPUCellularAutomaton3D;
 use appdata::dim3d::automata::automaton_gpu_n_chemicals::{GPUNChemicalsCellularAutomaton3D, CAChemicalGroup, CAChemical};
@@ -107,6 +107,7 @@ async fn main() -> std::io::Result<()> {
             .service(benchmarks_compare_cpu_gpu)
             .service(benchmarks_compare_cpu_gpu_catch_up)
             .service(benchmarks_gpu_shader_increment)
+            .service(batch_run_experiment)
             
     })
     .bind(("127.0.0.1", 7878))?

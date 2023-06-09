@@ -14,5 +14,10 @@ export class BatchExportEntry {
         this.attribute = "";
     }
 
+    static withAttribute(attribute: string) {
+        const entry = new BatchExportEntry();
+        entry.attribute = attribute;
+        return entry;
+    }
 
 }
