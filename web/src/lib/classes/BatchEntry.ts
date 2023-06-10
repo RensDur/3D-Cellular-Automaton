@@ -25,5 +25,8 @@ export class BatchEntry {
         this.step = 0.01;
     }
 
+    getStepCount() {
+        return (this.max-this.min)/this.step;
+    }
 
 }

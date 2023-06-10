@@ -37,6 +37,8 @@
     let selectedSpecies: Species | undefined = undefined;
     let numberOfIterations: number = 10;
 
+    let avgIterationDuration: number | undefined = undefined;
+
     let batchEntries: BatchEntry[] = [];
     let batchExportEntries: BatchExportEntry[] = [
         BatchExportEntry.withAttribute("number-of-species"),
@@ -54,6 +56,36 @@
 
 
     // METHODS RELATED TO SPECIES
+    function updateBatchFeedback() {
+        // Update the batch feedback text if possible
+        if (avgIterationDuration != undefined) {
+            // Calculate a time-estimate using the number of iterations
+            let timeEstimate = avgIterationDuration * batchNumOfIterations;
+
+            for (let i = 0; i < batchEntries.length; i++) {
+                timeEstimate *= batchEntries[i].getStepCount();
+            }
+
+            // Format the time estimate in hours:minutes:seconds
+            let hours = Math.floor(timeEstimate / 3600);
+            let subHours = timeEstimate % 3600;
+            let minutes = Math.floor(subHours / 60);
+            let subMinutes = subHours % 60;
+            let seconds = subMinutes.toFixed(3);
+
+            batchFeedback = "Time estimate: ";
+
+            if (hours > 0) {
+                batchFeedback += String(hours) + "h ";
+            }
+            if (minutes > 0) {
+                batchFeedback += String(minutes) + "m ";
+            }
+            batchFeedback += String(seconds) + "s";
+        }
+    }
+
+
     function updateSelector() {
 
         let oldValue = speciesSelector.value;
@@ -102,6 +134,11 @@
         batchEntries = [];
 
         batchEntries = oldBe;
+
+
+
+        // Update the batchFeedback
+        updateBatchFeedback();
         
     }
 
@@ -132,7 +169,7 @@
 
 <div id="wrapper">
     <div class="container" id="stage-container" bind:clientWidth={mainStageContainerWidth} bind:clientHeight={mainStageContaienrHeight}>
-        <!-- <MainStageMarchingCubes bind:sceneWidth={mainStageContainerWidth} bind:sceneHeight={mainStageContaienrHeight} /> -->
+        <MainStageMarchingCubes bind:sceneWidth={mainStageContainerWidth} bind:sceneHeight={mainStageContaienrHeight} />
     </div>
     <div class="container" id="order-parameter-container" bind:clientWidth={orderParameterContainerWidth} bind:clientHeight={orderParameterContainerHeight}>
         <OrderParameterGraph bind:windowWidth={orderParameterContainerWidth} bind:windowHeight={orderParameterContainerHeight}/>
@@ -180,7 +217,12 @@
                     <tr>
                         <td>Number of iterations</td>
                         <td><input type="number" style="width: 100px;" bind:value={numberOfIterations}></td>
-                        <td><button on:click={() => {dashboardController.runIterations(numberOfIterations, $dashboardController?.species, parseInt(speciesSelector.value));}}>Run</button></td>
+                        <td><button on:click={async () => {
+                            avgIterationDuration = await dashboardController.runIterations(numberOfIterations, $dashboardController?.species, parseInt(speciesSelector.value));
+
+                            // Immediately update the benchmark time-estimation
+                            updateBatchFeedback();
+                        }}>Run</button></td>
                     </tr>
                 </table>
             {/if}
@@ -214,7 +256,11 @@
 
                     <tr>
                         <td>
-                            <button on:click={() => {batchEntries.push(new BatchEntry()); batchEntries = batchEntries;}}>Add entry</button>
+                            <button on:click={() => {
+                                batchEntries.push(new BatchEntry());
+                                batchEntries = batchEntries;
+                                updateBatchFeedback();
+                            }}>Add entry</button>
                         </td>
                     </tr>
                 </table>
@@ -260,7 +306,7 @@
                 <table id="batch-export-run-container">
                     <tr>
                         <td>Number of iterations</td>
-                        <td><input type="number" style="width: 100px;" bind:value={batchNumOfIterations}></td>
+                        <td><input type="number" style="width: 100px;" bind:value={batchNumOfIterations} on:change={updateBatchFeedback}></td>
                     </tr>
                     <tr>
                         <td>Experiment identifier</td>
@@ -269,7 +315,7 @@
                     <tr>
                         <td></td>
                         <td><button on:click={() => {
-                            dashboardController.runBatchExperiment(batchEntries, batchExportEntries, batchNumOfIterations, batchExperimentIdentifier);
+                            dashboardController.runBatchExperiment($dashboardController?.species, batchEntries, batchExportEntries, batchNumOfIterations, batchExperimentIdentifier);
                         }}>Run</button></td>
                     </tr>
                     <tr>

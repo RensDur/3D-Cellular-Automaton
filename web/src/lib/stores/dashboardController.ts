@@ -108,7 +108,7 @@ function createDashboardControllerStore() {
             const size: number = await sendGetJson("/general/get-automaton-size");
 
             // 1. Update the species-specification on the server
-            await sendPost("/general/set-species-configuration", {species});
+            await sendPost("/nchem/set-species-configuration", {species});
 
             // 2. Randomly spread as many chemicals as there are species + 1
             await sendPost("/general/spread-chemicals-randomly", {"chemicals": species.length + 1});
@@ -128,6 +128,9 @@ function createDashboardControllerStore() {
 
             // Update the general controller to make other components work with this new data
             controller.pushDashboardUpdate(size, iterations, orderParameter, marchingCubesGltf, selectedSpecies);
+
+            // Return the average duration per iteration for this round of simulation
+            return duration.duration / iter;
         },
 
         requestMeshForSpecies: async (selectedSpecies: number) => {
@@ -162,7 +165,7 @@ function createDashboardControllerStore() {
             };
 
             // 1. Update the species-specification on the server
-            await sendPost("/general/set-species-configuration", {species});
+            await sendPost("/nchem/set-species-configuration", {species});
 
             // 2. Signal the server to run this batch 
             await sendPost("/batch/run-experiment", data);
