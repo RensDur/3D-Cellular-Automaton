@@ -154,14 +154,15 @@ function createDashboardControllerStore() {
         },
 
 
-        runBatchExperiment: async (species: Species[], entries: BatchEntry[], exportEntries: BatchExportEntry[], iterations: number, file_name: string) => {
+        runBatchExperiment: async (species: Species[], entries: BatchEntry[], exportEntries: BatchExportEntry[], iterations: number, file_name: string, csvSettingFloatingPoint: string) => {
 
             // Setup the experiment in the correct format
             const data = {
                 "entries": entries,
                 "export_entries": exportEntries,
                 "iterations": iterations,
-                "file_name": file_name
+                "file_name": file_name,
+                "floating_point": csvSettingFloatingPoint
             };
 
             // 1. Update the species-specification on the server

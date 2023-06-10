@@ -53,6 +53,7 @@
     let batchExperimentIdentifier: string = "experiment";
     let batchFeedback: string = "";
 
+    let csvSettingFloatingPoint: string = "comma";
 
 
     // METHODS RELATED TO SPECIES
@@ -169,7 +170,7 @@
 
 <div id="wrapper">
     <div class="container" id="stage-container" bind:clientWidth={mainStageContainerWidth} bind:clientHeight={mainStageContaienrHeight}>
-        <MainStageMarchingCubes bind:sceneWidth={mainStageContainerWidth} bind:sceneHeight={mainStageContaienrHeight} />
+        <!-- <MainStageMarchingCubes bind:sceneWidth={mainStageContainerWidth} bind:sceneHeight={mainStageContaienrHeight} /> -->
     </div>
     <div class="container" id="order-parameter-container" bind:clientWidth={orderParameterContainerWidth} bind:clientHeight={orderParameterContainerHeight}>
         <OrderParameterGraph bind:windowWidth={orderParameterContainerWidth} bind:windowHeight={orderParameterContainerHeight}/>
@@ -313,9 +314,19 @@
                         <td><input type="text" bind:value={batchExperimentIdentifier}></td>
                     </tr>
                     <tr>
+                        <td>CSV settings</td>
+                        <td>
+                            <span style="font-size: 10pt;">Floating point: </span>
+                            <input bind:group={csvSettingFloatingPoint} type="radio" name="csv-setting-fp" id="csv-setting-fp-comma" value="comma">
+                            <label for="csv-setting-fp-comma">Commas</label>
+                            <input bind:group={csvSettingFloatingPoint} type="radio" name="csv-setting-fp" id="csv-setting-fp-dot" value="dot">
+                            <label for="csv-setting-fp-dot">Dots</label>
+                        </td>
+                    </tr>
+                    <tr>
                         <td></td>
                         <td><button on:click={() => {
-                            dashboardController.runBatchExperiment($dashboardController?.species, batchEntries, batchExportEntries, batchNumOfIterations, batchExperimentIdentifier);
+                            dashboardController.runBatchExperiment($dashboardController?.species, batchEntries, batchExportEntries, batchNumOfIterations, batchExperimentIdentifier, csvSettingFloatingPoint);
                         }}>Run</button></td>
                     </tr>
                     <tr>
@@ -489,6 +500,10 @@
 
     td.faded {
         color: #999;
+        font-size: 10pt;
+    }
+
+    label {
         font-size: 10pt;
     }
 

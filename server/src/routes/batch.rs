@@ -28,7 +28,8 @@ pub struct BatchExperiment {
     entries: Vec<BatchEntry>,
     export_entries: Vec<BatchExportEntry>,
     iterations: usize,
-    file_name: String
+    file_name: String,
+    floating_point: String
 }
 
 
@@ -71,7 +72,8 @@ fn run_experiment(automaton: &mut GPUNChemicalsCellularAutomaton3D, experiment: 
             entries: experiment.entries[1..].to_vec(),
             export_entries: experiment.export_entries.clone(),
             iterations: experiment.iterations,
-            file_name: experiment.file_name.clone()
+            file_name: experiment.file_name.clone(),
+            floating_point: experiment.floating_point.clone()
         };
 
         // We're going to work with a while loop.
@@ -200,6 +202,9 @@ fn write_results(automaton: &GPUNChemicalsCellularAutomaton3D, experiment: &Batc
 
     // End the csv-line
     line.push_str("\r\n");
+
+    // If the csv setting for floating-points was set to 'comma', replace all dots with commas
+    line = line.replace(".", ",");
 
     // Write the line to the file
     match file.write_all(line.as_bytes()) {
