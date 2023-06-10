@@ -248,14 +248,21 @@ impl GPUNChemicalsCellularAutomaton3D {
             // Define the normalisation constant
             let normalisation = 6.0 * self.chemicals.len() as f32 * (AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE) as f32;
 
+            // Extract the obtained sums in the 'result_cell_sums' container
             let ptr = sum.contents() as *mut [i8; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE];
             unsafe {
                 result_cell_sums = (*ptr).to_vec();
             }
 
+            // For every sum that's been computed, add its effect to the result (this effect can be negative!)
             for i in 0..result_cell_sums.len() {
                 //println!("{}", result_cell_sums[i]);
                 result += result_cell_sums[i] as f32 / normalisation;
+            }
+
+            // Take the absolute value of the result
+            if result < 0.0 {
+                result = -result;
             }
 
             self.insert_order_parameter_value(result);
