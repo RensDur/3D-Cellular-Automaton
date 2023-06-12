@@ -169,20 +169,22 @@ fn write_results(automaton: &GPUNChemicalsCellularAutomaton3D, experiment: &Batc
         } else if export_entry.attribute == "order-parameter" {
 
             // Insert only the last value of the order parameter
-            let op = automaton.get_order_parameters();
+            let ops = automaton.get_order_parameters();
 
-            line.push_str(op[op.len()-1].to_string().as_str());
-            line.push(';');
+            for op in ops {
+                line.push_str(op[op.len()-1].to_string().as_str());
+                line.push(';');
+            }
 
         } else if export_entry.attribute == "order-parameter-evolution" {
 
             // Insert only the last value of the order parameter
-            let op = automaton.get_order_parameters();
+            // let op = automaton.get_order_parameters();
 
-            for i in op {
-                line.push_str(i.to_string().as_str());
-                line.push(';');
-            }
+            // for i in op {
+            //     line.push_str(i.to_string().as_str());
+            //     line.push(';');
+            // }
 
         } else if export_entry.attribute == "iterations" {
 
@@ -269,17 +271,21 @@ fn write_types(automaton: &GPUNChemicalsCellularAutomaton3D, experiment: &BatchE
         } else if export_entry.attribute == "order-parameter" {
 
             // Insert only the last value of the order parameter
-            line.push_str("Order parameter");
-            line.push(';');
+            let ops = automaton.get_order_parameters();
+
+            for op in ops {
+                line.push_str("Order parameter");
+                line.push(';');
+            }
 
         } else if export_entry.attribute == "order-parameter-evolution" {
 
             // Insert only the last value of the order parameter
-            for i in 0..experiment.iterations {
-                line.push_str("OP iter ");
-                line.push_str(i.to_string().as_str());
-                line.push(';');
-            }
+            // for i in 0..experiment.iterations {
+            //     line.push_str("OP iter ");
+            //     line.push_str(i.to_string().as_str());
+            //     line.push(';');
+            // }
 
         } else if export_entry.attribute == "iterations" {
 

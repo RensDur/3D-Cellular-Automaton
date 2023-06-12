@@ -14,6 +14,7 @@ use appdata::dim3d::automata::automaton_gpu_n_chemicals::{GPUNChemicalsCellularA
 use serde::{Serialize, Deserialize};
 
 pub const AUTOMATON_SIZE: usize = 50;
+pub const K_MAX: usize = 20;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct CAAppData {
@@ -36,16 +37,6 @@ impl CAAppData {
 async fn main() -> std::io::Result<()> {
 
     let chemicals = vec![
-        CAChemicalGroup {
-            promote: CAChemical {
-                range: 3.2,
-                influence: 1.0
-            },
-            demote: CAChemical {
-                range: 6.0,
-                influence: -0.2
-            }
-        },
         CAChemicalGroup {
             promote: CAChemical {
                 range: 3.2,

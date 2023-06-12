@@ -9,7 +9,7 @@ use metal::*;
 use objc::rc::autoreleasepool;
 use std::mem;
 
-use crate::{AUTOMATON_SIZE, routes::gpu_get};
+use crate::{AUTOMATON_SIZE, routes::gpu_get, K_MAX};
 
 const AUTOMATON_SHADER_SRC: &str = include_str!("automaton_n_chemicals_shader.metal");
 const ORDER_PARAM_SHADER_SRC: &str = include_str!("order_param_n_chemicals_shader.metal");
@@ -145,7 +145,7 @@ impl GPUNChemicalsCellularAutomaton3D {
             );
 
             let sum = {
-                let data: Vec<i8> = vec![0i8; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE * (self.chemicals.len()+1)];
+                let data: Vec<i8> = vec![0i8; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE * (K_MAX+1)];
                 device.new_buffer_with_data(
                     unsafe { mem::transmute(data.as_ptr()) },
                     (data.len() * mem::size_of::<i8>()) as u64,
@@ -243,15 +243,15 @@ impl GPUNChemicalsCellularAutomaton3D {
 
 
             let mut result: Vec<f32> = vec![];
-            let mut result_cell_sums: Vec<i8> = vec![0i8; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE * (self.chemicals.len()+1)];
+            let result_cell_sums: Vec<i8>;
 
             // Define the normalisation constant
             let normalisation = 6.0 * (AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE) as f32;
 
             // Extract the obtained sums in the 'result_cell_sums' container
-            let ptr = sum.contents() as *mut Vec<i8>;
+            let ptr = sum.contents() as *mut [i8; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE * (K_MAX+1)];
             unsafe {
-                result_cell_sums = *ptr;
+                result_cell_sums = (*ptr).to_vec();
             }
 
             for spec in 0..(self.chemicals.len()+1) {
