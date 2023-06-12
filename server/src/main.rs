@@ -2,7 +2,7 @@ mod appdata;
 mod routes;
 mod gltfgeneration;
 
-use std::sync::Mutex;
+use std::{sync::Mutex, time::Instant};
 
 use actix_cors::Cors;
 use actix_web::{App, HttpServer, web};
@@ -58,14 +58,61 @@ async fn main() -> std::io::Result<()> {
         }
     ];
 
-    let mut ca_app_data = CAAppData::new(3.2, 1.0, 6.0, -0.18, chemicals);
+    let mut ca_app_data = CAAppData::new(3.2, 1.0, 6.0, -0.2, chemicals);
 
     // ca_app_data.nchem_ca.spread_chemicals_randomly(2);
     // for _ in 0..100 {
     //     ca_app_data.nchem_ca.run_iteration();
     // }
 
+    // println!("Done!");
+
+    
+    // Simulation speed benchmark
+    let benchmarkIterations = 20;
+
+    // Initialise both simulators
+    ca_app_data.cpu_ca.spread_chemicals_randomly(2);
+    ca_app_data.nchem_ca.spread_chemicals_randomly(3);
+    
+    // println!("Starting CPU simulation of {} iterations.", benchmarkIterations);
+
+    // let cpuStart = Instant::now();
+
+    // for i in 0..benchmarkIterations {
+    //     println!("Progress: {}/{}", i, benchmarkIterations);
+    //     ca_app_data.cpu_ca.run_iteration();
+    // }
+
+    // let cpuDuration = cpuStart.elapsed();
+
+    // println!("CPU simulation finished in {} seconds.", cpuDuration.as_secs_f32());
+
+    // println!("Starting GPU simulation of {} iterations.", benchmarkIterations);
+
+    // let gpuStart = Instant::now();
+
+    // for i in 0..benchmarkIterations {
+    //     println!("Progress: {}/{}", i, benchmarkIterations);
+    //     ca_app_data.nchem_ca.run_iteration();
+    // }
+
+    // let gpuDuration = gpuStart.elapsed();
+
+    // println!("GPU simulation finished in {} seconds.", gpuDuration.as_secs_f32());
+
+    // println!("\nCompleted benchmark: size={}, iter={}.", AUTOMATON_SIZE, benchmarkIterations);
+    // // println!("\nCPU Benchmark: {}", cpuDuration.as_secs_f32() / benchmarkIterations as f32);
+    // println!("\nGPU Benchmark: {}", gpuDuration.as_secs_f32() / benchmarkIterations as f32);
+
+    // println!("\n•••\n\n\n");
+
+    // for _ in 0..30 {
+    //     ca_app_data.nchem_ca.run_iteration();
+    // }
+
     println!("Done!");
+
 
     let app_state = web::Data::new(Mutex::new(ca_app_data));
 

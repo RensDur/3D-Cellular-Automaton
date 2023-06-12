@@ -82,7 +82,7 @@ impl GPUNChemicalsCellularAutomaton3D {
     }
 
     pub fn insert_order_parameter_value(&mut self, val: f32) {
-        println!("Inserting order parameter {}", val);
+        // println!("Inserting order parameter {}", val);
 
         self.order_parameter.push(val);
     }
@@ -133,7 +133,7 @@ impl GPUNChemicalsCellularAutomaton3D {
         autoreleasepool(|| {
 
             let device = Device::system_default().expect("no device found");
-            println!("Computing order-parameter on GPU: {}", device.name());
+            // println!("Computing order-parameter on GPU: {}", device.name());
             let command_queue = device.new_command_queue();
 
             let data = self.export();
