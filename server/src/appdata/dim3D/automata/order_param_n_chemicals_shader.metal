@@ -85,33 +85,31 @@ kernel void compute_iteration(device SumInput& input [[ buffer(0) ]],
         // Compute the new gid by using these wrapped values
         int index = x_wrapped + y_wrapped * size_i + z_wrapped * size_i * size_i;
 
+        // Here, num_species refers to K+1
+        for (uint8_t i = 0; i < num_species; i++) {
 
-        for (uint8_t j = 0; j < num_species; j++) {
-            for (uint8_t i = j+1; i < num_species; i++) {
+            int8_t sigma1 = 0;
+            int8_t sigma2 = 0;
 
-                int8_t sigma1 = 0;
-                int8_t sigma2 = 0;
-
-                // Compute sigma1
-                // The value of the cell that we're currently computing for is input.data[gid];
-                if (input.data[gid] == i) {
-                    sigma1 = 1;
-                } else if (input.data[gid] == j) {
-                    sigma1 = -1;
-                }
-
-                // Compute sigma2
-                // The value of the neighbour we're currently considering is found at input.data[index];
-                if (input.data[index] == i) {
-                    sigma2 = 1;
-                } else if (input.data[index] == j) {
-                    sigma2 = -1;
-                }
-
-                // Add the absolute value of the multiplication of these numbers to the sum
-                input.sum[gid] += sigma1 * sigma2;
-                
+            // Compute sigma1
+            // The value of the cell that we're currently computing for is input.data[gid];
+            if (input.data[gid] == i) {
+                sigma1 = 1;
+            } else {
+                sigma1 = -1;
             }
+
+            // Compute sigma2
+            // The value of the neighbour we're currently considering is found at input.data[index];
+            if (input.data[index] == i) {
+                sigma2 = 1;
+            } else {
+                sigma2 = -1;
+            }
+
+            // Add the absolute value of the multiplication of these numbers to the sum
+            input.sum[num_species*gid + i] = sigma1 * sigma2;
+
         }
 
     }

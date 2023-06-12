@@ -47,7 +47,7 @@ pub struct GPUNChemicalsCellularAutomaton3D {
     pub chemicals: Vec<CAChemicalGroup>,
     iteration_count: u32,
     marching_cubes_chemical_capture: usize,
-    order_parameter: Vec<f32>
+    order_parameter: Vec<Vec<f32>>
 }
 
 
@@ -81,13 +81,13 @@ impl GPUNChemicalsCellularAutomaton3D {
         self.marching_cubes_chemical_capture
     }
 
-    pub fn insert_order_parameter_value(&mut self, val: f32) {
+    pub fn insert_order_parameter_value(&mut self, val: Vec<f32>) {
         // println!("Inserting order parameter {}", val);
 
         self.order_parameter.push(val);
     }
 
-    pub fn get_order_parameters(&self) -> Vec<f32> {
+    pub fn get_order_parameters(&self) -> Vec<Vec<f32>> {
         self.order_parameter.clone()
     }
 
@@ -145,7 +145,7 @@ impl GPUNChemicalsCellularAutomaton3D {
             );
 
             let sum = {
-                let data: [i8; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE] = [0i8; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE];
+                let data: Vec<i8> = vec![0i8; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE * (self.chemicals.len()+1)];
                 device.new_buffer_with_data(
                     unsafe { mem::transmute(data.as_ptr()) },
                     (data.len() * mem::size_of::<i8>()) as u64,
@@ -242,27 +242,26 @@ impl GPUNChemicalsCellularAutomaton3D {
 
 
 
-            let mut result: f32 = 0.0;
-            let result_cell_sums: Vec<i8>;
+            let mut result: Vec<f32> = vec![];
+            let mut result_cell_sums: Vec<i8> = vec![0i8; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE * (self.chemicals.len()+1)];
 
             // Define the normalisation constant
-            let normalisation = 6.0 * self.chemicals.len() as f32 * (AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE) as f32;
+            let normalisation = 6.0 * (AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE) as f32;
 
             // Extract the obtained sums in the 'result_cell_sums' container
-            let ptr = sum.contents() as *mut [i8; AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE];
+            let ptr = sum.contents() as *mut Vec<i8>;
             unsafe {
-                result_cell_sums = (*ptr).to_vec();
+                result_cell_sums = *ptr;
             }
 
-            // For every sum that's been computed, add its effect to the result (this effect can be negative!)
-            for i in 0..result_cell_sums.len() {
-                //println!("{}", result_cell_sums[i]);
-                result += result_cell_sums[i] as f32 / normalisation;
-            }
+            for spec in 0..(self.chemicals.len()+1) {
+                // Push a new f32 into the array
+                result.push(0.0);
 
-            // Take the absolute value of the result
-            if result < 0.0 {
-                result = -result;
+                // Now, for each cell in the CA, add all values of this species
+                for i in 0..(AUTOMATON_SIZE*AUTOMATON_SIZE*AUTOMATON_SIZE) {
+                    result[spec] += result_cell_sums[(self.chemicals.len()+1)*i + spec] as f32 / normalisation;
+                }
             }
 
             self.insert_order_parameter_value(result);
