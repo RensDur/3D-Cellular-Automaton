@@ -169,10 +169,10 @@ fn write_results(automaton: &GPUNChemicalsCellularAutomaton3D, experiment: &Batc
         } else if export_entry.attribute == "order-parameter" {
 
             // Insert only the last value of the order parameter
-            let ops = automaton.get_order_parameters();
+            let op = automaton.get_order_parameters();
 
-            for op in ops {
-                line.push_str(op[op.len()-1].to_string().as_str());
+            for i in 0..(automaton.chemicals.len() + 1) {
+                line.push_str(op[op.len()-1][i].to_string().as_str());
                 line.push(';');
             }
 
@@ -271,12 +271,15 @@ fn write_types(automaton: &GPUNChemicalsCellularAutomaton3D, experiment: &BatchE
         } else if export_entry.attribute == "order-parameter" {
 
             // Insert only the last value of the order parameter
-            let ops = automaton.get_order_parameters();
 
-            for op in ops {
-                line.push_str("Order parameter");
+            for i in 0..automaton.chemicals.len() {
+                line.push_str("Epsilon ");
+                line.push_str(i.to_string().as_str());
                 line.push(';');
             }
+
+            line.push_str("Epsilon undif.");
+            line.push(';');
 
         } else if export_entry.attribute == "order-parameter-evolution" {
 
@@ -349,6 +352,8 @@ async fn batch_run_experiment(state: web::Data<Mutex<CAAppData>>, experiment: we
 
     // Drop the lock on the state
     drop(state_mod);
+
+    println!("Finished batch experiment.");
 
     Ok("")
 

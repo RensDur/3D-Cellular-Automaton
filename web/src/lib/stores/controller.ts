@@ -118,7 +118,12 @@ function createControllerStore() {
             grid.setMarchingCubesGltf(marchingCubesGltf);
 
             // Get the nchem order parameter from the server
-            grid.orderParameter = orderParameterVector[0];
+            grid.orderParameter = [];
+
+            for (let i = 0; i < orderParameterVector.length; i++) {
+                grid.orderParameter.push(orderParameterVector[i][0]);
+            }
+
             grid.vectorOrderParameter = orderParameterVector;
 
             // Update both the cpu and gpu number of iterations

@@ -108,7 +108,7 @@ kernel void compute_iteration(device SumInput& input [[ buffer(0) ]],
             }
 
             // Add the absolute value of the multiplication of these numbers to the sum
-            input.sum[num_species*gid + i] = sigma1 * sigma2;
+            input.sum[num_species*gid + i] += sigma1 * sigma2;
 
         }
 
