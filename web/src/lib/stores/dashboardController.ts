@@ -120,14 +120,14 @@ function createDashboardControllerStore() {
             const iterations = await sendGet("/nchem/get-iterations");
 
             // 5. Update the order parameter
-            const orderParameter = await getOrderParameterFromServer();
+            const orderParameterVector = await getOrderParameterFromServer();
 
             // 6. Update the 3D graph
             await sendDevicePostWithJson("/set-chemical-capture", {chemical_capture: selectedSpecies});
             const marchingCubesGltf = await getCurrentMCMeshFromServer();
 
             // Update the general controller to make other components work with this new data
-            controller.pushDashboardUpdate(size, iterations, orderParameter, marchingCubesGltf, selectedSpecies);
+            controller.pushDashboardUpdate(size, iterations, orderParameterVector, marchingCubesGltf, selectedSpecies);
 
             // Return the average duration per iteration for this round of simulation
             return duration.duration / iter;
@@ -142,14 +142,14 @@ function createDashboardControllerStore() {
             const iterations = await sendGet("/nchem/get-iterations");
 
             // 5. Update the order parameter
-            const orderParameter = await getOrderParameterFromServer();
+            const orderParameterVector = await getOrderParameterFromServer();
 
             // 6. Update the 3D graph
             await sendDevicePostWithJson("/set-chemical-capture", {chemical_capture: selectedSpecies});
             const marchingCubesGltf = await getCurrentMCMeshFromServer();
 
             // Update the general controller to make other components work with this new data
-            controller.pushDashboardUpdate(size, iterations, orderParameter, marchingCubesGltf, selectedSpecies);
+            controller.pushDashboardUpdate(size, iterations, orderParameterVector, marchingCubesGltf, selectedSpecies);
 
         },
 

@@ -15,6 +15,7 @@ export class Grid3D {
     nChemChemicalCapture: number;
 
     orderParameter: number[];
+    vectorOrderParameter: number[][];
 
     // Constructor
     constructor(size: number) {
@@ -44,6 +45,7 @@ export class Grid3D {
         this.nChemChemicalCapture = 0;
 
         this.orderParameter = [];
+        this.vectorOrderParameter = [];
     }
 
     static from(size: number, data: number[][][]): Grid3D {
