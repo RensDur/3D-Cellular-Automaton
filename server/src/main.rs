@@ -39,6 +39,66 @@ async fn main() -> std::io::Result<()> {
     let chemicals = vec![
         CAChemicalGroup {
             promote: CAChemical {
+                range: 8.0,
+                influence: 1.0
+            },
+            demote: CAChemical {
+                range: 13.0,
+                influence: -0.35
+            }
+        },
+        CAChemicalGroup {
+            promote: CAChemical {
+                range: 3.2,
+                influence: 1.0
+            },
+            demote: CAChemical {
+                range: 6.0,
+                influence: -0.2
+            }
+        },
+        CAChemicalGroup {
+            promote: CAChemical {
+                range: 3.2,
+                influence: 1.0
+            },
+            demote: CAChemical {
+                range: 6.0,
+                influence: -0.2
+            }
+        },
+        CAChemicalGroup {
+            promote: CAChemical {
+                range: 3.2,
+                influence: 1.0
+            },
+            demote: CAChemical {
+                range: 6.0,
+                influence: -0.2
+            }
+        },
+        CAChemicalGroup {
+            promote: CAChemical {
+                range: 3.2,
+                influence: 1.0
+            },
+            demote: CAChemical {
+                range: 6.0,
+                influence: -0.2
+            }
+        },
+        CAChemicalGroup {
+            promote: CAChemical {
+                range: 3.2,
+                influence: 1.0
+            },
+            demote: CAChemical {
+                range: 6.0,
+                influence: -0.2
+            }
+        },
+        CAChemicalGroup {
+            promote: CAChemical {
                 range: 3.2,
                 influence: 1.0
             },
@@ -51,56 +111,10 @@ async fn main() -> std::io::Result<()> {
 
     let mut ca_app_data = CAAppData::new(3.2, 1.0, 6.0, -0.2, chemicals);
 
-    // ca_app_data.nchem_ca.spread_chemicals_randomly(2);
-    // for _ in 0..100 {
-    //     ca_app_data.nchem_ca.run_iteration();
-    // }
-
-    // println!("Done!");
-
-    
-    // Simulation speed benchmark
-    let benchmarkIterations = 20;
-
-    // Initialise both simulators
-    ca_app_data.cpu_ca.spread_chemicals_randomly(2);
-    ca_app_data.nchem_ca.spread_chemicals_randomly(3);
-    
-    // println!("Starting CPU simulation of {} iterations.", benchmarkIterations);
-
-    // let cpuStart = Instant::now();
-
-    // for i in 0..benchmarkIterations {
-    //     println!("Progress: {}/{}", i, benchmarkIterations);
-    //     ca_app_data.cpu_ca.run_iteration();
-    // }
-
-    // let cpuDuration = cpuStart.elapsed();
-
-    // println!("CPU simulation finished in {} seconds.", cpuDuration.as_secs_f32());
-
-    // println!("Starting GPU simulation of {} iterations.", benchmarkIterations);
-
-    // let gpuStart = Instant::now();
-
-    // for i in 0..benchmarkIterations {
-    //     println!("Progress: {}/{}", i, benchmarkIterations);
-    //     ca_app_data.nchem_ca.run_iteration();
-    // }
-
-    // let gpuDuration = gpuStart.elapsed();
-
-    // println!("GPU simulation finished in {} seconds.", gpuDuration.as_secs_f32());
-
-    // println!("\nCompleted benchmark: size={}, iter={}.", AUTOMATON_SIZE, benchmarkIterations);
-    // // println!("\nCPU Benchmark: {}", cpuDuration.as_secs_f32() / benchmarkIterations as f32);
-    // println!("\nGPU Benchmark: {}", gpuDuration.as_secs_f32() / benchmarkIterations as f32);
-
-    // println!("\n•••\n\n\n");
-
-    // for _ in 0..30 {
-    //     ca_app_data.nchem_ca.run_iteration();
-    // }
+    ca_app_data.nchem_ca.spread_chemicals_randomly(8);
+    for _ in 0..30 {
+        ca_app_data.nchem_ca.run_iteration();
+    }
 
     println!("Done!");
 

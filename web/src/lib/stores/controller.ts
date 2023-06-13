@@ -48,8 +48,8 @@ function createControllerStore() {
         const grid = Grid3D.from(state.length, state);
 
         // Get the MC Mesh from the server
-        const mcGltf = await getCurrentMCMeshFromServer();
-        grid.setMarchingCubesGltf(mcGltf);
+        // const mcGltf = await getCurrentMCMeshFromServer();
+        // grid.setMarchingCubesGltf(mcGltf);
 
         // Get the nchem order parameter from the server
         const orderParameters = await getOrderParameterFromServer();
@@ -118,11 +118,7 @@ function createControllerStore() {
             grid.setMarchingCubesGltf(marchingCubesGltf);
 
             // Get the nchem order parameter from the server
-            grid.orderParameter = [];
-
-            for (let i = 0; i < orderParameterVector.length; i++) {
-                grid.orderParameter.push(orderParameterVector[i][0]);
-            }
+            grid.orderParameter = orderParameterVector[0];
 
             grid.vectorOrderParameter = orderParameterVector;
 

@@ -25,7 +25,7 @@
     let previouslyRenderedGrid: any;
 
     // Colors!
-    let chemical_colors = [0xc2532b, 0xe3a474, 0x7c1e79, 0x9862a5, 0xb8d161, 0x5db98d, 0xcc4a4a]
+    let chemical_colors = [0xc2532b, 0x5bafd9, 0x7c1e79, 0x9862a5, 0xb8d161, 0x5db98d, 0xcc4a4a]
 
     // THREE.js setup
     function setupScene() {

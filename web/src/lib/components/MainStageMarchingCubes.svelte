@@ -36,7 +36,7 @@
     let meshObjectsFrontSide: any[] = [];
 
     // Colors!
-    let chemical_colors = [0xc2532b, 0xe3a474, 0x7c1e79, 0x9862a5, 0xb8d161, 0x5db98d, 0xcc4a4a]
+    let chemical_colors = [0xc2532b, 0x4287f5, 0x7c1e79, 0x9862a5, 0xb8d161, 0x5db98d, 0xcc4a4a]
 
     // THREE.js behaviour variables
     let size: number = 20;
@@ -161,8 +161,8 @@
                         }
 
                         // Show both sides of the mesh with a different color
-                        meshObjectsFrontSide.push(new THREE.Mesh(meshGeometries[i], new THREE.MeshPhongMaterial({color: colorB, side: THREE.FrontSide})));
-                        meshObjectsBackSide.push(new THREE.Mesh(meshGeometries[i], new THREE.MeshPhongMaterial({color: colorA, side: THREE.BackSide})));
+                        meshObjectsFrontSide.push(new THREE.Mesh(meshGeometries[i], new THREE.MeshPhongMaterial({color: colorA, side: THREE.FrontSide})));
+                        meshObjectsBackSide.push(new THREE.Mesh(meshGeometries[i], new THREE.MeshPhongMaterial({color: colorB, side: THREE.BackSide})));
 
                         // Show the edges of the mesh
                         // const edges = new THREE.EdgesGeometry(meshGeometries[i]);

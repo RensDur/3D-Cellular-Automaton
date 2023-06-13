@@ -88,7 +88,32 @@ impl GPUNChemicalsCellularAutomaton3D {
     }
 
     pub fn get_order_parameters(&self) -> Vec<Vec<f32>> {
-        self.order_parameter.clone()
+        // In this class, the order parameters are organised as follows:
+        // self.order_parameter is a Vec<Vec<f32>> and contains a Vec<f32> for every iteration.
+        // Every iteration Vec<f32> contains (K+1) entries: K epsilons and the undif. epsilon
+        // This is a good format for collecting order parameters along the way, but not for 
+        // sharing them with other parts of the system.
+
+        // Here, we'll therefore transform the order parameter into a Vec<Vec<f32>> that contains
+        // a Vec<f32> for every (K+1) cell-types. Each Vec<f32> then contains one f32 for every iteration.
+
+        let mut result: Vec<Vec<f32>> = vec![];
+
+        // Add K+1 empty vectors
+        for spec in 0..(self.chemicals.len() + 1) {
+            result.push(vec![]);
+        }
+
+        // For each iteration
+        for iter in 0..self.order_parameter.len() {
+            // Go over all the species again
+            for spec in 0..(self.chemicals.len() + 1) {
+                // Append the next iteration for this species
+                result[spec].push(self.order_parameter[iter][spec]);
+            }
+        }
+
+        result
     }
 
     //
