@@ -13,7 +13,7 @@ use appdata::dim3d::automata::automaton_gpu_n_chemicals::{GPUNChemicalsCellularA
 
 use serde::{Serialize, Deserialize};
 
-pub const AUTOMATON_SIZE: usize = 50;
+pub const AUTOMATON_SIZE: usize = 30;
 pub const K_MAX: usize = 20;
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -37,67 +37,87 @@ impl CAAppData {
 async fn main() -> std::io::Result<()> {
 
     let chemicals = vec![
-        CAChemicalGroup {
-            promote: CAChemical {
-                range: 8.0,
-                influence: 1.0
-            },
-            demote: CAChemical {
-                range: 13.0,
-                influence: -0.35
-            }
-        },
-        CAChemicalGroup {
-            promote: CAChemical {
-                range: 3.2,
-                influence: 1.0
-            },
-            demote: CAChemical {
-                range: 6.0,
-                influence: -0.2
-            }
-        },
-        CAChemicalGroup {
-            promote: CAChemical {
-                range: 3.2,
-                influence: 1.0
-            },
-            demote: CAChemical {
-                range: 6.0,
-                influence: -0.2
-            }
-        },
-        CAChemicalGroup {
-            promote: CAChemical {
-                range: 3.2,
-                influence: 1.0
-            },
-            demote: CAChemical {
-                range: 6.0,
-                influence: -0.2
-            }
-        },
-        CAChemicalGroup {
-            promote: CAChemical {
-                range: 3.2,
-                influence: 1.0
-            },
-            demote: CAChemical {
-                range: 6.0,
-                influence: -0.2
-            }
-        },
-        CAChemicalGroup {
-            promote: CAChemical {
-                range: 3.2,
-                influence: 1.0
-            },
-            demote: CAChemical {
-                range: 6.0,
-                influence: -0.2
-            }
-        },
-        CAChemicalGroup {
+        // CAChemicalGroup { // 0
+        //     promote: CAChemical {
+        //         range: 9.0,
+        //         influence: 1.0
+        //     },
+        //     demote: CAChemical {
+        //         range: 14.0,
+        //         influence: -0.35
+        //     }
+        // },
+        // CAChemicalGroup { // 1
+        //     promote: CAChemical {
+        //         range: 5.0,
+        //         influence: 1.0
+        //     },
+        //     demote: CAChemical {
+        //         range: 9.4,
+        //         influence: -0.2
+        //     }
+        // },
+        // CAChemicalGroup { // 2
+        //     promote: CAChemical {
+        //         range: 3.2,
+        //         influence: 1.0
+        //     },
+        //     demote: CAChemical {
+        //         range: 6.0,
+        //         influence: -0.2
+        //     }
+        // },
+        // CAChemicalGroup { // 3
+        //     promote: CAChemical {
+        //         range: 2.0,
+        //         influence: 2.0
+        //     },
+        //     demote: CAChemical {
+        //         range: 3.0,
+        //         influence: -0.34
+        //     }
+        // },
+        // CAChemicalGroup { // 4
+        //     promote: CAChemical {
+        //         range: 3.2,
+        //         influence: 1.0
+        //     },
+        //     demote: CAChemical {
+        //         range: 6.0,
+        //         influence: -0.24
+        //     }
+        // },
+        // CAChemicalGroup { // 5
+        //     promote: CAChemical {
+        //         range: 3.2,
+        //         influence: 1.0
+        //     },
+        //     demote: CAChemical {
+        //         range: 6.0,
+        //         influence: -0.2
+        //     }
+        // },
+        // CAChemicalGroup { // 6
+        //     promote: CAChemical {
+        //         range: 3.2,
+        //         influence: 1.0
+        //     },
+        //     demote: CAChemical {
+        //         range: 6.0,
+        //         influence: -0.2
+        //     }
+        // },
+        // CAChemicalGroup { // 6
+        //     promote: CAChemical {
+        //         range: 3.2,
+        //         influence: 1.0
+        //     },
+        //     demote: CAChemical {
+        //         range: 6.0,
+        //         influence: -0.2
+        //     }
+        // },
+        CAChemicalGroup { // 6
             promote: CAChemical {
                 range: 3.2,
                 influence: 1.0
@@ -111,10 +131,10 @@ async fn main() -> std::io::Result<()> {
 
     let mut ca_app_data = CAAppData::new(3.2, 1.0, 6.0, -0.2, chemicals);
 
-    ca_app_data.nchem_ca.spread_chemicals_randomly(8);
-    for _ in 0..30 {
-        ca_app_data.nchem_ca.run_iteration();
-    }
+    // ca_app_data.nchem_ca.spread_chemicals_randomly(8);
+    // for _ in 0..100 {
+    //     ca_app_data.nchem_ca.run_iteration();
+    // }
 
     println!("Done!");
 
