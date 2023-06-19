@@ -15,7 +15,7 @@ function createDashboardControllerStore() {
     const { subscribe, set, update } = writable<DashboardStore>();
 
     const serverAddress = "http://localhost:7878";
-    const workingAddress = "nchem";
+    const workingAddress = "dim2d";
 
     async function getCurrentMCMeshFromServer() {
         const response = await fetch(serverAddress + "/" + workingAddress + "/get-current-state-triangles", {
@@ -28,7 +28,7 @@ function createDashboardControllerStore() {
     }
 
     async function getOrderParameterFromServer() {
-        const response = await fetch(serverAddress + "/nchem/get-order-parameter", {
+        const response = await fetch(serverAddress + "/dim2d/get-order-parameter", {
             method: "GET"
         });
 
@@ -85,7 +85,7 @@ function createDashboardControllerStore() {
             const store = new DashboardStore();
 
             // Get the species configuration from the server
-            const speciesConfig = await sendGetJson("/nchem/get-species-configuration");
+            const speciesConfig = await sendGetJson("/dim2d/get-species-configuration");
 
             // Translate this model into the species array
             const species: Species[] = [];
@@ -108,7 +108,7 @@ function createDashboardControllerStore() {
             const size: number = await sendGetJson("/general/get-automaton-size");
 
             // 1. Update the species-specification on the server
-            await sendPost("/nchem/set-species-configuration", {species});
+            await sendPost("/dim2d/set-species-configuration", {species});
 
             // 2. Randomly spread as many chemicals as there are species + 1
             await sendPost("/general/spread-chemicals-randomly", {"chemicals": species.length + 1});
@@ -117,7 +117,7 @@ function createDashboardControllerStore() {
             const duration = await sendDevicePostWithJson("/run-iteration", {num_iterations: iter});
 
             // 4. Update the number of iterations run
-            const iterations = await sendGet("/nchem/get-iterations");
+            const iterations = await sendGet("/dim2d/get-iterations");
 
             // 5. Update the order parameter
             const orderParameterVector = await getOrderParameterFromServer();
@@ -139,7 +139,7 @@ function createDashboardControllerStore() {
             const size: number = await sendGetJson("/general/get-automaton-size");
 
             // 4. Update the number of iterations run
-            const iterations = await sendGet("/nchem/get-iterations");
+            const iterations = await sendGet("/dim2d/get-iterations");
 
             // 5. Update the order parameter
             const orderParameterVector = await getOrderParameterFromServer();
@@ -167,7 +167,7 @@ function createDashboardControllerStore() {
             };
 
             // 1. Update the species-specification on the server
-            await sendPost("/nchem/set-species-configuration", {species});
+            await sendPost("/dim2d/set-species-configuration", {species});
 
             // 2. Signal the server to run this batch 
             await sendPost("/batch/run-experiment", data);
