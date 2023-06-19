@@ -25,15 +25,15 @@ kernel void compute_iteration(device SumInput& input [[ buffer(0) ]],
     uint size = input.arg_size_container[0];
     int size_i = (int) size;
 
-    uint array_size = size*size*size;
+    uint array_size = size*size;
     int array_size_i = (int) array_size;
 
     // Extract the number of chemicals in this simulation from the size_container (structure specified above)
     int num_chemicals = (int) input.arg_size_container[1];
 
     // Find x, y, z coordinates by using modulo calculations
-    int y = (gid % (size_i*size_i)) / size_i;
-    int x = (gid % (size_i*size_i)) % size_i;
+    int y = gid / size_i;
+    int x = gid % size_i;
 
     //
     // Influences are organised in the arg_chemicals array as follows:

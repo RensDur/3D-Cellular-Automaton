@@ -550,8 +550,8 @@ impl CellularAutomaton3D for GPUNChemicalsCellularAutomaton2D {
             argument_encoder.set_buffer(3, &arg_chemicals, 0);
             argument_encoder.set_buffer(4, &arg_neighbours_promote_x, 0);
             argument_encoder.set_buffer(5, &arg_neighbours_promote_y, 0);
-            argument_encoder.set_buffer(7, &arg_neighbours_demote_x, 0);
-            argument_encoder.set_buffer(8, &arg_neighbours_demote_y, 0);
+            argument_encoder.set_buffer(6, &arg_neighbours_demote_x, 0);
+            argument_encoder.set_buffer(7, &arg_neighbours_demote_y, 0);
 
             let pipeline_state_descriptor = ComputePipelineDescriptor::new();
             pipeline_state_descriptor.set_compute_function(Some(&kernel));

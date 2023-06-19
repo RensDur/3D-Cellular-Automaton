@@ -28,8 +28,8 @@ kernel void compute_iteration(device SumInput& input [[ buffer(0) ]],
     int num_species = (int) input.arg_size_container[1];
 
     // Find x, y, z coordinates by using modulo calculations
-    int y = (gid % (size_i*size_i)) / size_i;
-    int x = (gid % (size_i*size_i)) % size_i;
+    int y = gid / size_i;
+    int x = gid % size_i;
 
 
     for (int a = 0; a < 8; a += 2) {
