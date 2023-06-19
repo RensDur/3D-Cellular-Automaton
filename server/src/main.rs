@@ -6,8 +6,8 @@ use std::{sync::Mutex, time::Instant};
 
 use actix_cors::Cors;
 use actix_web::{App, HttpServer, web};
-use routes::{debug_routes::*, cpu_get::*, cpu_post::*, gpu_get::*, gpu_post::*, nchem_get::*, nchem_post::*, general_get::*, general_post::*, batch::*, benchmarks::{compare_cpu_gpu::{benchmarks_compare_cpu_gpu, benchmarks_compare_cpu_gpu_catch_up}, gpu_shader_increment::benchmarks_gpu_shader_increment}};
-use appdata::dim3d::automata::{automaton_cpu::CPUCellularAutomaton3D, automaton::CellularAutomaton3D};
+use routes::{debug_routes::*, cpu_get::*, cpu_post::*, gpu_get::*, gpu_post::*, nchem_get::*, nchem_post::*, dim2d_get::*, dim2d_post::*, general_get::*, general_post::*, batch::*, benchmarks::{compare_cpu_gpu::{benchmarks_compare_cpu_gpu, benchmarks_compare_cpu_gpu_catch_up}, gpu_shader_increment::benchmarks_gpu_shader_increment}};
+use appdata::{dim3d::automata::{automaton_cpu::CPUCellularAutomaton3D, automaton::CellularAutomaton3D}, dim2d::automaton_2d_gpu::GPUNChemicalsCellularAutomaton2D};
 use appdata::dim3d::automata::automaton_gpu::GPUCellularAutomaton3D;
 use appdata::dim3d::automata::automaton_gpu_n_chemicals::{GPUNChemicalsCellularAutomaton3D, CAChemicalGroup, CAChemical};
 
@@ -20,7 +20,8 @@ pub const K_MAX: usize = 20;
 pub struct CAAppData {
     pub cpu_ca: CPUCellularAutomaton3D,
     pub gpu_ca: GPUCellularAutomaton3D,
-    pub nchem_ca: GPUNChemicalsCellularAutomaton3D
+    pub nchem_ca: GPUNChemicalsCellularAutomaton3D,
+    pub dim2d_ca: GPUNChemicalsCellularAutomaton2D
 }
 
 impl CAAppData {
@@ -28,7 +29,8 @@ impl CAAppData {
         CAAppData {
             cpu_ca: CPUCellularAutomaton3D::new(AUTOMATON_SIZE, dc_range, dc_influence, uc_range, uc_influence),
             gpu_ca: GPUCellularAutomaton3D::new(dc_range, dc_influence, uc_range, uc_influence),
-            nchem_ca: GPUNChemicalsCellularAutomaton3D::new(chemicals)
+            nchem_ca: GPUNChemicalsCellularAutomaton3D::new(chemicals.clone()),
+            dim2d_ca: GPUNChemicalsCellularAutomaton2D::new(chemicals.clone())
         }
     }
 }
@@ -173,6 +175,18 @@ async fn main() -> std::io::Result<()> {
             .service(nchem_post_run_iteration)
             .service(nchem_post_set_chemical_capture)
             .service(nchem_set_species_configuration)
+            .service(dim2d_get_current_state)
+            .service(dim2d_get_current_state_triangles)
+            .service(dim2d_get_iterations)
+            .service(dim2d_get_chemical_capture)
+            .service(dim2d_get_order_parameter)
+            .service(dim2d_get_species_configuration)
+            .service(dim2d_post_initialise)
+            .service(dim2d_post_clear_all_voxels)
+            .service(dim2d_post_spread_chemicals_randomly)
+            .service(dim2d_post_run_iteration)
+            .service(dim2d_post_set_chemical_capture)
+            .service(dim2d_set_species_configuration)
             .service(general_get_automaton_size)
             .service(general_spread_chemicals_randomly)
             .service(general_create_activator_patch)

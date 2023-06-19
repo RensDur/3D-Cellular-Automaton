@@ -9,3 +9,5 @@ pub mod benchmarks;
 pub mod general_post;
 pub mod general_get;
 pub mod batch;
+pub mod dim2d_get;
+pub mod dim2d_post;
