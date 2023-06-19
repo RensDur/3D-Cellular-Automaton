@@ -1038,6 +1038,7 @@ dependencies = [
  "miette",
  "objc",
  "rand",
+ "rand_chacha",
  "serde",
 ]
 
