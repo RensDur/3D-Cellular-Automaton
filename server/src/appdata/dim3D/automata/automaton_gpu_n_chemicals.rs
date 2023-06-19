@@ -4,6 +4,7 @@ use isosurface::{source::Source, marching_cubes::MarchingCubes};
 use serde::{Serialize, Deserialize};
 
 use rand::prelude::*;
+use rand_chacha::ChaCha8Rng;
 
 use metal::*;
 use objc::rc::autoreleasepool;
@@ -369,7 +370,7 @@ impl CellularAutomaton3D for GPUNChemicalsCellularAutomaton3D {
     // Spreading chemicals randomly is done in exactly the same way as the original implementation
     fn spread_chemicals_randomly(&mut self, chem: u32) {
         // Random number generator
-        let mut rng = rand::thread_rng();
+        let mut rng = ChaCha8Rng::seed_from_u64(1);
 
         // Loop over all the cells in the grid
         for x in 0..self.grid.len() {
