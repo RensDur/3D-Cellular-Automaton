@@ -167,6 +167,7 @@ async fn main() -> std::io::Result<()> {
             .service(nchem_get_chemical_capture)
             .service(nchem_get_order_parameter)
             .service(nchem_get_species_configuration)
+            .service(nchem_state_has_converged)
             .service(nchem_post_initialise)
             .service(nchem_post_clear_all_voxels)
             .service(nchem_post_spread_chemicals_randomly)

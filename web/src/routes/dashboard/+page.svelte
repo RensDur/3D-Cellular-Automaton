@@ -8,6 +8,7 @@
     import MainStageMarchingCubes from "$lib/components/MainStageMarchingCubes.svelte";
     import OrderParameterGraph from "$lib/components/OrderParameterGraph.svelte";
 	import BatchEntryRow from "$lib/components/dashboard/BatchEntryRow.svelte";
+    import { controller } from "$lib/stores/controller";
     import { dashboardController } from "$lib/stores/dashboardController";
 	import { onMount } from "svelte";
 
@@ -225,6 +226,15 @@
                             // Immediately update the benchmark time-estimation
                             updateBatchFeedback();
                         }}>Run</button></td>
+                    </tr>
+                    <tr>
+                        <td colspan={3}>
+                            {#if $controller?.hasConverged}
+                            CA has converged after {$controller?.gpuNChemIterations} iterations
+                            {:else}
+                            CA has not converged after {$controller?.gpuNChemIterations} iterations
+                            {/if}
+                        </td>
                     </tr>
                 </table>
             {/if}

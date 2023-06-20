@@ -49,7 +49,7 @@ pub struct GPUNChemicalsCellularAutomaton3D {
     iteration_count: u32,
     marching_cubes_chemical_capture: usize,
     order_parameter: Vec<Vec<f32>>,
-    converged: bool
+    pub converged: bool
 }
 
 
@@ -142,7 +142,7 @@ impl GPUNChemicalsCellularAutomaton3D {
     fn import(&mut self, data: Vec<u8>) {
 
         // Upon importing, check if the CA has converged
-        let mut has_converged = true;
+        let mut convergence_counter: u64 = 0;
 
         for x in 0..AUTOMATON_SIZE {
             for y in 0..AUTOMATON_SIZE {
@@ -150,7 +150,7 @@ impl GPUNChemicalsCellularAutomaton3D {
 
                     // If one of the cells in these generations differ, this CA has not converged.
                     if self.grid[x][y][z] != data[x + y*AUTOMATON_SIZE + z*AUTOMATON_SIZE*AUTOMATON_SIZE] {
-                        has_converged = false;
+                        convergence_counter += 1;
                     }
 
                     // Import the data like normally
@@ -159,7 +159,9 @@ impl GPUNChemicalsCellularAutomaton3D {
             }
         }
 
-        self.converged = has_converged;
+        let difference_percentage = convergence_counter as f32 / data.len() as f32;
+
+        self.converged = difference_percentage <= 0.01;
 
     }
 

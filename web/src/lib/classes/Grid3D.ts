@@ -17,6 +17,8 @@ export class Grid3D {
     orderParameter: number[];
     vectorOrderParameter: number[][];
 
+    hasConverged: boolean;
+
     // Constructor
     constructor(size: number) {
         this.size = size;
@@ -46,6 +48,8 @@ export class Grid3D {
 
         this.orderParameter = [];
         this.vectorOrderParameter = [];
+
+        this.hasConverged = false;
     }
 
     static from(size: number, data: number[][][]): Grid3D {
