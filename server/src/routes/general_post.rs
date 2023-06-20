@@ -29,6 +29,7 @@ async fn general_spread_chemicals_randomly(state: web::Data<Mutex<CAAppData>>, i
     let nchem_clone = state_mod.nchem_ca.clone();
     state_mod.cpu_ca.import_data_from_automaton(&nchem_clone);
     state_mod.gpu_ca.import_data_from_automaton(&nchem_clone);
+    state_mod.dim2d_ca.import_data_from_automaton(&nchem_clone);
 
     drop(state_mod);
 

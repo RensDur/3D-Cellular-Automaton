@@ -13,7 +13,7 @@ use appdata::dim3d::automata::automaton_gpu_n_chemicals::{GPUNChemicalsCellularA
 
 use serde::{Serialize, Deserialize};
 
-pub const AUTOMATON_SIZE: usize = 30;
+pub const AUTOMATON_SIZE: usize = 100;
 pub const K_MAX: usize = 20;
 
 #[derive(Clone, Serialize, Deserialize)]

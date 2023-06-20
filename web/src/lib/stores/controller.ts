@@ -9,7 +9,7 @@ function createControllerStore() {
     const { subscribe, set, update } = writable<Grid3D>();
 
     const serverAddress = "http://localhost:7878";
-    let workingAddress = "nchem";
+    let workingAddress = "dim2d";
 
     async function getCurrentGridFromServer() {
         const response = await fetch(serverAddress + "/" + workingAddress + "/get-current-state", {
@@ -36,7 +36,7 @@ function createControllerStore() {
     }
 
     async function getOrderParameterFromServer() {
-        const response = await fetch(serverAddress + "/nchem/get-order-parameter", {
+        const response = await fetch(serverAddress + "/dim2d/get-order-parameter", {
             method: "GET"
         });
 
@@ -51,16 +51,16 @@ function createControllerStore() {
         // const mcGltf = await getCurrentMCMeshFromServer();
         // grid.setMarchingCubesGltf(mcGltf);
 
-        // Get the nchem order parameter from the server
+        // Get the dim2d order parameter from the server
         const orderParameters = await getOrderParameterFromServer();
         grid.orderParameter = orderParameters;
 
         // Update both the cpu and gpu number of iterations
         grid.cpuIterations = await sendGet("/cpu/get-iterations");
         grid.gpuIterations = await sendGet("/gpu/get-iterations");
-        grid.gpuNChemIterations = await sendGet("/nchem/get-iterations");
+        grid.gpuNChemIterations = await sendGet("/dim2d/get-iterations");
 
-        grid.nChemChemicalCapture = parseInt(await sendGet("/nchem/get-chemical-capture"));
+        grid.nChemChemicalCapture = parseInt(await sendGet("/dim2d/get-chemical-capture"));
 
         console.log("The current grid state was requested from the server. Response:");
         console.log(grid);
@@ -117,7 +117,7 @@ function createControllerStore() {
             // Get the MC Mesh from the server
             grid.setMarchingCubesGltf(marchingCubesGltf);
 
-            // Get the nchem order parameter from the server
+            // Get the dim2d order parameter from the server
             grid.orderParameter = orderParameterVector[0];
 
             grid.vectorOrderParameter = orderParameterVector;
