@@ -48,7 +48,8 @@ pub struct GPUNChemicalsCellularAutomaton3D {
     pub chemicals: Vec<CAChemicalGroup>,
     iteration_count: u32,
     marching_cubes_chemical_capture: usize,
-    order_parameter: Vec<Vec<f32>>
+    order_parameter: Vec<Vec<f32>>,
+    converged: bool
 }
 
 
@@ -65,7 +66,8 @@ impl GPUNChemicalsCellularAutomaton3D {
             chemicals,
             iteration_count: 0,
             marching_cubes_chemical_capture: 0,
-            order_parameter: vec![]
+            order_parameter: vec![],
+            converged: false
         }
     }
 
@@ -139,13 +141,25 @@ impl GPUNChemicalsCellularAutomaton3D {
 
     fn import(&mut self, data: Vec<u8>) {
 
+        // Upon importing, check if the CA has converged
+        let mut has_converged = true;
+
         for x in 0..AUTOMATON_SIZE {
             for y in 0..AUTOMATON_SIZE {
                 for z in 0..AUTOMATON_SIZE {
+
+                    // If one of the cells in these generations differ, this CA has not converged.
+                    if self.grid[x][y][z] != data[x + y*AUTOMATON_SIZE + z*AUTOMATON_SIZE*AUTOMATON_SIZE] {
+                        has_converged = false;
+                    }
+
+                    // Import the data like normally
                     self.grid[x][y][z] = data[x + y*AUTOMATON_SIZE + z*AUTOMATON_SIZE*AUTOMATON_SIZE];
                 }
             }
         }
+
+        self.converged = has_converged;
 
     }
 
@@ -322,13 +336,23 @@ impl CellularAutomaton3D for GPUNChemicalsCellularAutomaton3D {
 
         // Reset the order parameter
         self.order_parameter = vec![];
+
+        // Reset the convergence boolean
+        self.converged = false;
     }
 
 
 
     // Reset is empty, just like the original gpu implemenetation (this is kind of a fallen signature for n-chemicals)
     fn reset(&mut self, size: usize, dc_range: f32, dc_influence: f32, uc_range: f32, uc_influence: f32) {
-        
+        // Reset the iteration count
+        self.iteration_count = 0;
+
+        // Reset the order parameter
+        self.order_parameter = vec![];
+
+        // Reset the convergence boolean
+        self.converged = false;
     }
 
     // Get, set and size are exactly the same as the original gpu implementation
@@ -364,6 +388,9 @@ impl CellularAutomaton3D for GPUNChemicalsCellularAutomaton3D {
 
         self.compute_order_parameter();
 
+        // Reset the convergence boolean
+        self.converged = false;
+
     }
 
 
@@ -388,6 +415,9 @@ impl CellularAutomaton3D for GPUNChemicalsCellularAutomaton3D {
         self.order_parameter = vec![];
 
         self.compute_order_parameter();
+
+        // Reset the convergence boolean
+        self.converged = false;
     }
 
 
@@ -400,6 +430,12 @@ impl CellularAutomaton3D for GPUNChemicalsCellularAutomaton3D {
     //
     //
     fn run_iteration(&mut self) {
+
+        // If this automaton has already converged, don't run any more iterations anymore
+        if self.converged {
+            return;
+        }
+
         autoreleasepool(|| {
 
             let device = Device::system_default().expect("no device found");
