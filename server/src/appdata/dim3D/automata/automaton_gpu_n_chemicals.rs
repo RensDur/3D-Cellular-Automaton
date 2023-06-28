@@ -48,7 +48,8 @@ pub struct GPUNChemicalsCellularAutomaton3D {
     pub chemicals: Vec<CAChemicalGroup>,
     iteration_count: u32,
     marching_cubes_chemical_capture: usize,
-    order_parameter: Vec<Vec<f32>>
+    order_parameter: Vec<Vec<f32>>,
+    pub converged: bool
 }
 
 
@@ -65,7 +66,8 @@ impl GPUNChemicalsCellularAutomaton3D {
             chemicals,
             iteration_count: 0,
             marching_cubes_chemical_capture: 0,
-            order_parameter: vec![]
+            order_parameter: vec![],
+            converged: false
         }
     }
 
@@ -139,13 +141,63 @@ impl GPUNChemicalsCellularAutomaton3D {
 
     fn import(&mut self, data: Vec<u8>) {
 
+        // Upon importing, check if the CA has converged
+        let mut convergence_counter: u64 = 0;
+
         for x in 0..AUTOMATON_SIZE {
             for y in 0..AUTOMATON_SIZE {
                 for z in 0..AUTOMATON_SIZE {
+
+                    // If one of the cells in these generations differ, this CA has not converged.
+                    if self.grid[x][y][z] != data[x + y*AUTOMATON_SIZE + z*AUTOMATON_SIZE*AUTOMATON_SIZE] {
+                        convergence_counter += 1;
+                    }
+
+                    // Import the data like normally
                     self.grid[x][y][z] = data[x + y*AUTOMATON_SIZE + z*AUTOMATON_SIZE*AUTOMATON_SIZE];
                 }
             }
         }
+
+        let difference_percentage = convergence_counter as f32 / data.len() as f32;
+
+        self.converged = difference_percentage <= 0.01;
+
+    }
+
+
+
+    //
+    // Calculate the volume that is occupied by each of the cell-types
+    //
+
+    pub fn calculate_volume_per_cell_type(&self) -> Vec<f32> {
+
+        // Create the array that holds the volume-part for every species and undif. cells
+        let mut result: Vec<f32> = vec![0f32; self.chemicals.len() + 1];
+
+        let number_of_cells: f32 = (AUTOMATON_SIZE * AUTOMATON_SIZE * AUTOMATON_SIZE) as f32;
+
+        // Loop over every type of cell that can occur in this CA
+        for x in 0..AUTOMATON_SIZE {
+            for y in 0..AUTOMATON_SIZE {
+                for z in 0..AUTOMATON_SIZE {
+
+                    // And simply count the number of occurrences for every species
+                    result[self.get(x,y,z) as usize] += 1.0;
+
+                }
+            }
+        }
+
+        // Divide the counts by the total number of cells to get part-volume
+        for i in 0..result.len() {
+            result[i] /= number_of_cells;
+
+            println!("Species {} captured {}% of the volume in the CA.", i, result[i]*100.0);
+        }
+
+        result
 
     }
 
@@ -298,6 +350,10 @@ impl GPUNChemicalsCellularAutomaton3D {
 
 
 
+
+
+
+
 }
 
 
@@ -322,13 +378,23 @@ impl CellularAutomaton3D for GPUNChemicalsCellularAutomaton3D {
 
         // Reset the order parameter
         self.order_parameter = vec![];
+
+        // Reset the convergence boolean
+        self.converged = false;
     }
 
 
 
     // Reset is empty, just like the original gpu implemenetation (this is kind of a fallen signature for n-chemicals)
     fn reset(&mut self, size: usize, dc_range: f32, dc_influence: f32, uc_range: f32, uc_influence: f32) {
-        
+        // Reset the iteration count
+        self.iteration_count = 0;
+
+        // Reset the order parameter
+        self.order_parameter = vec![];
+
+        // Reset the convergence boolean
+        self.converged = false;
     }
 
     // Get, set and size are exactly the same as the original gpu implementation
@@ -364,6 +430,9 @@ impl CellularAutomaton3D for GPUNChemicalsCellularAutomaton3D {
 
         self.compute_order_parameter();
 
+        // Reset the convergence boolean
+        self.converged = false;
+
     }
 
 
@@ -388,6 +457,9 @@ impl CellularAutomaton3D for GPUNChemicalsCellularAutomaton3D {
         self.order_parameter = vec![];
 
         self.compute_order_parameter();
+
+        // Reset the convergence boolean
+        self.converged = false;
     }
 
 
@@ -400,6 +472,12 @@ impl CellularAutomaton3D for GPUNChemicalsCellularAutomaton3D {
     //
     //
     fn run_iteration(&mut self) {
+
+        // If this automaton has already converged, don't run any more iterations anymore
+        if self.converged {
+            return;
+        }
+
         autoreleasepool(|| {
 
             let device = Device::system_default().expect("no device found");

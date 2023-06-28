@@ -119,6 +119,9 @@ function createDashboardControllerStore() {
             // 4. Update the number of iterations run
             const iterations = await sendGet("/nchem/get-iterations");
 
+            // 5. Update the convergence boolean
+            const converged = await sendGet("/nchem/state-has-converged");
+
             // 5. Update the order parameter
             const orderParameterVector = await getOrderParameterFromServer();
 
@@ -127,7 +130,7 @@ function createDashboardControllerStore() {
             const marchingCubesGltf = await getCurrentMCMeshFromServer();
 
             // Update the general controller to make other components work with this new data
-            controller.pushDashboardUpdate(size, iterations, orderParameterVector, marchingCubesGltf, selectedSpecies);
+            controller.pushDashboardUpdate(size, iterations, converged, orderParameterVector, marchingCubesGltf, selectedSpecies);
 
             // Return the average duration per iteration for this round of simulation
             return duration.duration / iter;
@@ -141,15 +144,18 @@ function createDashboardControllerStore() {
             // 4. Update the number of iterations run
             const iterations = await sendGet("/nchem/get-iterations");
 
-            // 5. Update the order parameter
+            // 5. Update the convergence boolean
+            const converged = await sendGet("/nchem/state-has-converged");
+
+            // 6. Update the order parameter
             const orderParameterVector = await getOrderParameterFromServer();
 
-            // 6. Update the 3D graph
+            // 7. Update the 3D graph
             await sendDevicePostWithJson("/set-chemical-capture", {chemical_capture: selectedSpecies});
             const marchingCubesGltf = await getCurrentMCMeshFromServer();
 
             // Update the general controller to make other components work with this new data
-            controller.pushDashboardUpdate(size, iterations, orderParameterVector, marchingCubesGltf, selectedSpecies);
+            controller.pushDashboardUpdate(size, iterations, converged, orderParameterVector, marchingCubesGltf, selectedSpecies);
 
         },
 

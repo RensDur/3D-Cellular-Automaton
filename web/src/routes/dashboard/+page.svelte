@@ -8,6 +8,7 @@
     import MainStageMarchingCubes from "$lib/components/MainStageMarchingCubes.svelte";
     import OrderParameterGraph from "$lib/components/OrderParameterGraph.svelte";
 	import BatchEntryRow from "$lib/components/dashboard/BatchEntryRow.svelte";
+    import { controller } from "$lib/stores/controller";
     import { dashboardController } from "$lib/stores/dashboardController";
 	import { onMount } from "svelte";
 
@@ -211,6 +212,10 @@
                         <td>Demotor influence</td>
                         <td><input bind:this={demotorInfluenceInput} type="number" bind:value={selectedSpecies.chemicalB.influence}></td>
                     </tr>
+                    <tr>
+                        <td>WVD</td>
+                        <td>{(4.0/3.0) * Math.PI * (Math.pow(selectedSpecies.chemicalA.range, 3)*selectedSpecies.chemicalA.influence + (Math.pow(selectedSpecies.chemicalB.range, 3) - Math.pow(selectedSpecies.chemicalA.range, 3)) * selectedSpecies.chemicalB.influence)}</td>
+                    </tr>
                 </table>
 
                 <span class="space"></span>
@@ -225,6 +230,15 @@
                             // Immediately update the benchmark time-estimation
                             updateBatchFeedback();
                         }}>Run</button></td>
+                    </tr>
+                    <tr>
+                        <td colspan={3}>
+                            {#if $controller?.hasConverged}
+                            CA has converged after {$controller?.gpuNChemIterations} iterations
+                            {:else}
+                            CA has not converged after {$controller?.gpuNChemIterations} iterations
+                            {/if}
+                        </td>
                     </tr>
                 </table>
             {/if}

@@ -110,7 +110,7 @@ function createControllerStore() {
     return {
         subscribe,
 
-        pushDashboardUpdate: async (size: number, iterations: string, orderParameterVector: number[][], marchingCubesGltf: number[], selectedSpecies: number) => {
+        pushDashboardUpdate: async (size: number, iterations: string, converged: string, orderParameterVector: number[][], marchingCubesGltf: number[], selectedSpecies: number) => {
 
             const grid = new Grid3D(size);
 
@@ -126,6 +126,8 @@ function createControllerStore() {
             grid.gpuNChemIterations = iterations;
 
             grid.nChemChemicalCapture = selectedSpecies;
+
+            grid.hasConverged = converged === "true";
 
             update(_ => grid);
         },
