@@ -15,7 +15,7 @@ Under the supervision of M. Skrodzki and A.B.T. Barbaro.
 ## Abstract
 In 1952, Alan M. Turing presented a reaction-diffusion model that described formation of skin patterns. The patterns he predicted have later been found in various natural phenomena, such as in skins of fish or even in vegetation around termite hills. His patterns have even been taken to the micro-level. In 1984, David A. Young proposed a discretisation of this model, which enabled computer simulation. Both Turing and Young had only looked at two-dimensional patterns, until Martin Skrodzki and Konrad Polthier took the patterns to the third dimension in 2017. In this paper, these 3D simulations are generalised to produce patterns with more than two substances. We want to see whether Turing-like patterns also emerge there. To increase simulation speeds, a Graphics Processing Unit (GPU) implementation is described for this multi-species extension. Furthermore, we begin to investigate to what extent an order parameter can be defined, to analyse the formation of 3D structures. We found that our multi-species extension produced Turing-like structures that look similar to the ones found by former models. Our GPU simulation provided a significant performance increase. We also found that our order parameter can distinguish between well-mixed, well-segregated, and fully dominated states. However, it is yet unclear whether it can also be used to classify shapes.
 
-_Read the full Batchelor thesis here: [Multi Species Turing Patterns in Three Dimensions](http://resolver.tudelft.nl/uuid:eecd5afe-de11-476c-b3e6-95fff175ca44)_
+_Read the full Bachelor thesis here: [Multi Species Turing Patterns in Three Dimensions](http://resolver.tudelft.nl/uuid:eecd5afe-de11-476c-b3e6-95fff175ca44)_
 
 <hr>
 
