@@ -168,6 +168,42 @@ impl GPUNChemicalsCellularAutomaton3D {
 
 
     //
+    // Calculate the volume that is occupied by each of the cell-types
+    //
+
+    pub fn calculate_volume_per_cell_type(&self) -> Vec<f32> {
+
+        // Create the array that holds the volume-part for every species and undif. cells
+        let mut result: Vec<f32> = vec![0f32; self.chemicals.len() + 1];
+
+        let number_of_cells: f32 = (AUTOMATON_SIZE * AUTOMATON_SIZE * AUTOMATON_SIZE) as f32;
+
+        // Loop over every type of cell that can occur in this CA
+        for x in 0..AUTOMATON_SIZE {
+            for y in 0..AUTOMATON_SIZE {
+                for z in 0..AUTOMATON_SIZE {
+
+                    // And simply count the number of occurrences for every species
+                    result[self.get(x,y,z) as usize] += 1.0;
+
+                }
+            }
+        }
+
+        // Divide the counts by the total number of cells to get part-volume
+        for i in 0..result.len() {
+            result[i] /= number_of_cells;
+
+            println!("Species {} captured {}% of the volume in the CA.", i, result[i]*100.0);
+        }
+
+        result
+
+    }
+
+
+
+    //
     // COMPUTING THE ORDER-PARAMETERS
     //
 
@@ -311,6 +347,10 @@ impl GPUNChemicalsCellularAutomaton3D {
         });
 
     }
+
+
+
+
 
 
 
