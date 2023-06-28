@@ -9,7 +9,7 @@ function createControllerStore() {
     const { subscribe, set, update } = writable<Grid3D>();
 
     const serverAddress = "http://localhost:7878";
-    let workingAddress = "gpu";
+    let workingAddress = "nchem";
 
     async function getCurrentGridFromServer() {
         const response = await fetch(serverAddress + "/" + workingAddress + "/get-current-state", {
@@ -35,17 +35,32 @@ function createControllerStore() {
         return res;
     }
 
+    async function getOrderParameterFromServer() {
+        const response = await fetch(serverAddress + "/nchem/get-order-parameter", {
+            method: "GET"
+        });
+
+        return await response.json();
+    }
+
     async function updateStore() {
         const state = await getCurrentGridFromServer();
         const grid = Grid3D.from(state.length, state);
 
         // Get the MC Mesh from the server
-        const mcGltf = await getCurrentMCMeshFromServer();
-        grid.setMarchingCubesGltf(mcGltf);
+        // const mcGltf = await getCurrentMCMeshFromServer();
+        // grid.setMarchingCubesGltf(mcGltf);
+
+        // Get the nchem order parameter from the server
+        const orderParameters = await getOrderParameterFromServer();
+        grid.orderParameter = orderParameters;
 
         // Update both the cpu and gpu number of iterations
         grid.cpuIterations = await sendGet("/cpu/get-iterations");
         grid.gpuIterations = await sendGet("/gpu/get-iterations");
+        grid.gpuNChemIterations = await sendGet("/nchem/get-iterations");
+
+        grid.nChemChemicalCapture = parseInt(await sendGet("/nchem/get-chemical-capture"));
 
         console.log("The current grid state was requested from the server. Response:");
         console.log(grid);
@@ -95,6 +110,28 @@ function createControllerStore() {
     return {
         subscribe,
 
+        pushDashboardUpdate: async (size: number, iterations: string, converged: string, orderParameterVector: number[][], marchingCubesGltf: number[], selectedSpecies: number) => {
+
+            const grid = new Grid3D(size);
+
+            // Get the MC Mesh from the server
+            grid.setMarchingCubesGltf(marchingCubesGltf);
+
+            // Get the nchem order parameter from the server
+            grid.orderParameter = orderParameterVector[0];
+
+            grid.vectorOrderParameter = orderParameterVector;
+
+            // Update both the cpu and gpu number of iterations
+            grid.gpuNChemIterations = iterations;
+
+            grid.nChemChemicalCapture = selectedSpecies;
+
+            grid.hasConverged = converged === "true";
+
+            update(_ => grid);
+        },
+
         getWorkingDevice: () => {
             return workingAddress;
         },
@@ -112,6 +149,11 @@ function createControllerStore() {
 
         selectSimulationDevice: async (device: string) => {
             workingAddress = device;
+            await updateStore();
+        },
+
+        setChemicalCapture: async (chemical: number) => {
+            await sendDevicePostWithJson("/set-chemical-capture", {chemical_capture: chemical});
             await updateStore();
         },
 

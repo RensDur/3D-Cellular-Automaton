@@ -115,4 +115,23 @@ pub trait CellularAutomaton3D {
 
         String::from("{}")
     }
+
+    fn state_fully_dominated(&self) -> bool {
+
+        let mut dominated = true;
+        let first_encounter = self.get(0, 0, 0);
+
+        for x in 0..self.size() {
+            for y in 0..self.size() {
+                for z in 0..self.size() {
+                    if self.get(x, y, z) != first_encounter {
+                        dominated = false;
+                    }
+                }
+            }
+        }
+
+        dominated
+
+    }
 }

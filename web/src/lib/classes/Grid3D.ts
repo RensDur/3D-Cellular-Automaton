@@ -10,6 +10,14 @@ export class Grid3D {
 
     cpuIterations: string;
     gpuIterations: string;
+    gpuNChemIterations: string;
+
+    nChemChemicalCapture: number;
+
+    orderParameter: number[];
+    vectorOrderParameter: number[][];
+
+    hasConverged: boolean;
 
     // Constructor
     constructor(size: number) {
@@ -34,6 +42,14 @@ export class Grid3D {
 
         this.cpuIterations = "0";
         this.gpuIterations = "0";
+        this.gpuNChemIterations = "0";
+
+        this.nChemChemicalCapture = 0;
+
+        this.orderParameter = [];
+        this.vectorOrderParameter = [];
+
+        this.hasConverged = false;
     }
 
     static from(size: number, data: number[][][]): Grid3D {

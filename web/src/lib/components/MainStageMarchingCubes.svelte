@@ -8,6 +8,10 @@
     import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
     import { controller } from "$lib/stores/controller";
 
+    // Exposures
+    export let sceneWidth: number | undefined = undefined;
+    export let sceneHeight: number | undefined = undefined;
+
     // DOM bindings
     let containerDiv: HTMLDivElement;
 
@@ -31,6 +35,9 @@
     let meshObjectsBackSide: any[] = [];
     let meshObjectsFrontSide: any[] = [];
 
+    // Colors!
+    let chemical_colors = [0xc2532b, 0x5bafd9, 0x7c1e79, 0x9862a5, 0x78eb7a, 0xe778eb, 0xcc4a4a]
+
     // THREE.js behaviour variables
     let size: number = 20;
     let previouslyRenderedGrid: any;
@@ -46,7 +53,13 @@
 
         // Setup the WebGL renderer
         renderer = new THREE.WebGLRenderer({antialias: true});
-        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        if (sceneWidth == undefined || sceneHeight == undefined) {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        } else {
+            renderer.setSize(sceneWidth, sceneHeight);
+        }
+
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.BasicShadowMap;
 
@@ -67,7 +80,11 @@
         containerDiv.appendChild(renderer.domElement);
 
         // Specify the camera properties
-        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        if (sceneWidth == undefined || sceneHeight == undefined) {
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        } else {
+            camera = new THREE.PerspectiveCamera(75, sceneWidth / sceneHeight, 0.1, 1000);
+        }
         camera.position.set(size, size, size);
         
         // Specify the orbit-controls
@@ -123,9 +140,29 @@
                         meshGeometries[i].computeVertexNormals();
                         meshGeometries[i].translate(-size/2, -size/2, -size/2);
 
+                        // Decide which colour should appear where
+                        // The back-side of the mesh is always the chemical that was selected
+                        let colorA = chemical_colors[0];
+                        let colorB = chemical_colors[1];
+
+                        // If the controller indicates that the current-working-device is the nchem-device
+                        if (controller.getWorkingDevice() == "nchem") {
+                            // The colors need to be changed.
+                            // The selected cell-type is:
+                            let selectedChemicalCapture = $controller.nChemChemicalCapture;
+
+                            console.log("The selected cell-type is: " + String(selectedChemicalCapture));
+
+                            // colorA will become the color that corresponds to this cell-type
+                            colorA = 0xfccf03;
+
+                            // colorB will become grey
+                            colorB = chemical_colors[selectedChemicalCapture];
+                        }
+
                         // Show both sides of the mesh with a different color
-                        meshObjectsFrontSide.push(new THREE.Mesh(meshGeometries[i], new THREE.MeshPhongMaterial({color: "#e3a474", side: THREE.FrontSide})));
-                        meshObjectsBackSide.push(new THREE.Mesh(meshGeometries[i], new THREE.MeshPhongMaterial({color: "#c2532b", side: THREE.BackSide})));
+                        meshObjectsFrontSide.push(new THREE.Mesh(meshGeometries[i], new THREE.MeshPhongMaterial({color: colorA, side: THREE.FrontSide})));
+                        meshObjectsBackSide.push(new THREE.Mesh(meshGeometries[i], new THREE.MeshPhongMaterial({color: colorB, side: THREE.BackSide})));
 
                         // Show the edges of the mesh
                         // const edges = new THREE.EdgesGeometry(meshGeometries[i]);
@@ -184,11 +221,20 @@
 
     function handleWindowResize(e: Event) {
         // Update the camera aspect-ratio
-        camera.aspect = window.innerWidth / window.innerHeight;
+        if (sceneWidth == undefined || sceneHeight == undefined) {
+            camera.aspect = window.innerWidth / window.innerHeight;
+        } else {
+            camera.aspect = sceneWidth / sceneHeight;
+        }
+        
         camera.updateProjectionMatrix();
 
         // Update the size of the renderer to match the new window-size
-        renderer.setSize(window.innerWidth, window.innerHeight);
+        if (sceneWidth == undefined || sceneHeight == undefined) {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        } else {
+            renderer.setSize(sceneWidth, sceneHeight);
+        }
     }
 
 
