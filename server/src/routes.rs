@@ -7,3 +7,5 @@ pub mod nchem_get;
 pub mod nchem_post;
 pub mod benchmarks;
 pub mod general_post;
+pub mod general_get;
+pub mod batch;

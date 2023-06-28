@@ -2,18 +2,19 @@ mod appdata;
 mod routes;
 mod gltfgeneration;
 
-use std::sync::Mutex;
+use std::{sync::Mutex, time::Instant};
 
 use actix_cors::Cors;
 use actix_web::{App, HttpServer, web};
-use routes::{debug_routes::*, cpu_get::*, cpu_post::*, gpu_get::*, gpu_post::*, nchem_get::*, nchem_post::*, general_post::*, benchmarks::{compare_cpu_gpu::{benchmarks_compare_cpu_gpu, benchmarks_compare_cpu_gpu_catch_up}, gpu_shader_increment::benchmarks_gpu_shader_increment}};
+use routes::{debug_routes::*, cpu_get::*, cpu_post::*, gpu_get::*, gpu_post::*, nchem_get::*, nchem_post::*, general_get::*, general_post::*, batch::*, benchmarks::{compare_cpu_gpu::{benchmarks_compare_cpu_gpu, benchmarks_compare_cpu_gpu_catch_up}, gpu_shader_increment::benchmarks_gpu_shader_increment}};
 use appdata::dim3d::automata::{automaton_cpu::CPUCellularAutomaton3D, automaton::CellularAutomaton3D};
 use appdata::dim3d::automata::automaton_gpu::GPUCellularAutomaton3D;
 use appdata::dim3d::automata::automaton_gpu_n_chemicals::{GPUNChemicalsCellularAutomaton3D, CAChemicalGroup, CAChemical};
 
 use serde::{Serialize, Deserialize};
 
-pub const AUTOMATON_SIZE: usize = 30;
+pub const AUTOMATON_SIZE: usize = 100;
+pub const K_MAX: usize = 20;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct CAAppData {
@@ -36,106 +37,112 @@ impl CAAppData {
 async fn main() -> std::io::Result<()> {
 
     let chemicals = vec![
-        CAChemicalGroup {
+        // CAChemicalGroup { // 0
+        //     promote: CAChemical {
+        //         range: 9.0,
+        //         influence: 1.0
+        //     },
+        //     demote: CAChemical {
+        //         range: 14.0,
+        //         influence: -0.35
+        //     }
+        // },
+        // CAChemicalGroup { // 1
+        //     promote: CAChemical {
+        //         range: 5.0,
+        //         influence: 1.0
+        //     },
+        //     demote: CAChemical {
+        //         range: 9.4,
+        //         influence: -0.2
+        //     }
+        // },
+        // CAChemicalGroup { // 2
+        //     promote: CAChemical {
+        //         range: 3.2,
+        //         influence: 1.0
+        //     },
+        //     demote: CAChemical {
+        //         range: 6.0,
+        //         influence: -0.2
+        //     }
+        // },
+        // CAChemicalGroup { // 3
+        //     promote: CAChemical {
+        //         range: 2.0,
+        //         influence: 2.0
+        //     },
+        //     demote: CAChemical {
+        //         range: 3.0,
+        //         influence: -0.34
+        //     }
+        // },
+        // CAChemicalGroup { // 4
+        //     promote: CAChemical {
+        //         range: 3.2,
+        //         influence: 1.0
+        //     },
+        //     demote: CAChemical {
+        //         range: 6.0,
+        //         influence: -0.24
+        //     }
+        // },
+        CAChemicalGroup { // 5
             promote: CAChemical {
-                range: 3.2,
+                range: 6.0,
                 influence: 1.0
             },
             demote: CAChemical {
-                range: 6.0,
-                influence: -0.23
+                range: 10.0,
+                influence: -0.3
             }
         },
-        CAChemicalGroup {
+        CAChemicalGroup { // 6
             promote: CAChemical {
-                range: 3.2,
-                influence: 1.0
-            },
-            demote: CAChemical {
-                range: 6.0,
-                influence: -0.25
-            }
-        },
-        CAChemicalGroup {
-            promote: CAChemical {
-                range: 3.2,
-                influence: 1.0
-            },
-            demote: CAChemical {
-                range: 6.0,
-                influence: -0.25
-            }
-        },
-        CAChemicalGroup {
-            promote: CAChemical {
-                range: 3.2,
+                range: 4.0,
                 influence: 1.0
             },
             demote: CAChemical {
                 range: 7.0,
-                influence: -0.25
+                influence: -0.3
             }
         },
-        CAChemicalGroup {
+        CAChemicalGroup { // 6
+            promote: CAChemical {
+                range: 4.3,
+                influence: 1.0
+            },
+            demote: CAChemical {
+                range: 8.0,
+                influence: -0.22
+            }
+        },
+        CAChemicalGroup { // 6
             promote: CAChemical {
                 range: 3.2,
                 influence: 1.0
             },
             demote: CAChemical {
                 range: 6.0,
-                influence: -0.25
-            }
-        },
-        CAChemicalGroup {
-            promote: CAChemical {
-                range: 3.2,
-                influence: 1.0
-            },
-            demote: CAChemical {
-                range: 6.0,
-                influence: -0.25
-            }
-        },
-        CAChemicalGroup {
-            promote: CAChemical {
-                range: 3.2,
-                influence: 1.0
-            },
-            demote: CAChemical {
-                range: 6.0,
-                influence: -0.25
-            }
-        },
-        CAChemicalGroup {
-            promote: CAChemical {
-                range: 3.2,
-                influence: 1.0
-            },
-            demote: CAChemical {
-                range: 6.0,
-                influence: -0.25
-            }
-        },
-        CAChemicalGroup {
-            promote: CAChemical {
-                range: 3.2,
-                influence: 1.0
-            },
-            demote: CAChemical {
-                range: 6.0,
-                influence: -0.25
+                influence: -0.28
             }
         }
     ];
 
-    let mut ca_app_data = CAAppData::new(3.2, 1.0, 6.0, -0.18, chemicals);
+    let mut ca_app_data = CAAppData::new(3.2, 1.0, 6.0, -0.2, chemicals);
 
-    ca_app_data.nchem_ca.spread_chemicals_randomly(10);
-    for _ in 0..50 {
-        ca_app_data.nchem_ca.run_iteration();
-    }
+    // ca_app_data.nchem_ca.spread_chemicals_randomly(5);
+    // for _ in 0..100 {
+    //     ca_app_data.nchem_ca.run_iteration();
+    // }
+
+
+    // ca_app_data.nchem_ca.calculate_volume_per_cell_type();
+
+    
 
     println!("Done!");
+
 
     let app_state = web::Data::new(Mutex::new(ca_app_data));
 
@@ -163,16 +170,22 @@ async fn main() -> std::io::Result<()> {
             .service(nchem_get_current_state_triangles)
             .service(nchem_get_iterations)
             .service(nchem_get_chemical_capture)
+            .service(nchem_get_order_parameter)
+            .service(nchem_get_species_configuration)
+            .service(nchem_state_has_converged)
             .service(nchem_post_initialise)
             .service(nchem_post_clear_all_voxels)
             .service(nchem_post_spread_chemicals_randomly)
             .service(nchem_post_run_iteration)
             .service(nchem_post_set_chemical_capture)
+            .service(nchem_set_species_configuration)
+            .service(general_get_automaton_size)
             .service(general_spread_chemicals_randomly)
             .service(general_create_activator_patch)
             .service(benchmarks_compare_cpu_gpu)
             .service(benchmarks_compare_cpu_gpu_catch_up)
             .service(benchmarks_gpu_shader_increment)
+            .service(batch_run_experiment)
             
     })
     .bind(("127.0.0.1", 7878))?

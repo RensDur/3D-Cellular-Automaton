@@ -3,7 +3,16 @@
     import ControlCenter from './ControlCenter.svelte';
 
     import { tweened } from 'svelte/motion';
-    import { quadInOut } from 'svelte/easing';
+    import { cubicInOut, quadInOut } from 'svelte/easing';
+	import OrderParameterGraph from './OrderParameterGraph.svelte';
+
+    // Window width
+    let windowWidth = 0;
+    let windowHeight = 0;
+
+    // Canvas size
+    let canvasWidth = 100;
+    let canvasHeight = 100;
 
     // State boolean
     let csShown = false;
@@ -13,8 +22,8 @@
     const hiddenHoverSize = 40;
 
     const animationProperties = {
-        duration: 300,
-        easing: quadInOut
+        duration: 500,
+        easing: cubicInOut
     }
 
     const csWidth = tweened(hiddenSize, animationProperties);
@@ -27,7 +36,7 @@
     }
 
     function openControlCenter() {
-        csWidth.set(420);
+        csWidth.set(600);
         csShown = true;
     }
 
@@ -65,8 +74,8 @@
         on:mouseleave={hoverOutControlCenter}
         on:mousedown={openControlCenter}>
 
-        <div id="control-center-wrapper">
-            <ControlCenter/>
+        <div id="order-parameter-graph-wrapper" bind:clientWidth={canvasWidth} bind:clientHeight={canvasHeight}>
+            <OrderParameterGraph bind:windowWidth={canvasWidth} bind:windowHeight={canvasHeight}/>
         </div>
 
         <button id="toggleButton"
@@ -74,6 +83,8 @@
         </button>
 
 </div>
+
+<svelte:window bind:innerWidth={windowWidth} bind:innerHeight={windowHeight} />
 
 
 <style>
@@ -83,11 +94,11 @@
     }
 
     div#container {
-        height: calc(100vh - 60px);
+        height: 400px;
 
         position: absolute;
-        left: 0;
-        top: 30px;
+        right: 0;
+        top: calc(100vh - 430px);
 
         backdrop-filter: blur(20px);
 
@@ -95,14 +106,13 @@
         box-shadow: 0 0 8px 2px #aaaaaa99;
 
         box-sizing: border-box;
-        border-right: 1px solid #999;
+        border-left: 1px solid #999;
         border-top: 1px solid #999;
         border-bottom: 1px solid #999;
-        border-top-right-radius: 25px;
-        border-bottom-right-radius: 25px;
+        border-top-left-radius: 25px;
+        border-bottom-left-radius: 25px;
 
-        overflow-x: hidden;
-        overflow-y: scroll;
+        overflow: hidden;
     }
 
     button#toggleButton {
@@ -113,7 +123,7 @@
         height: 3rem;
 
         position: absolute;
-        right: 5px;
+        left: 5px;
         top: calc(50% - 1.5rem);
 
         border: none;
@@ -129,9 +139,10 @@
         width: 15px;
     }
 
-    div#control-center-wrapper {
+    div#order-parameter-graph-wrapper {
         width: calc(100% - 60px);
         min-width: 200px;
+        height: calc(100% - 60px);
         max-height: calc(100% - 60px);
 
         position: absolute;

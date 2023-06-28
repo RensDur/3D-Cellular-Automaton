@@ -3,7 +3,7 @@ use std::{sync::Mutex, time::Instant};
 use actix_web::{post, web, Responder, Result};
 use serde::{Deserialize, Serialize};
 use crate::appdata::dim3d::automata::automaton::CellularAutomaton3D;
-use crate::CAAppData;
+use crate::{CAAppData, CAChemical, CAChemicalGroup};
 
 #[derive(Deserialize)]
 pub struct InfoPostInitialise {
@@ -38,6 +38,27 @@ pub struct ResponsePostGeneral {
 pub struct ResponsePostRunIteration {
     duration: f32
 }
+
+
+
+
+#[derive(Serialize, Deserialize)]
+pub struct InfoPostChemicalHelper {
+    range: f32,
+    influence: f32
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct InfoPostSpeciesHelper {
+    chemicalA: InfoPostChemicalHelper,
+    chemicalB: InfoPostChemicalHelper
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct InfoPostSetSpeciesConfiguration {
+    species: Vec<InfoPostSpeciesHelper>
+}
+
 
 #[post("/nchem/initialise")]
 pub async fn nchem_post_initialise(state: web::Data<Mutex<CAAppData>>, info: web::Json<InfoPostInitialise>) -> Result<impl Responder> {
@@ -103,4 +124,32 @@ pub async fn nchem_post_set_chemical_capture(state: web::Data<Mutex<CAAppData>>,
 
     Ok(web::Json(ResponsePostGeneral{status: 0}))
     
+}
+
+
+#[post("/nchem/set-species-configuration")]
+async fn nchem_set_species_configuration(state: web::Data<Mutex<CAAppData>>, info: web::Json<InfoPostSetSpeciesConfiguration>) -> Result<impl Responder> {
+
+    // Construct the correct list of chemicals
+    let mut chemicals: Vec<CAChemicalGroup> = vec![];
+
+    for s in &info.species {
+        chemicals.push(CAChemicalGroup {
+            promote: CAChemical {
+                range: s.chemicalA.range,
+                influence: s.chemicalA.influence
+            },
+            demote: CAChemical {
+                range: s.chemicalB.range,
+                influence: s.chemicalB.influence
+            }
+        });
+    }
+
+    // Set the new chemicals array
+    let mut state_mod = state.lock().unwrap();
+    state_mod.nchem_ca.chemicals = chemicals;
+    drop(state_mod);
+
+    Ok("")
 }

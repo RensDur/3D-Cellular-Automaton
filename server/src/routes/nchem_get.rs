@@ -47,3 +47,40 @@ async fn nchem_get_chemical_capture(state: web::Data<Mutex<CAAppData>>) -> Resul
     Ok(usize::to_string(&chemical_capture))
 
 }
+
+#[get("/nchem/get-order-parameter")]
+async fn nchem_get_order_parameter(state: web::Data<Mutex<CAAppData>>) -> Result<impl Responder> {
+
+    let state_mod = state.lock().unwrap();
+
+    let result = state_mod.nchem_ca.get_order_parameters();
+
+    drop(state_mod);
+
+    Ok(web::Json(result))
+}
+
+#[get("/nchem/get-species-configuration")]
+async fn nchem_get_species_configuration(state: web::Data<Mutex<CAAppData>>) -> Result<impl Responder> {
+
+    let state_mod = state.lock().unwrap();
+
+    let result = state_mod.nchem_ca.chemicals.clone();
+
+    drop(state_mod);
+
+    Ok(web::Json(result))
+
+}
+
+#[get("/nchem/state-has-converged")]
+async fn nchem_state_has_converged(state: web::Data<Mutex<CAAppData>>) -> Result<impl Responder> {
+
+    let state_mod = state.lock().unwrap();
+
+    let converged = state_mod.nchem_ca.converged;
+
+    drop(state_mod);
+
+    Ok(web::Json(converged))
+}

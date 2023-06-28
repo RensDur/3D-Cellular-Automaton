@@ -97,7 +97,7 @@
     }
 
     div#csbutton.toggleNotActive {
-        background: #99999977;
+        background: #bbbbbb77;
     }
 
 </style>

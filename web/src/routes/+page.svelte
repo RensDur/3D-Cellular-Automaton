@@ -3,8 +3,9 @@
     import ControlCenterOverlay from "$lib/components/ControlCenterOverlay.svelte";
     import MainStage from "$lib/components/MainStage.svelte";
 	import MainStageMarchingCubes from "$lib/components/MainStageMarchingCubes.svelte";
+	import OrderParameterGraphOverlay from "$lib/components/OrderParameterGraphOverlay.svelte";
 
-    let view_mode = 1;
+    let view_mode = 0;
 
 </script>
 
@@ -20,8 +21,12 @@
     </div>
 
     <!-- Foreground that contains controls and other overlays -->
-    <div id="foreground">
+    <div id="control-center">
         <ControlCenterOverlay/>
+    </div>
+
+    <div id="order-parameter">
+        <OrderParameterGraphOverlay/>
     </div>
 </div>
 
@@ -49,14 +54,20 @@
         z-index: 0;
     }
 
-    div#foreground {
+    div#control-center {
         position: absolute;
         left: 0;
         top: 0;
 
         z-index: 1;
+    }
 
-        background: green;
+    div#order-parameter {
+        position: absolute;
+        right: 0;
+        top: 0;
+
+        z-index: 1;
     }
 
 </style>
