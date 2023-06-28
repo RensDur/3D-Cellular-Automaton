@@ -7,6 +7,8 @@ use crate::{CAAppData, appdata::dim3d::automata::{automaton_gpu_n_chemicals::GPU
 use std::io::prelude::*;
 use std::path::Path;
 
+use std::f32::consts::PI;
+
 #[derive(Serialize, Deserialize, Clone)]
 pub struct BatchEntry {
     species: usize,
@@ -29,7 +31,8 @@ pub struct BatchExperiment {
     export_entries: Vec<BatchExportEntry>,
     iterations: usize,
     file_name: String,
-    floating_point: String
+    floating_point: String,
+    exclude_fully_dominated: bool
 }
 
 
@@ -56,8 +59,11 @@ fn run_experiment(automaton: &mut GPUNChemicalsCellularAutomaton3D, experiment: 
         // Record the simulation time
         let duration = start.elapsed();
 
-        // Write the desired results to the file
-        write_results(automaton, experiment, duration.as_secs_f32(), file);
+        // If the experiment specifies not to include entries that yielded fully converged CA, exclude them.
+        if !experiment.exclude_fully_dominated || !automaton.state_fully_dominated() {
+            // Write the desired results to the file
+            write_results(automaton, experiment, duration.as_secs_f32(), file);
+        }
 
     }
 
@@ -73,7 +79,8 @@ fn run_experiment(automaton: &mut GPUNChemicalsCellularAutomaton3D, experiment: 
             export_entries: experiment.export_entries.clone(),
             iterations: experiment.iterations,
             file_name: experiment.file_name.clone(),
-            floating_point: experiment.floating_point.clone()
+            floating_point: experiment.floating_point.clone(),
+            exclude_fully_dominated: experiment.exclude_fully_dominated
         };
 
         // We're going to work with a while loop.
@@ -171,17 +178,21 @@ fn write_results(automaton: &GPUNChemicalsCellularAutomaton3D, experiment: &Batc
             // Insert only the last value of the order parameter
             let op = automaton.get_order_parameters();
 
-            line.push_str(op[op.len()-1].to_string().as_str());
-            line.push(';');
+            for i in 0..(automaton.chemicals.len() + 1) {
+                line.push_str(op[op.len()-1][i].to_string().as_str());
+                line.push(';');
+            }
 
         } else if export_entry.attribute == "order-parameter-evolution" {
 
             // Insert only the last value of the order parameter
-            let op = automaton.get_order_parameters();
+            let ops = automaton.get_order_parameters();
 
-            for i in op {
-                line.push_str(i.to_string().as_str());
-                line.push(';');
+            for op in ops {
+                for v in op {
+                    line.push_str(v.to_string().as_str());
+                    line.push(';');
+                }
             }
 
         } else if export_entry.attribute == "iterations" {
@@ -196,6 +207,24 @@ fn write_results(automaton: &GPUNChemicalsCellularAutomaton3D, experiment: &Batc
             line.push_str(sim_time.to_string().as_str());
             line.push(';');
 
+        } else if export_entry.attribute == "impact-delta" {
+
+            for i in 0..automaton.chemicals.len() {
+                
+                // Compute the impact for the promotor of this chemical
+                let promotor_impact = (4.0/3.0) * PI * f32::powi(automaton.chemicals[i].promote.range, 3) * automaton.chemicals[i].promote.influence;
+
+                // Compute the impact of the demotor for this chemical
+                let demotor_impact = f32::max(0.0, (4.0/3.0) * PI * f32::powi(automaton.chemicals[i].demote.range, 3) - (4.0/3.0) * PI * f32::powi(automaton.chemicals[i].promote.range, 3)) * automaton.chemicals[i].demote.influence;
+
+                // And finally the delta between them. Positive number means promotor dominates, negative demotor dominates.
+                let impact_delta = promotor_impact + demotor_impact;
+
+                line.push_str(impact_delta.to_string().as_str());
+
+                line.push(';');
+            }
+            
         }
 
     }
@@ -269,17 +298,31 @@ fn write_types(automaton: &GPUNChemicalsCellularAutomaton3D, experiment: &BatchE
         } else if export_entry.attribute == "order-parameter" {
 
             // Insert only the last value of the order parameter
-            line.push_str("Order parameter");
+
+            for i in 0..automaton.chemicals.len() {
+                line.push_str("Epsilon ");
+                line.push_str(i.to_string().as_str());
+                line.push(';');
+            }
+
+            line.push_str("Epsilon undif.");
             line.push(';');
 
         } else if export_entry.attribute == "order-parameter-evolution" {
 
-            // Insert only the last value of the order parameter
-            for i in 0..experiment.iterations {
-                line.push_str("OP iter ");
+            for i in 0..automaton.chemicals.len() {
+                line.push_str("Epsilon ");
                 line.push_str(i.to_string().as_str());
                 line.push(';');
+
+                // Make room for all iterations of the order parameter
+                for _ in 0..experiment.iterations {
+                    line.push(';');
+                }
             }
+
+            line.push_str("Epsilon undif.");
+            line.push(';');
 
         } else if export_entry.attribute == "iterations" {
 
@@ -292,6 +335,14 @@ fn write_types(automaton: &GPUNChemicalsCellularAutomaton3D, experiment: &BatchE
             // The simulation time is given as a parameter to this function
             line.push_str("Simulation time");
             line.push(';');
+
+        } else if export_entry.attribute == "impact-delta" {
+
+            for i in 0..automaton.chemicals.len() {
+                line.push_str("Impact delta - species ");
+                line.push_str(i.to_string().as_str());
+                line.push(';');
+            }
 
         }
 
@@ -343,6 +394,8 @@ async fn batch_run_experiment(state: web::Data<Mutex<CAAppData>>, experiment: we
 
     // Drop the lock on the state
     drop(state_mod);
+
+    println!("Finished batch experiment.");
 
     Ok("")
 

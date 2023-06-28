@@ -8,6 +8,7 @@
     import MainStageMarchingCubes from "$lib/components/MainStageMarchingCubes.svelte";
     import OrderParameterGraph from "$lib/components/OrderParameterGraph.svelte";
 	import BatchEntryRow from "$lib/components/dashboard/BatchEntryRow.svelte";
+    import { controller } from "$lib/stores/controller";
     import { dashboardController } from "$lib/stores/dashboardController";
 	import { onMount } from "svelte";
 
@@ -54,6 +55,7 @@
     let batchFeedback: string = "";
 
     let csvSettingFloatingPoint: string = "comma";
+    let batchSettingExcludeDominated: boolean = false;
 
 
     // METHODS RELATED TO SPECIES
@@ -210,6 +212,10 @@
                         <td>Demotor influence</td>
                         <td><input bind:this={demotorInfluenceInput} type="number" bind:value={selectedSpecies.chemicalB.influence}></td>
                     </tr>
+                    <tr>
+                        <td>WVD</td>
+                        <td>{(4.0/3.0) * Math.PI * (Math.pow(selectedSpecies.chemicalA.range, 3)*selectedSpecies.chemicalA.influence + (Math.pow(selectedSpecies.chemicalB.range, 3) - Math.pow(selectedSpecies.chemicalA.range, 3)) * selectedSpecies.chemicalB.influence)}</td>
+                    </tr>
                 </table>
 
                 <span class="space"></span>
@@ -224,6 +230,15 @@
                             // Immediately update the benchmark time-estimation
                             updateBatchFeedback();
                         }}>Run</button></td>
+                    </tr>
+                    <tr>
+                        <td colspan={3}>
+                            {#if $controller?.hasConverged}
+                            CA has converged after {$controller?.gpuNChemIterations} iterations
+                            {:else}
+                            CA has not converged after {$controller?.gpuNChemIterations} iterations
+                            {/if}
+                        </td>
                     </tr>
                 </table>
             {/if}
@@ -279,6 +294,7 @@
                                 <select bind:value={be.attribute}>
                                     <option value="number-of-species">Number of species</option>
                                     <option value="chem-values">Chemical values</option>
+                                    <option value="impact-delta">Chemical Impact Delta</option>
                                     <option value="order-parameter">Order parameter</option>
                                     <option value="order-parameter-evolution">Order parameter (+evolution)</option>
                                     <option value="iterations">Number of iterations</option>
@@ -325,8 +341,15 @@
                     </tr>
                     <tr>
                         <td></td>
+                        <td>
+                            <input type="checkbox" name="exclude_fully_dominated" id="exclude_fully_dominated_checkbox" bind:checked={batchSettingExcludeDominated}>
+                            <label for="exclude_fully_dominated_checkbox">Exclude non-converging outcomes</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
                         <td><button on:click={() => {
-                            dashboardController.runBatchExperiment($dashboardController?.species, batchEntries, batchExportEntries, batchNumOfIterations, batchExperimentIdentifier, csvSettingFloatingPoint);
+                            dashboardController.runBatchExperiment($dashboardController?.species, batchEntries, batchExportEntries, batchNumOfIterations, batchExperimentIdentifier, csvSettingFloatingPoint, batchSettingExcludeDominated);
                         }}>Run</button></td>
                     </tr>
                     <tr>

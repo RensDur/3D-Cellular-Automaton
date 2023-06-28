@@ -119,15 +119,18 @@ function createDashboardControllerStore() {
             // 4. Update the number of iterations run
             const iterations = await sendGet("/nchem/get-iterations");
 
+            // 5. Update the convergence boolean
+            const converged = await sendGet("/nchem/state-has-converged");
+
             // 5. Update the order parameter
-            const orderParameter = await getOrderParameterFromServer();
+            const orderParameterVector = await getOrderParameterFromServer();
 
             // 6. Update the 3D graph
             await sendDevicePostWithJson("/set-chemical-capture", {chemical_capture: selectedSpecies});
             const marchingCubesGltf = await getCurrentMCMeshFromServer();
 
             // Update the general controller to make other components work with this new data
-            controller.pushDashboardUpdate(size, iterations, orderParameter, marchingCubesGltf, selectedSpecies);
+            controller.pushDashboardUpdate(size, iterations, converged, orderParameterVector, marchingCubesGltf, selectedSpecies);
 
             // Return the average duration per iteration for this round of simulation
             return duration.duration / iter;
@@ -141,20 +144,23 @@ function createDashboardControllerStore() {
             // 4. Update the number of iterations run
             const iterations = await sendGet("/nchem/get-iterations");
 
-            // 5. Update the order parameter
-            const orderParameter = await getOrderParameterFromServer();
+            // 5. Update the convergence boolean
+            const converged = await sendGet("/nchem/state-has-converged");
 
-            // 6. Update the 3D graph
+            // 6. Update the order parameter
+            const orderParameterVector = await getOrderParameterFromServer();
+
+            // 7. Update the 3D graph
             await sendDevicePostWithJson("/set-chemical-capture", {chemical_capture: selectedSpecies});
             const marchingCubesGltf = await getCurrentMCMeshFromServer();
 
             // Update the general controller to make other components work with this new data
-            controller.pushDashboardUpdate(size, iterations, orderParameter, marchingCubesGltf, selectedSpecies);
+            controller.pushDashboardUpdate(size, iterations, converged, orderParameterVector, marchingCubesGltf, selectedSpecies);
 
         },
 
 
-        runBatchExperiment: async (species: Species[], entries: BatchEntry[], exportEntries: BatchExportEntry[], iterations: number, file_name: string, csvSettingFloatingPoint: string) => {
+        runBatchExperiment: async (species: Species[], entries: BatchEntry[], exportEntries: BatchExportEntry[], iterations: number, file_name: string, csvSettingFloatingPoint: string, excludeFullyDominated: boolean) => {
 
             // Setup the experiment in the correct format
             const data = {
@@ -162,7 +168,8 @@ function createDashboardControllerStore() {
                 "export_entries": exportEntries,
                 "iterations": iterations,
                 "file_name": file_name,
-                "floating_point": csvSettingFloatingPoint
+                "floating_point": csvSettingFloatingPoint,
+                "exclude_fully_dominated": excludeFullyDominated
             };
 
             // 1. Update the species-specification on the server

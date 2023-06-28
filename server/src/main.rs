@@ -13,7 +13,8 @@ use appdata::dim3d::automata::automaton_gpu_n_chemicals::{GPUNChemicalsCellularA
 
 use serde::{Serialize, Deserialize};
 
-pub const AUTOMATON_SIZE: usize = 50;
+pub const AUTOMATON_SIZE: usize = 100;
+pub const K_MAX: usize = 20;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct CAAppData {
@@ -36,80 +37,109 @@ impl CAAppData {
 async fn main() -> std::io::Result<()> {
 
     let chemicals = vec![
-        CAChemicalGroup {
+        // CAChemicalGroup { // 0
+        //     promote: CAChemical {
+        //         range: 9.0,
+        //         influence: 1.0
+        //     },
+        //     demote: CAChemical {
+        //         range: 14.0,
+        //         influence: -0.35
+        //     }
+        // },
+        // CAChemicalGroup { // 1
+        //     promote: CAChemical {
+        //         range: 5.0,
+        //         influence: 1.0
+        //     },
+        //     demote: CAChemical {
+        //         range: 9.4,
+        //         influence: -0.2
+        //     }
+        // },
+        // CAChemicalGroup { // 2
+        //     promote: CAChemical {
+        //         range: 3.2,
+        //         influence: 1.0
+        //     },
+        //     demote: CAChemical {
+        //         range: 6.0,
+        //         influence: -0.2
+        //     }
+        // },
+        // CAChemicalGroup { // 3
+        //     promote: CAChemical {
+        //         range: 2.0,
+        //         influence: 2.0
+        //     },
+        //     demote: CAChemical {
+        //         range: 3.0,
+        //         influence: -0.34
+        //     }
+        // },
+        // CAChemicalGroup { // 4
+        //     promote: CAChemical {
+        //         range: 3.2,
+        //         influence: 1.0
+        //     },
+        //     demote: CAChemical {
+        //         range: 6.0,
+        //         influence: -0.24
+        //     }
+        // },
+        CAChemicalGroup { // 5
             promote: CAChemical {
-                range: 3.2,
+                range: 6.0,
                 influence: 1.0
             },
             demote: CAChemical {
-                range: 6.0,
-                influence: -0.2
+                range: 10.0,
+                influence: -0.3
             }
         },
-        CAChemicalGroup {
+        CAChemicalGroup { // 6
+            promote: CAChemical {
+                range: 4.0,
+                influence: 1.0
+            },
+            demote: CAChemical {
+                range: 7.0,
+                influence: -0.3
+            }
+        },
+        CAChemicalGroup { // 6
+            promote: CAChemical {
+                range: 4.3,
+                influence: 1.0
+            },
+            demote: CAChemical {
+                range: 8.0,
+                influence: -0.22
+            }
+        },
+        CAChemicalGroup { // 6
             promote: CAChemical {
                 range: 3.2,
                 influence: 1.0
             },
             demote: CAChemical {
                 range: 6.0,
-                influence: -0.2
+                influence: -0.28
             }
         }
     ];
 
     let mut ca_app_data = CAAppData::new(3.2, 1.0, 6.0, -0.2, chemicals);
 
-    // ca_app_data.nchem_ca.spread_chemicals_randomly(2);
+    // ca_app_data.nchem_ca.spread_chemicals_randomly(5);
     // for _ in 0..100 {
     //     ca_app_data.nchem_ca.run_iteration();
     // }
 
-    // println!("Done!");
+
+    // ca_app_data.nchem_ca.calculate_volume_per_cell_type();
 
     
-    // Simulation speed benchmark
-    let benchmarkIterations = 20;
-
-    // Initialise both simulators
-    ca_app_data.cpu_ca.spread_chemicals_randomly(2);
-    ca_app_data.nchem_ca.spread_chemicals_randomly(3);
-    
-    // println!("Starting CPU simulation of {} iterations.", benchmarkIterations);
-
-    // let cpuStart = Instant::now();
-
-    // for i in 0..benchmarkIterations {
-    //     println!("Progress: {}/{}", i, benchmarkIterations);
-    //     ca_app_data.cpu_ca.run_iteration();
-    // }
-
-    // let cpuDuration = cpuStart.elapsed();
-
-    // println!("CPU simulation finished in {} seconds.", cpuDuration.as_secs_f32());
-
-    // println!("Starting GPU simulation of {} iterations.", benchmarkIterations);
-
-    // let gpuStart = Instant::now();
-
-    // for i in 0..benchmarkIterations {
-    //     println!("Progress: {}/{}", i, benchmarkIterations);
-    //     ca_app_data.nchem_ca.run_iteration();
-    // }
-
-    // let gpuDuration = gpuStart.elapsed();
-
-    // println!("GPU simulation finished in {} seconds.", gpuDuration.as_secs_f32());
-
-    // println!("\nCompleted benchmark: size={}, iter={}.", AUTOMATON_SIZE, benchmarkIterations);
-    // // println!("\nCPU Benchmark: {}", cpuDuration.as_secs_f32() / benchmarkIterations as f32);
-    // println!("\nGPU Benchmark: {}", gpuDuration.as_secs_f32() / benchmarkIterations as f32);
-
-    // println!("\n•••\n\n\n");
-
-    // for _ in 0..30 {
-    //     ca_app_data.nchem_ca.run_iteration();
-    // }
 
     println!("Done!");
 
@@ -142,6 +172,7 @@ async fn main() -> std::io::Result<()> {
             .service(nchem_get_chemical_capture)
             .service(nchem_get_order_parameter)
             .service(nchem_get_species_configuration)
+            .service(nchem_state_has_converged)
             .service(nchem_post_initialise)
             .service(nchem_post_clear_all_voxels)
             .service(nchem_post_spread_chemicals_randomly)

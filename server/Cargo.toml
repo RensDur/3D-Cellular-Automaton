@@ -15,4 +15,5 @@ metal = "0.24.0"
 miette = "5.9.0"
 objc = "0.2.7"
 rand = "0.8.5"
+rand_chacha = "0.3.1"
 serde = { version = "1.0.160", features = ["derive"] }

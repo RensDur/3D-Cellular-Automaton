@@ -5,7 +5,7 @@
 	import MainStageMarchingCubes from "$lib/components/MainStageMarchingCubes.svelte";
 	import OrderParameterGraphOverlay from "$lib/components/OrderParameterGraphOverlay.svelte";
 
-    let view_mode = 1;
+    let view_mode = 0;
 
 </script>
 
